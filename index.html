@@ -9,220 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;900&family=Lora:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --text-color: #fcf4da;
-            --background-color: #003a53;
-            --accent-color: #cd181b;
-            --link-color: #d4b92b;
-            --hover-color: #2790af;
-        }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Lora', serif;
-            background: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        h1, h2 {
-            font-family: 'Lora', serif;
-            font-weight: 600;
-            line-height: 1.2;
-        }
-
-        /* Hero Section with Portrait */
-        .hero {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            margin-left: calc(-50vw + 50%);
-            margin-right: calc(-50vw + 50%);
-        }
-
-        .hero-portrait {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: auto;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-            padding: 80px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-        }
-
-        .hero-overlay h1 {
-            font-size: clamp(64px, 12vw, 140px);
-            color: white;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            text-align: left;
-        }
-
-        /* About Section */
-        .about {
-            padding: 140px 40px;
-            background: var(--background-color);
-            color: var(--text-color);
-        }
-
-        .about-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 80px;
-            align-items: start;
-        }
-
-        .about-callout h2 {
-            font-size: clamp(56px, 8vw, 100px);
-            margin-bottom: 30px;
-            color: var(--text-color);
-            line-height: 1.1;
-        }
-
-        .callout-text {
-            font-size: clamp(24px, 3vw, 42px);
-            line-height: 1.4;
-            color: var(--text-color);
-        }
-
-        .about-text p {
-            font-size: clamp(18px, 2vw, 24px);
-            line-height: 1.7;
-            margin-bottom: 25px;
-            color: var(--text-color);
-        }
-
-        .about-text p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Links Section */
-        .links-section {
-            padding: 100px 40px;
-            background: var(--text-color);
-        }
-
-        .links-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .links-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 50px 100px;
-        }
-
-        .link-box {
-            display: block;
-            font-family: 'Bebas Neue', sans-serif;
-            font-weight: 400;
-            font-size: clamp(56px, 7vw, 110px);
-            text-decoration: none;
-            color: var(--background-color);
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            line-height: 1;
-            transition: color 0.2s ease;
-        }
-
-        .link-box:hover {
-            color: var(--accent-color);
-        }
-
-        .link-box:nth-child(odd) {
-            text-align: left;
-        }
-
-        .link-box:nth-child(even) {
-            text-align: right;
-        }
-
-        /* Footer */
-        .footer {
-            padding: 60px 40px;
-            text-align: center;
-            background: var(--text-color);
-            color: var(--background-color);
-        }
-
-        .footer-content {
-            max-width: 800px;
-            margin: 0 auto;
-            font-size: 16px;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .hero-overlay {
-                padding: 60px;
-            }
-
-            .about-grid {
-                grid-template-columns: 1fr;
-                gap: 50px;
-            }
-
-            .links-grid {
-                grid-template-columns: 1fr;
-                gap: 40px;
-            }
-
-            .link-box {
-                font-size: clamp(48px, 10vw, 90px);
-                text-align: left !important;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero-overlay {
-                padding: 40px 24px;
-            }
-
-            .hero-overlay h1 {
-                text-align: left;
-            }
-
-            .about {
-                padding: 80px 24px;
-            }
-
-            .links-section {
-                padding: 80px 24px;
-            }
-
-            .footer {
-                padding: 40px 24px;
-            }
-
-            .link-box {
-                font-size: clamp(36px, 9vw, 70px);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/home.css">
 </head>
 <body>
     <!-- ============================================ -->
@@ -271,13 +60,14 @@
     <section class="links-section">
         <div class="links-container">
             <div class="links-grid">
-                <a href="https://blog.jrbnz.com" class="link-box">Blog</a>
-                <a href="https://milfordcreative.com" class="link-box">Work</a>
-                <a href="https://photos.jrbnz.com" class="link-box">Photos</a>
-                <a href="https://www.linkedin.com/in/jamesbell-nz/" class="link-box">LinkedIn</a>
-                <a href="/now" class="link-box">Now</a>
-                <a href="https://thetheatrelist.nz" class="link-box">The Theatre List</a>
-                <a href="mailto:james@jrbnz.com" class="link-box">Contact</a>
+                <div><a href="https://blog.jrbnz.com" class="link-box">Blog</a></div>
+                <div><a href="https://milfordcreative.com" class="link-box">Work</a></div>
+                <div><a href="https://photos.jrbnz.com" class="link-box">Photos</a></div>
+                <div><a href="https://www.linkedin.com/in/jamesbell-nz/" class="link-box">LinkedIn</a></div>
+                <div><a href="#" class="link-box">Theatre</a></div>
+                <div><a href="mailto:james@jrbnz.com" class="link-box">Contact</a></div>
+                <div><a href="/now" class="link-box">Now</a></div>
+                <div><a href="https://thetheatrelist.com" class="link-box">The Theatre List</a></div>
             </div>
         </div>
     </section>

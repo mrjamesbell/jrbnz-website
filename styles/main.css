@@ -1,0 +1,127 @@
+/* Base styles and variables */
+:root {
+    --text-color: #fcf4da;
+    --background-color: #003a53;
+    --accent-color: #cd181b;
+    --link-color: #d4b92b;
+    --hover-color: #2790af;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Lora', serif;
+    background: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+h1, h2 {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+a:hover {
+    border-bottom-color: var(--link-color);
+}
+
+/* Container utilities */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Page header */
+.page-header {
+    padding: 80px 40px 40px;
+    background: var(--background-color);
+}
+
+.page-header h1 {
+    font-size: clamp(64px, 12vw, 140px);
+    color: var(--text-color);
+    text-align: left;
+}
+
+/* Content section */
+.content-section {
+    padding: 40px 40px 100px;
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.content-section p {
+    font-size: clamp(18px, 2vw, 24px);
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.content-section ul {
+    font-size: clamp(18px, 2vw, 24px);
+    line-height: 1.7;
+    margin-left: 30px;
+    margin-bottom: 30px;
+}
+
+.content-section li {
+    margin-bottom: 10px;
+}
+
+.content-section .footnote {
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.content-section a {
+    color: var(--accent-color);
+}
+
+/* Back link */
+.back-link {
+    display: inline-block;
+    margin-top: 30px;
+    font-size: 20px;
+    color: var(--link-color);
+}
+
+/* Footer */
+.footer {
+    padding: 60px 40px;
+    text-align: center;
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-header {
+        padding: 60px 24px 24px;
+    }
+
+    .content-section {
+        padding: 24px 24px 80px;
+    }
+
+    .footer {
+        padding: 40px 24px;
+    }
+}
