@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 James Bell</title>
+    <meta name="description" content="Theatre maker, writer, business manager and photographer from Auckland, New Zealand.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --text-color: #fcf4da;
+            --background-color: #003a53;
+            --accent-color: #cd181b;
+            --link-color: #d4b92b;
+            --hover-color: #2790af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1, h2 {
+            font-family: 'Lora', serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        /* Hero Section with Portrait */
+        .hero {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .hero-portrait {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            padding: 80px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        }
+
+        .hero-overlay h1 {
+            font-size: clamp(64px, 12vw, 140px);
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            text-align: left;
+        }
+
+        /* About Section */
+        .about {
+            padding: 140px 40px;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .about-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 80px;
+            align-items: start;
+        }
+
+        .about-callout h2 {
+            font-size: clamp(56px, 8vw, 100px);
+            margin-bottom: 30px;
+            color: var(--text-color);
+            line-height: 1.1;
+        }
+
+        .callout-text {
+            font-size: clamp(24px, 3vw, 42px);
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .about-text p {
+            font-size: clamp(18px, 2vw, 24px);
+            line-height: 1.7;
+            margin-bottom: 25px;
+            color: var(--text-color);
+        }
+
+        .about-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Links Section */
+        .links-section {
+            padding: 100px 40px;
+            background: var(--text-color);
+        }
+
+        .links-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 60px 80px;
+        }
+
+        .link-box {
+            display: block;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: clamp(32px, 4vw, 56px);
+            text-decoration: none;
+            color: var(--background-color);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 60px 40px;
+            text-align: center;
+            background: var(--text-color);
+            color: var(--background-color);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-overlay {
+                padding: 60px;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 50px;
+            }
+
+            .links-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 40px 60px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-overlay {
+                padding: 40px 24px;
+            }
+
+            .hero-overlay h1 {
+                text-align: left;
+            }
+
+            .about {
+                padding: 80px 24px;
+            }
+
+            .links-section {
+                padding: 80px 24px;
+            }
+
+            .footer {
+                padding: 40px 24px;
+            }
+
+            .links-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================ -->
+    <!-- HERO SECTION - Edit greeting text below -->
+    <!-- ============================================ -->
+    <section class="hero">
+        <img src="james-bell.jpg" alt="James Bell" class="hero-portrait">
+        <div class="hero-overlay">
+            <!-- EDIT THIS: Change the greeting text -->
+            <h1>Kia ora</h1>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- ABOUT SECTION - Edit callout and bio below -->
+    <!-- ============================================ -->
+    <section class="about">
+        <div class="about-container">
+            <div class="about-grid">
+                <!-- Left side: Callout -->
+                <div class="about-callout">
+                    <h2>James Bell</h2>
+                    <p class="callout-text">Theatre maker, writer, business manager and photographer from Auckland, New Zealand.</p>
+                </div>
+                
+                <!-- Right side: Bio -->
+                <div class="about-text">
+                    <p>I'm James, a forty-something self-confessed geek living on the North Shore of Auckland, New Zealand.</p>
+                    <p>I've been involved in theatre since intermediate school, starting as a stagehand. I joined Shoreside Theatre as a lighting operator in 1991 and formed my own theatre company, Foolish Wit Theatre, in 2015.</p>
+                    <p>I began directing in 2014. In 2010 I was one of 12 people worldwide chosen to take part in a directing workshop at the Royal Academy of Dramatic Arts in London.</p>
+                    <p>I worked for one of the first internet providers in New Zealand where I saved the world from Y2K, and spent twelve years working in the public service. I'm currently the Business Manager of The PumpHouse Theatre in Takapuna.</p>
+                    <p>Outside of theatre I enjoy photography, travelling and British TV panel shows. I share a cat named Meowvolio who likes biting toes in the middle of the night.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Links Section -->
+    <section class="links-section">
+        <div class="links-container">
+            <div class="links-grid">
+                <a href="https://blog.jrbnz.com" class="link-box">Blog</a>
+                <a href="/now" class="link-box">Now</a>
+                <a href="https://photos.jrbnz.com" class="link-box">Photos</a>
+                <a href="https://www.linkedin.com/in/jamesbell-nz/" class="link-box">LinkedIn</a>
+                <a href="https://thetheatrelist.nz" class="link-box">The Theatre List</a>
+                <a href="mailto:james@jrbnz.com" class="link-box">Email</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 James Bell</p>
+        </div>
+    </footer>
+</body>
+</html>
