@@ -28,3 +28,12 @@ Temporary Items
 *.swp
 *.swo
 *~
+
+# Photo gallery configuration (contains secrets)
+photos/.env
+photos/wrangler.toml
+photos/node_modules/
+photos/.wrangler/
+
+# Claude Code configuration
+.claude/

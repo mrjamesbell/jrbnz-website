@@ -1,0 +1,211 @@
+/* Gallery-specific styles - extends main.css from jrbnz.com */
+
+/* Filter Navigation - inside cream section */
+.filter-nav {
+    padding: 0 0 40px 0;
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.filter-link {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
+    font-size: clamp(24px, 3vw, 32px);
+}
+
+.filter-link:hover {
+    border-bottom-color: var(--accent-color);
+}
+
+.filter-link.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+
+.gallery {
+    column-count: 4;
+    column-gap: 20px;
+    width: 100%;
+}
+
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: rgba(0, 58, 83, 0.1);
+    break-inside: avoid;
+    margin-bottom: 20px;
+    display: inline-block;
+    width: 100%;
+    border-bottom: none !important;
+    border: 3px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.gallery-item:hover {
+    border-color: var(--accent-color);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-item img.loaded {
+    opacity: 1;
+}
+
+/* Loading & Error States */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: clamp(18px, 2vw, 24px);
+    color: var(--background-color);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.error {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: clamp(18px, 2vw, 24px);
+    color: var(--accent-color);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-top: 60px;
+    padding: 20px;
+}
+
+.pagination-btn {
+    background-color: transparent;
+    color: var(--background-color);
+    border: 2px solid var(--background-color);
+    padding: 12px 24px;
+    font-family: 'Lora', serif;
+    font-size: clamp(16px, 2vw, 20px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: var(--background-color);
+    border-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.page-info {
+    color: var(--background-color);
+    font-size: clamp(16px, 2vw, 20px);
+}
+
+/* Lightbox Customization */
+.gslide-description {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.glightbox-clean .gclose,
+.glightbox-clean .gnext,
+.glightbox-clean .gprev {
+    background-color: var(--link-color);
+    color: var(--background-color);
+}
+
+.glightbox-clean .gclose:hover,
+.glightbox-clean .gnext:hover,
+.glightbox-clean .gprev:hover {
+    background-color: var(--hover-color);
+}
+
+/* Fix lightbox image sizing to prevent scrollbars */
+.gcontainer {
+    width: 100vw;
+    height: 100vh;
+}
+
+.gslide-image img,
+.gslide-media img {
+    max-height: 95vh !important;
+    max-width: 95vw !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+.ginner-container {
+    width: auto !important;
+    height: auto !important;
+}
+
+.gslide-inline,
+.gslide-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .gallery {
+        column-count: 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-nav {
+        padding: 0 0 24px 0;
+        gap: 20px;
+    }
+
+    .gallery {
+        column-count: 2;
+        column-gap: 16px;
+    }
+
+    .gallery-item {
+        margin-bottom: 16px;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .pagination-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery {
+        column-count: 1;
+    }
+}

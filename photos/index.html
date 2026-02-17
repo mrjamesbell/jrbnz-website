@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos | James Bell</title>
+    <meta name="description" content="Photography portfolio by James Bell - Theatre and Travel photography">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/photos/styles/gallery.css">
+
+    <!-- GLightbox for modal/lightbox -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">
+</head>
+<body>
+    <!-- Blue header section with title -->
+    <header class="page-header">
+        <h1>Photos</h1>
+    </header>
+
+    <!-- Cream content section with navigation and gallery -->
+    <section class="content-section">
+        <nav class="filter-nav">
+            <a href="/photos" class="filter-link active" data-category="all">All Photos</a>
+            <a href="/photos?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
+            <a href="/photos?category=travel" class="filter-link" data-category="travel">Travel</a>
+        </nav>
+
+        <div id="loading" class="loading">Loading photos...</div>
+        <div id="gallery" class="gallery"></div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <nav class="pagination" id="pagination" style="display: none;">
+            <button id="prev-btn" class="pagination-btn" disabled>← Previous</button>
+            <span id="page-info" class="page-info"></span>
+            <button id="next-btn" class="pagination-btn" disabled>Next →</button>
+        </nav>
+    </section>
+
+    <!-- Footer with back link -->
+    <footer class="footer">
+        <div class="footer-content">
+            <a href="/" class="back-link">← Back to home</a>
+        </div>
+    </footer>
+
+    <!-- GLightbox -->
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
+
+    <!-- Gallery script -->
+    <script type="module" src="/photos/scripts/gallery.js"></script>
+</body>
+</html>
