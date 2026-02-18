@@ -1,33 +1,36 @@
-// Gallery functionality
+// Gallery — fetches photos.json from R2, handles filtering, pagination, hero, lightbox
 
-// Configuration
-const USE_MOCK_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
-const API_ENDPOINT = USE_MOCK_API ? '/api' : 'https://photo-gallery-worker.jrbnz.workers.dev/api';
-const PHOTOS_PER_PAGE = 30;
+const PHOTOS_JSON_URL = 'https://i.jrbnz.com/photos.json';
+const PHOTOS_PER_PAGE = 16;
 
 // State
+let manifest = null;   // full photos.json
 let currentPage = 1;
 let currentCategory = 'all';
-let totalPages = 1;
 let lightbox = null;
-let mockGetPhotos, mockTrackClick;
 
-// Initialize gallery on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    // Load mock API if in local dev mode
-    if (USE_MOCK_API) {
-        const module = await import('./mock-api.js');
-        mockGetPhotos = module.mockGetPhotos;
-        mockTrackClick = module.mockTrackClick;
-        console.log('🔧 Using mock API for local development');
-    }
-
     initializeNavigation();
     initializePagination();
+    await loadManifest();
     loadPhotosFromURL();
 });
 
-// Initialize navigation links
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+async function loadManifest() {
+    try {
+        const res = await fetch(PHOTOS_JSON_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        manifest = await res.json();
+    } catch (err) {
+        console.error('Failed to load photos manifest:', err);
+        showError('Failed to load photos. Please try again later.');
+    }
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+
 function initializeNavigation() {
     const navLinks = document.querySelectorAll('.filter-link');
 
@@ -36,157 +39,119 @@ function initializeNavigation() {
             e.preventDefault();
             const category = link.dataset.category;
 
-            // Update active state
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
 
-            // Update URL and load photos
             const url = category === 'all' ? '/photos' : `/photos?category=${category}`;
             window.history.pushState({ category }, '', url);
 
             currentCategory = category;
             currentPage = 1;
-            loadPhotos();
+            render();
         });
     });
 
-    // Handle browser back/forward
     window.addEventListener('popstate', () => {
         loadPhotosFromURL();
     });
 }
 
-// Initialize pagination controls
-function initializePagination() {
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-
-    prevBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            loadPhotos();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
-
-    nextBtn.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            loadPhotos();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
-}
-
-// Load photos based on current URL
 function loadPhotosFromURL() {
     const params = new URLSearchParams(window.location.search);
     currentCategory = params.get('category') || 'all';
     currentPage = parseInt(params.get('page')) || 1;
 
-    // Update active navigation
-    const navLinks = document.querySelectorAll('.filter-link');
-    navLinks.forEach(link => {
-        if (link.dataset.category === currentCategory) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
+    document.querySelectorAll('.filter-link').forEach(link => {
+        link.classList.toggle('active', link.dataset.category === currentCategory);
     });
 
-    loadPhotos();
+    render();
 }
 
-// Fetch and display photos
-async function loadPhotos() {
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function render() {
+    if (!manifest) return;
+    renderHero();
+    renderGallery();
+}
+
+function renderHero() {
+    const panel = document.getElementById('hero-panel');
+    const heroImg = document.getElementById('hero-image');
+    const heroLink = document.getElementById('hero-link');
+    const heroDesc = document.getElementById('hero-description');
+
+    const catData = currentCategory !== 'all' && manifest.categories?.[currentCategory];
+    const hero = catData?.hero || null;
+    const description = catData?.description || null;
+
+    if (!hero) {
+        panel.classList.add('hidden');
+        return;
+    }
+
+    heroLink.href = hero.fullUrl;
+    heroImg.src = hero.fullUrl;
+    heroImg.alt = hero.filename || '';
+    heroDesc.textContent = description || '';
+    heroDesc.style.display = description ? '' : 'none';
+    panel.classList.remove('hidden');
+
+    // Reinitialise lightbox so it picks up the (possibly new) hero anchor
+    initializeLightbox();
+}
+
+function renderGallery() {
     const gallery = document.getElementById('gallery');
     const loading = document.getElementById('loading');
-    const error = document.getElementById('error');
     const pagination = document.getElementById('pagination');
 
-    // Show loading state
-    loading.style.display = 'block';
+    loading.style.display = 'none';
     gallery.innerHTML = '';
-    error.style.display = 'none';
-    pagination.style.display = 'none';
+    hideError();
 
-    try {
-        let data;
+    const all = manifest.photos || [];
+    const filtered = currentCategory === 'all'
+        ? all
+        : all.filter(p => p.category === currentCategory);
 
-        if (USE_MOCK_API && mockGetPhotos) {
-            // Use mock API for local development
-            data = await mockGetPhotos(currentCategory, currentPage, PHOTOS_PER_PAGE);
-        } else {
-            // Use real API
-            const params = new URLSearchParams({
-                page: currentPage,
-                perPage: PHOTOS_PER_PAGE
-            });
-
-            if (currentCategory !== 'all') {
-                params.append('category', currentCategory);
-            }
-
-            const response = await fetch(`${API_ENDPOINT}/photos?${params}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            data = await response.json();
-        }
-
-        loading.style.display = 'none';
-
-        if (data.photos.length === 0) {
-            error.textContent = 'No photos found.';
-            error.style.display = 'block';
-            return;
-        }
-
-        renderGallery(data.photos);
-        updatePagination(data);
-
-    } catch (err) {
-        console.error('Error loading photos:', err);
-        loading.style.display = 'none';
-        error.textContent = 'Failed to load photos. Please try again later.';
-        error.style.display = 'block';
+    if (filtered.length === 0) {
+        showError('No photos found.');
+        pagination.style.display = 'none';
+        return;
     }
-}
 
-// Render gallery grid
-function renderGallery(photos) {
-    const gallery = document.getElementById('gallery');
+    const totalPages = Math.ceil(filtered.length / PHOTOS_PER_PAGE);
+    // Clamp page in case filter changed
+    if (currentPage > totalPages) currentPage = totalPages;
 
-    photos.forEach(photo => {
+    const start = (currentPage - 1) * PHOTOS_PER_PAGE;
+    const page = filtered.slice(start, start + PHOTOS_PER_PAGE);
+
+    page.forEach(photo => {
         const item = document.createElement('a');
         item.className = 'gallery-item glightbox';
         item.href = photo.fullUrl;
-        item.dataset.photoId = photo.id;
         item.dataset.gallery = 'gallery';
 
         const img = document.createElement('img');
         img.src = photo.thumbnailUrl;
         img.alt = photo.filename || 'Photo';
         img.loading = 'lazy';
-
-        // Fade in when loaded
-        img.addEventListener('load', () => {
-            img.classList.add('loaded');
-        });
+        img.addEventListener('load', () => img.classList.add('loaded'));
 
         item.appendChild(img);
         gallery.appendChild(item);
     });
 
-    // Initialize GLightbox
+    updatePagination(totalPages);
     initializeLightbox();
 }
 
-// Initialize GLightbox with click tracking
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+
 function initializeLightbox() {
-    // Destroy existing instance if any
     if (lightbox) {
         lightbox.destroy();
     }
@@ -198,69 +163,53 @@ function initializeLightbox() {
         autoplayVideos: false,
         width: '90vw',
         height: '90vh',
-        onOpen: () => {
-            // Track click when lightbox opens
-            const element = lightbox.elements[lightbox.index];
-            if (element && element.node) {
-                const photoId = element.node.dataset.photoId;
-                if (photoId) {
-                    trackClick(photoId);
-                }
-            }
-        },
-        onSlideChange: ({ prev, current }) => {
-            // Track click when slide changes
-            const element = lightbox.elements[current.index];
-            if (element && element.node) {
-                const photoId = element.node.dataset.photoId;
-                if (photoId) {
-                    trackClick(photoId);
-                }
-            }
+    });
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+function initializePagination() {
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+        const all = manifest?.photos || [];
+        const filtered = currentCategory === 'all' ? all : all.filter(p => p.category === currentCategory);
+        const totalPages = Math.ceil(filtered.length / PHOTOS_PER_PAGE);
+        if (currentPage < totalPages) {
+            currentPage++;
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
 }
 
-// Track photo click
-async function trackClick(photoId) {
-    try {
-        if (USE_MOCK_API && mockTrackClick) {
-            // Use mock API for local development
-            await mockTrackClick(photoId);
-        } else {
-            // Use real API
-            await fetch(`${API_ENDPOINT}/click`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ photoId })
-            });
-        }
-    } catch (err) {
-        // Silent fail - don't interrupt user experience
-        console.error('Error tracking click:', err);
-    }
-}
-
-// Update pagination controls
-function updatePagination(data) {
+function updatePagination(totalPages) {
     const pagination = document.getElementById('pagination');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const pageInfo = document.getElementById('page-info');
 
-    totalPages = data.totalPages;
-
-    // Update button states
     prevBtn.disabled = currentPage <= 1;
     nextBtn.disabled = currentPage >= totalPages;
-
-    // Update page info
     pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+}
 
-    // Show pagination only if there's more than one page
-    if (totalPages > 1) {
-        pagination.style.display = 'flex';
-    }
+// ── Error helpers ─────────────────────────────────────────────────────────────
+
+function showError(msg) {
+    const el = document.getElementById('error');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function hideError() {
+    const el = document.getElementById('error');
+    el.style.display = 'none';
 }
