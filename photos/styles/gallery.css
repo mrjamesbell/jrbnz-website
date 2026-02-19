@@ -153,7 +153,6 @@
 
 .gallery-item {
     position: relative;
-    overflow: hidden;
     border-radius: 4px;
     cursor: pointer;
     background-color: rgba(0, 58, 83, 0.1);
@@ -162,12 +161,17 @@
     display: inline-block;
     width: 100%;
     border-bottom: none !important;
-    border: 3px solid transparent;
-    transition: border-color 0.2s ease;
+    outline: 5px solid transparent;
+    outline-offset: -5px;
+    transition: outline-color 0.2s ease;
 }
 
 .gallery-item:hover {
-    border-color: var(--accent-color);
+    outline-color: var(--accent-color);
+}
+
+.gallery-item:last-child {
+    margin-bottom: 0;
 }
 
 .gallery-item img {
