@@ -42,7 +42,10 @@ function initializeNavigation() {
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
 
-            const url = category === 'all' ? '/photos' : `/photos?category=${category}`;
+            // Filter nav always stays visible once a category is selected
+            document.querySelector('.filter-nav').style.display = '';
+
+            const url = `/photos?category=${category}`;
             window.history.pushState({ category }, '', url);
 
             currentCategory = category;
@@ -58,12 +61,18 @@ function initializeNavigation() {
 
 function loadPhotosFromURL() {
     const params = new URLSearchParams(window.location.search);
-    currentCategory = params.get('category') || 'all';
+    const categoryParam = params.get('category');
+    // Landing = /photos with no category param at all
+    currentCategory = categoryParam || 'all';
     currentPage = parseInt(params.get('page')) || 1;
 
     document.querySelectorAll('.filter-link').forEach(link => {
         link.classList.toggle('active', link.dataset.category === currentCategory);
     });
+
+    // Show/hide filter nav depending on whether we're on the landing view
+    const isLanding = categoryParam === null;
+    document.querySelector('.filter-nav').style.display = isLanding ? 'none' : '';
 
     render();
 }
@@ -81,8 +90,9 @@ function renderCategoryOverview() {
     const overview = document.getElementById('category-overview');
     const categories = manifest.categories || {};
 
-    // Only show on 'all' view, page 1
-    if (currentCategory !== 'all' || currentPage > 1) {
+    // Only show on the landing view (no category param)
+    const isLanding = new URLSearchParams(window.location.search).get('category') === null;
+    if (!isLanding) {
         overview.classList.add('hidden');
         return;
     }
@@ -104,6 +114,7 @@ function renderCategoryOverview() {
         a.addEventListener('click', e => {
             e.preventDefault();
             document.querySelectorAll('.filter-link').forEach(l => l.classList.toggle('active', l.dataset.category === name));
+            document.querySelector('.filter-nav').style.display = '';
             window.history.pushState({ category: name }, '', `/photos?category=${name}`);
             currentCategory = name;
             currentPage = 1;
@@ -163,6 +174,13 @@ function renderGallery() {
     loading.style.display = 'none';
     gallery.innerHTML = '';
     hideError();
+
+    // On the landing view, no gallery — just the category cards
+    const isLanding = new URLSearchParams(window.location.search).get('category') === null;
+    if (isLanding) {
+        pagination.style.display = 'none';
+        return;
+    }
 
     const all = manifest.photos || [];
     const catData = currentCategory !== 'all' && manifest.categories?.[currentCategory];
