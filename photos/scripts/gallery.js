@@ -45,7 +45,7 @@ function initializeNavigation() {
             // Filter nav always stays visible once a category is selected
             document.querySelector('.filter-nav').style.display = '';
 
-            const url = `/photos?category=${category}`;
+            const url = category === 'all' ? '/photos' : `/photos?category=${category}`;
             window.history.pushState({ category }, '', url);
 
             currentCategory = category;
