@@ -9,19 +9,20 @@
 }
 
 .filter-back {
-    font-family: 'Lora', serif;
-    font-size: clamp(14px, 1.5vw, 18px);
-    color: rgba(0, 58, 83, 0.5);
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: clamp(24px, 3vw, 32px);
+    color: rgba(0, 58, 83, 0.35);
     text-decoration: none;
-    border-bottom: none;
-    align-self: center;
-    margin-right: 8px;
-    transition: color 0.2s ease;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .filter-back:hover {
     color: var(--accent-color);
-    border-bottom: none;
+    border-bottom-color: var(--accent-color);
 }
 
 .filter-link {
