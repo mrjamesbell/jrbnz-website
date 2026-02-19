@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">
 </head>
 <body>
+    <div id="site-header"></div>
+
     <header class="page-header">
         <h1>Photos</h1>
     </header>
@@ -29,6 +31,9 @@
             <a href="/photos?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
             <a href="/photos?category=travel" class="filter-link" data-category="travel">Travel</a>
         </nav>
+
+        <!-- Category overview (shown when 'All' is active) -->
+        <div class="category-overview hidden" id="category-overview"></div>
 
         <!-- Hero + description panel (shown per category) -->
         <div class="hero-panel hidden" id="hero-panel">
@@ -51,39 +56,8 @@
         </nav>
     </section>
 
-    <footer class="footer">
-        <div class="footer-grid">
-            <div>
-                <h4>James Bell</h4>
-                <div>Auckland, New Zealand</div>
-                <div class="footer-links-col" style="margin-top:10px;">
-                    <a href="mailto:james@jrbnz.com">james@jrbnz.com</a>
-                </div>
-                <div class="footer-fineprint">
-                    Theatre maker, writer, business manager and photographer.
-                </div>
-            </div>
-            <div>
-                <h4>Links</h4>
-                <div class="footer-links-col">
-                    <a href="/">Home</a>
-                    <a href="/now/">Now</a>
-                    <a href="/photos/">Photos</a>
-                </div>
-            </div>
-            <div>
-                <h4>Find me</h4>
-                <div class="footer-links-col">
-                    <a href="https://www.linkedin.com/in/jamesbell-nz/" target="_blank" rel="noreferrer">LinkedIn</a>
-                    <a href="https://instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-fineprint" style="margin-top:26px;">
-            &copy; <span id="footer-year"></span> James Bell
-        </div>
-        <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
-    </footer>
+    <div id="site-footer"></div>
+    <script src="/scripts/components.js"></script>
 
     <!-- GLightbox -->
     <script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>

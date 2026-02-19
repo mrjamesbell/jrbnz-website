@@ -19,6 +19,7 @@
     <!-- ============================================ -->
     <section class="hero">
         <img id="hero-portrait" src="" alt="James Bell" class="hero-portrait">
+        <div class="hero-logo">JRBNZ</div>
         <div class="hero-overlay">
             <!-- EDIT THIS: Change the greeting text -->
             <h1>Kia ora</h1>
@@ -31,30 +32,6 @@
         const randomImage = images[Math.floor(Math.random() * images.length)];
         document.getElementById('hero-portrait').src = randomImage;
     </script>
-
-    <!-- ============================================ -->
-    <!-- ABOUT SECTION - Edit callout and bio below -->
-    <!-- ============================================ -->
-    <section class="about">
-        <div class="about-container">
-            <div class="about-grid">
-                <!-- Left side: Callout -->
-                <div class="about-callout">
-                    <h2>James Bell</h2>
-                    <p class="callout-text">Theatre maker, writer, business manager and photographer from Auckland, New Zealand.</p>
-                </div>
-                
-                <!-- Right side: Bio -->
-                <div class="about-text">
-                    <p>I'm James, a forty-something self-confessed geek living on the North Shore of Auckland, New Zealand.</p>
-                    <p>I've been involved in theatre since intermediate school, starting as a stagehand. I joined Shoreside Theatre as a lighting operator in 1991 and formed my own theatre company, Foolish Wit Theatre, in 2015.</p>
-                    <p>I began directing in 2014. In 2010 I was one of 12 people worldwide chosen to take part in a directing workshop at the Royal Academy of Dramatic Arts in London.</p>
-                    <p>I worked for one of the first internet providers in New Zealand where I saved the world from Y2K, and spent twelve years working in the public service. I'm currently the Business Manager of The PumpHouse Theatre in Takapuna.</p>
-                    <p>Outside of theatre I enjoy photography, travelling and British TV panel shows. I share a cat named Meowvolio who likes biting toes in the middle of the night.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Links Section -->
     <section class="links-section">
@@ -71,38 +48,34 @@
         </div>
     </section>
 
+    <!-- ============================================ -->
+    <!-- ABOUT SECTION - Edit callout and bio below -->
+    <!-- ============================================ -->
+    <section class="about">
+        <div class="about-container">
+            <div class="about-grid">
+                <!-- Left side: Callout -->
+                <div class="about-callout">
+                    <h2>James Bell</h2>
+                    <p class="callout-text">Theatre maker, writer, business manager and photographer from Auckland, New Zealand.</p>
+                </div>
+
+                <!-- Right side: Bio -->
+                <div class="about-text">
+                    <p>I'm James, a forty-something self-confessed geek living on the North Shore of Auckland, New Zealand.</p>
+                    <p>I've been involved in theatre since intermediate school, starting as a stagehand. I joined Shoreside Theatre as a lighting operator in 1991 and formed my own theatre company, Foolish Wit Theatre, in 2015.</p>
+                    <p>I began directing in 2014. In 2010 I was one of 12 people worldwide chosen to take part in a directing workshop at the Royal Academy of Dramatic Arts in London.</p>
+                    <p>I worked for one of the first internet providers in New Zealand where I saved the world from Y2K, and spent twelve years working in the public service. I'm currently the Business Manager of The PumpHouse Theatre in Takapuna.</p>
+                    <p>Outside of theatre I enjoy photography, travelling and British TV panel shows. I share a cat named Meowvolio who likes biting toes in the middle of the night.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <footer class="footer">
-        <div class="footer-grid">
-            <div>
-                <h4>James Bell</h4>
-                <div>Auckland, New Zealand</div>
-                <div class="footer-links-col" style="margin-top:10px;">
-                    <a href="mailto:james@jrbnz.com">james@jrbnz.com</a>
-                </div>
-                <div class="footer-fineprint">
-                    Theatre maker, writer, business manager and photographer.
-                </div>
-            </div>
-            <div>
-                <h4>Links</h4>
-                <div class="footer-links-col">
-                    <a href="/">Home</a>
-                    <a href="/now/">Now</a>
-                    <a href="/photos/">Photos</a>
-                </div>
-            </div>
-            <div>
-                <h4>Find me</h4>
-                <div class="footer-links-col">
-                    <a href="https://www.linkedin.com/in/jamesbell-nz/" target="_blank" rel="noreferrer">LinkedIn</a>
-                    <a href="https://instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-fineprint" style="margin-top:26px;">
-            &copy; <span id="footer-year"></span> James Bell
-        </div>
-        <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+        <div class="footer-fineprint">&copy; <span class="footer-year"></span> James Bell</div>
+        <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+        <script>document.querySelectorAll('.footer-year').forEach(el => el.textContent = new Date().getFullYear());</script>
     </footer>
 </body>
 </html>

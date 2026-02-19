@@ -32,6 +32,7 @@
 /* Hero + description panel */
 .hero-panel {
     display: flex;
+    flex-direction: row-reverse;
     gap: 40px;
     align-items: flex-start;
     margin-bottom: 48px;
@@ -42,7 +43,7 @@
 }
 
 .hero-panel .hero-image-wrap {
-    flex: 0 0 50%;
+    flex: 0 0 65%;
 }
 
 .hero-panel .hero-image-wrap a {
@@ -76,10 +77,70 @@
     .hero-panel .hero-image-wrap {
         flex: none;
         width: 100%;
+        order: 2;
     }
 
     .hero-panel .hero-description {
-        display: none;
+        display: block;
+        order: 1;
+    }
+}
+
+/* Category overview grid (shown on /photos with no category selected) */
+.category-overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.category-overview.hidden {
+    display: none;
+}
+
+.category-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.category-card:hover {
+    border-color: var(--accent-color);
+}
+
+.category-card a {
+    display: block;
+    border-bottom: none;
+}
+
+.category-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+}
+
+.category-card-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 48px 24px 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 4vw, 56px);
+    letter-spacing: 0.03em;
+    color: #fff;
+    pointer-events: none;
+}
+
+@media (max-width: 600px) {
+    .category-overview {
+        grid-template-columns: 1fr;
     }
 }
 
