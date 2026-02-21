@@ -1,0 +1,2 @@
+/blog    https://blog.jrbnz.com/posts/    301
+/blog/*  https://blog.jrbnz.com/:splat   301
