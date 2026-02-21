@@ -1,2 +1,2 @@
-/posts   https://blog.jrbnz.com/posts/    301
-/posts/* https://blog.jrbnz.com/:splat   301
+/posts    https://blog.jrbnz.com/posts/         301
+/posts/*  https://blog.jrbnz.com/posts/:splat   301
