@@ -76,15 +76,18 @@ a:hover {
 }
 
 .site-nav .nav-links a {
-    font-family: 'Lora', serif;
-    font-size: 19px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: rgba(252, 244, 218, 0.6);
-    border-bottom: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .site-nav .nav-links a:hover {
-    color: var(--accent-color);
-    border-bottom: none;
+    color: var(--text-color);
+    border-bottom-color: var(--text-color);
 }
 
 /* Page header */

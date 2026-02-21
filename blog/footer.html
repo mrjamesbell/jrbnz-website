@@ -1,0 +1,11 @@
+<nav class="post-nav">
+    {{ previous_post }}
+    <a href="/blog/">All posts</a>
+    {{ next_post }}
+</nav>
+
+<footer class="footer">
+    <div class="footer-fineprint">&copy; <span id="blog-footer-year"></span> James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+    <script>document.getElementById('blog-footer-year').textContent = new Date().getFullYear();</script>
+</footer>
