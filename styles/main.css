@@ -1,10 +1,10 @@
 /* Base styles and variables */
 :root {
-    --text-color: #fcf4da;
-    --background-color: #003a53;
-    --accent-color: #cd181b;
+    --text-color: #f0ede8;
+    --background-color: #574f57;
+    --accent-color: #e8823a;
     --link-color: #d4b92b;
-    --hover-color: #2790af;
+    --hover-color: #e8823a;
 }
 
 * {
@@ -30,8 +30,13 @@ h1, h2 {
 a {
     color: var(--link-color);
     text-decoration: none;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.2s ease;
+    border-bottom: 1.6px solid var(--link-color);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+a:visited {
+    color: var(--link-color);
+    border-bottom-color: var(--link-color);
 }
 
 a:hover {
