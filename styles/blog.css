@@ -151,8 +151,17 @@
 
 /* Post body wrapper — constrains readable column */
 .post-body {
-  max-width: 80%;
+  max-width: 80vw;
   margin: 0 auto;
+}
+
+/* Also constrain old posts that predate the .post-body wrapper */
+.content-section > .post-meta,
+.content-section > .post-content,
+.content-section > .back-link {
+  max-width: 80vw;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Post title inside content (intermediate scale between page header and body) */
@@ -166,20 +175,24 @@
 }
 
 /* Image alignment */
-.post-content .rightalign {
-  float: right;
+img.rightalign {
+  float: right !important;
   max-width: 50%;
+  width: auto;
   height: auto;
-  margin: 0 0 1em 1.5em;
+  margin: 0 0 1em 1.5em !important;
   display: block;
+  border-radius: 4px;
 }
 
-.post-content .leftalign {
-  float: left;
+img.leftalign {
+  float: left !important;
   max-width: 50%;
+  width: auto;
   height: auto;
-  margin: 0 1.5em 1em 0;
+  margin: 0 1.5em 1em 0 !important;
   display: block;
+  border-radius: 4px;
 }
 
 .post-content::after {
@@ -190,7 +203,10 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-  .post-body {
+  .post-body,
+  .content-section > .post-meta,
+  .content-section > .post-content,
+  .content-section > .back-link {
     max-width: 100%;
   }
 
