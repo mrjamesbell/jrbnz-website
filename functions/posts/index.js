@@ -1,7 +1,12 @@
 export async function onRequestGet({ env }) {
-  const obj = await env.BLOG.get('posts/index.html');
-  if (!obj) return new Response(emptyIndex(), { headers: { 'content-type': 'text/html;charset=utf-8' } });
-  return new Response(obj.body, { headers: { 'content-type': 'text/html;charset=utf-8', 'cache-control': 'public,max-age=60' } });
+  try {
+    if (!env.BLOG) return new Response('R2 binding BLOG not found — check Pages bindings in Cloudflare dashboard.', { status: 500 });
+    const obj = await env.BLOG.get('posts/index.html');
+    if (!obj) return new Response(emptyIndex(), { headers: { 'content-type': 'text/html;charset=utf-8' } });
+    return new Response(obj.body, { headers: { 'content-type': 'text/html;charset=utf-8', 'cache-control': 'public,max-age=60' } });
+  } catch (e) {
+    return new Response(`Error: ${e.message}`, { status: 500 });
+  }
 }
 
 function emptyIndex() {
