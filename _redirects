@@ -1,2 +1,1 @@
-/posts    https://blog.jrbnz.com/posts/         301
-/posts/*  https://blog.jrbnz.com/posts/:splat   301
+/admin  /admin/  301
