@@ -77,14 +77,17 @@ const FOOT = `<footer class="footer">
 function buildPostHtml({ title, date, tags, contentHtml }) {
   const tagLinks = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   return `${HEAD(title)}
-<header class="page-header"><h1>${esc(title)}</h1></header>
+<header class="page-header"><h1>BLOG</h1></header>
 <section class="content-section">
-  <div class="post-meta">
-    <time datetime="${esc(date)}">${fmtDate(date)}</time>
-    ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
+  <div class="post-body">
+    <h2 class="post-title">${esc(title)}</h2>
+    <div class="post-meta">
+      <time datetime="${esc(date)}">${fmtDate(date)}</time>
+      ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
+    </div>
+    <div class="post-content">${contentHtml}</div>
+    <a href="/posts/" class="back-link">← All posts</a>
   </div>
-  <div class="post-content">${contentHtml}</div>
-  <a href="/posts/" class="back-link">← All posts</a>
 </section>
 ${FOOT}`;
 }

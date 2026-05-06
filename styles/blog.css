@@ -149,8 +149,51 @@
   margin: 2em 0;
 }
 
+/* Post body wrapper — constrains readable column */
+.post-body {
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+/* Post title inside content (intermediate scale between page header and body) */
+.post-title {
+  font-family: 'Lora', serif;
+  font-size: clamp(24px, 3.5vw, 40px);
+  font-weight: 700;
+  color: var(--background-color);
+  line-height: 1.25;
+  margin-bottom: 20px;
+}
+
+/* Image alignment */
+.post-content .rightalign {
+  float: right;
+  max-width: 50%;
+  height: auto;
+  margin: 0 0 1em 1.5em;
+  display: block;
+}
+
+.post-content .leftalign {
+  float: left;
+  max-width: 50%;
+  height: auto;
+  margin: 0 1.5em 1em 0;
+  display: block;
+}
+
+.post-content::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
+  .post-body {
+    max-width: 100%;
+  }
+
   .post-list-item {
     flex-direction: column;
     gap: 4px;
@@ -167,5 +210,12 @@
 
   .post-meta {
     gap: 10px;
+  }
+
+  .post-content .rightalign,
+  .post-content .leftalign {
+    float: none;
+    max-width: 100%;
+    margin: 1em 0;
   }
 }
