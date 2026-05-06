@@ -9,12 +9,12 @@
   align-items: baseline;
   gap: 16px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(87, 79, 87, 0.15);
+  border-bottom: 1px solid oklch(18% 0.01 50 / 0.15);
 }
 
 .post-list-item time {
   font-size: 15px;
-  color: rgba(87, 79, 87, 0.6);
+  color: oklch(18% 0.01 50 / 0.6);
   white-space: nowrap;
   min-width: 120px;
 }
@@ -46,7 +46,7 @@
 .tags-footer {
   margin-top: 48px;
   padding-top: 24px;
-  border-top: 1px solid rgba(87, 79, 87, 0.15);
+  border-top: 1px solid oklch(18% 0.01 50 / 0.15);
 }
 
 /* Post meta */
@@ -57,9 +57,9 @@
   flex-wrap: wrap;
   margin-bottom: 32px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(87, 79, 87, 0.15);
+  border-bottom: 1px solid oklch(18% 0.01 50 / 0.15);
   font-size: 15px;
-  color: rgba(87, 79, 87, 0.65);
+  color: oklch(18% 0.01 50 / 0.65);
 }
 
 .post-meta .post-tags {
@@ -117,20 +117,20 @@
   border-left: 3px solid var(--accent-color);
   padding: 0 0 0 20px;
   margin: 1.5em 0;
-  color: rgba(87, 79, 87, 0.75);
+  color: oklch(18% 0.01 50 / 0.75);
   font-style: italic;
 }
 
 .post-content code {
   font-family: 'Courier New', monospace;
   font-size: 0.88em;
-  background: rgba(87, 79, 87, 0.1);
+  background: oklch(18% 0.01 50 / 0.1);
   padding: 2px 6px;
   border-radius: 3px;
 }
 
 .post-content pre {
-  background: rgba(87, 79, 87, 0.08);
+  background: oklch(18% 0.01 50 / 0.08);
   padding: 20px;
   border-radius: 6px;
   overflow-x: auto;
@@ -145,7 +145,7 @@
 
 .post-content hr {
   border: none;
-  border-top: 1px solid rgba(87, 79, 87, 0.2);
+  border-top: 1px solid oklch(18% 0.01 50 / 0.2);
   margin: 2em 0;
 }
 

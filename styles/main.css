@@ -1,10 +1,10 @@
 /* Base styles and variables */
 :root {
     --text-color: #f0ede8;
-    --background-color: #574f57;
-    --accent-color: #e8823a;
-    --link-color: #d4b92b;
-    --hover-color: #e8823a;
+    --background-color: oklch(18% 0.01 50);
+    --accent-color: oklch(44% 0.09 185);
+    --link-color: oklch(44% 0.09 185);
+    --hover-color: oklch(44% 0.09 185);
 }
 
 * {

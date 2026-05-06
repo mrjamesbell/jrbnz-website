@@ -15,7 +15,7 @@ const ADMIN_HTML = `<!DOCTYPE html>
 :root {
   --bg: #14141f;
   --surface: #1d1d2e;
-  --accent: #e07a38;
+  --accent: oklch(44% 0.09 185);
   --text: #f0ede8;
   --muted: rgba(240,237,232,0.42);
   --border: rgba(240,237,232,0.08);
