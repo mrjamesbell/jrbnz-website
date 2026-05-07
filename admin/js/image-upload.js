@@ -129,42 +129,96 @@ async function handleFile(file, textarea, input) {
 }
 
 async function openMediaPicker(textarea) {
-  let items = [];
-  try {
-    const res = await fetch('/api/media');
-    if (res.ok) items = await res.json();
-  } catch {}
-
-  if (!items.length) {
-    showToast('No media in library yet', 'default');
+  const modal = document.getElementById('media-picker-modal');
+  if (!modal) {
+    showToast('Media picker not available', 'error');
     return;
   }
 
-  // Simple modal with grid
-  const backdrop = document.createElement('div');
-  backdrop.className = 'modal-backdrop';
-  backdrop.innerHTML = `<div class="modal" style="max-width:600px">
-    <div class="modal-header">
-      <span class="modal-title">Media library</span>
-      <button class="modal-close" id="media-picker-close">×</button>
-    </div>
-    <div class="modal-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:16px">
-      ${items.map(item => `<div class="media-picker-thumb" data-url="${item.url}" style="cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;aspect-ratio:1">
-        <img src="${item.url}" alt="" style="width:100%;height:100%;object-fit:cover" loading="lazy">
-      </div>`).join('')}
-    </div>
-  </div>`;
+  const grid = document.getElementById('media-picker-grid');
+  const insertBtn = document.getElementById('media-picker-insert');
+  const infoEl = document.getElementById('picker-selected-info');
+  const searchEl = document.getElementById('media-picker-search');
+  const closeBtn = document.getElementById('media-picker-close');
+  const cancelBtn = document.getElementById('media-picker-cancel');
 
-  document.body.appendChild(backdrop);
+  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
+  insertBtn.disabled = true;
+  if (infoEl) infoEl.textContent = '';
+  if (searchEl) searchEl.value = '';
+  modal.style.display = 'flex';
 
-  backdrop.querySelector('#media-picker-close').onclick = () => backdrop.remove();
-  backdrop.addEventListener('click', e => {
-    const thumb = e.target.closest('.media-picker-thumb');
-    if (thumb) {
-      insertImageMarkdown(textarea, thumb.dataset.url, '');
-      backdrop.remove();
-    } else if (e.target === backdrop) {
-      backdrop.remove();
+  try {
+    const res = await fetch('/api/media?limit=48');
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.items || []);
+
+    if (!items.length) {
+      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
+    } else {
+      grid.innerHTML = items.map(item => {
+        const url = _esc(item.publicUrl || item.url || '');
+        const name = _esc(item.filename || '');
+        const size = _fmtBytes(item.size || 0);
+        return `<div class="media-item" data-url="${url}" data-key="${_esc(item.key)}">
+          <img src="${url}" alt="${name}" loading="lazy">
+          <div class="media-item-overlay">
+            <div class="media-item-filename">${name}</div>
+            <div class="media-item-size">${size}</div>
+          </div>
+        </div>`;
+      }).join('');
     }
-  });
+  } catch {
+    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
+  }
+
+  const onGridClick = e => {
+    const item = e.target.closest('.media-item');
+    if (!item) return;
+    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
+    item.classList.add('is-selected');
+    insertBtn.disabled = false;
+    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
+  };
+  grid.addEventListener('click', onGridClick);
+
+  const close = () => {
+    modal.style.display = 'none';
+    grid.removeEventListener('click', onGridClick);
+    insertBtn.onclick = null;
+    if (closeBtn) closeBtn.onclick = null;
+    if (cancelBtn) cancelBtn.onclick = null;
+    if (searchEl) searchEl.oninput = null;
+  };
+
+  insertBtn.onclick = () => {
+    const selected = grid.querySelector('.media-item.is-selected');
+    if (selected) insertImageMarkdown(textarea, selected.dataset.url, '');
+    close();
+  };
+
+  if (closeBtn) closeBtn.onclick = close;
+  if (cancelBtn) cancelBtn.onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+
+  if (searchEl) {
+    searchEl.oninput = e => {
+      const q = e.target.value.toLowerCase();
+      grid.querySelectorAll('.media-item').forEach(item => {
+        const name = item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '';
+        item.style.display = name.includes(q) ? '' : 'none';
+      });
+    };
+  }
+}
+
+function _esc(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _fmtBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
 }

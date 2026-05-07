@@ -1,0 +1,194 @@
+/*
+ * Signal Admin — YouTube Block
+ * jrbnz.com blogging platform
+ *
+ * Replaces the .youtube-block section in editor-components.css
+ */
+
+.youtube-block {
+  margin: 28px 0;
+  border: var(--border-cream);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-cream-mid);
+}
+
+/* ── Thumbnail — always 16:9, never clips ── */
+.youtube-thumb-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: var(--color-ink);
+  overflow: hidden;
+}
+
+.youtube-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.youtube-thumb-wrap.no-thumb {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.youtube-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  background: rgba(0,0,0,0.65);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.youtube-play-triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 0 10px 20px;
+  border-color: transparent transparent transparent #ffffff;
+  margin-left: 4px;
+  opacity: 0.9;
+}
+
+.youtube-remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  line-height: 1;
+}
+
+.youtube-block:hover .youtube-remove-btn {
+  opacity: 1;
+}
+
+/* ── Info bar below thumbnail ── */
+.youtube-info-bar {
+  padding: 12px 16px 10px;
+  border-top: var(--border-cream);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.youtube-title {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+  line-height: 1.3;
+}
+
+.youtube-url-text {
+  font-size: 11px;
+  color: var(--color-cream-text-ghost);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.youtube-embed-note {
+  font-size: 11px;
+  color: var(--color-teal);
+  font-family: var(--font-sans);
+}
+
+/* ── Width controls ── */
+.youtube-width-bar {
+  padding: 8px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.youtube-width-label {
+  font-size: 10px;
+  color: var(--color-cream-text-ghost);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 4px;
+}
+
+.youtube-width-pill {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: var(--border-cream);
+  border-radius: var(--radius-pill);
+  color: var(--color-cream-text-muted);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  background: none;
+  transition: all var(--transition-fast);
+}
+
+.youtube-width-pill.is-active {
+  border-color: var(--color-teal);
+  color: var(--color-teal);
+  font-weight: 600;
+}
+
+.youtube-width-pill:hover:not(.is-active) {
+  border-color: var(--color-cream-border-mid);
+  color: var(--color-ink);
+}
+
+/* ── Width variants ── */
+.youtube-block.width-column {
+  /* default, stays within writing column */
+}
+
+.youtube-block.width-wide {
+  margin-left: -48px;
+  margin-right: -48px;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+.youtube-block.width-full {
+  margin-left: calc(-48px - 20px);
+  margin-right: calc(-48px - 20px);
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+/* ── Rendered embed (Read/Split view) ── */
+.youtube-embed-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.youtube-embed-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}

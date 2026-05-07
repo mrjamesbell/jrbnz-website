@@ -7,12 +7,12 @@
 <link rel="stylesheet" href="/admin/css/design-tokens.css">
 <link rel="stylesheet" href="/admin/css/admin-layout.css">
 <link rel="stylesheet" href="/admin/css/editor-components.css">
+<link rel="stylesheet" href="/admin/css/youtube-block.css">
 <link rel="stylesheet" href="/admin/css/mobile.css">
 <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 </head>
 <body>
 
-<!-- App shell — populated by app.js -->
 <div class="signal-app" id="app" style="display:none">
 
   <!-- Rail -->
@@ -31,77 +31,60 @@
     </a>
   </nav>
 
-  <!-- Sidebar -->
-  <aside class="signal-sidebar" id="sidebar">
-    <div class="sidebar-head">
-      <div class="sidebar-site-name">jrbnz.com</div>
-      <div class="sidebar-author" id="sidebar-author">James Bell</div>
-      <input class="sidebar-search" type="search" id="sidebar-search" placeholder="Search posts…" autocomplete="off">
-    </div>
-    <div class="sidebar-list" id="sidebar-list">
-      <!-- Populated by app.js -->
-    </div>
-    <div class="sidebar-footer">
-      <button class="btn-new-post" id="btn-new-post">+ New post</button>
-    </div>
-  </aside>
+  <!-- Main content -->
+  <div class="signal-main">
 
-  <!-- Sidebar overlay (tablet) -->
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-  <!-- Editor panel -->
-  <main class="signal-editor" id="editor-panel">
-
-    <!-- Top bar -->
-    <div class="editor-topbar" id="editor-topbar">
-      <button class="btn-menu" id="btn-menu" aria-label="Toggle sidebar">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><rect y="3" width="18" height="2"/><rect y="8" width="18" height="2"/><rect y="13" width="18" height="2"/></svg>
-      </button>
-      <a href="/admin/" class="topbar-breadcrumb" id="topbar-breadcrumb">Posts</a>
-      <span class="topbar-sep" id="topbar-sep" style="display:none">/</span>
-      <span class="topbar-title" id="topbar-title"></span>
-      <div class="topbar-right">
-        <span class="topbar-word-count" id="topbar-word-count"></span>
-        <span class="topbar-save-status" id="topbar-save-status" style="display:none">
-          <span class="topbar-save-dot" id="topbar-save-dot"></span>
-          <span id="topbar-save-text">Saved</span>
-        </span>
-        <a href="#" class="btn-preview" id="btn-view-post" style="display:none" target="_blank" rel="noopener">View ↗</a>
-        <button class="btn-publish" id="btn-publish" style="display:none">Publish</button>
+    <!-- VIEW 1: Post list (shown at /admin/) -->
+    <div class="post-list-view" id="view-list">
+      <div class="post-list-inner">
+        <div class="post-list-header">
+          <h1 class="post-list-heading">Posts</h1>
+          <a href="#" class="btn-new-post" id="btn-new-post-main">+ New post</a>
+        </div>
+        <div class="post-list-section-label">Drafts</div>
+        <div class="post-list-items" id="drafts-list"></div>
+        <div class="post-list-section-label" style="margin-top:32px">Published</div>
+        <div class="post-list-items" id="published-list"></div>
       </div>
     </div>
 
-    <!-- Post list view (default when no post open) -->
-    <div class="post-list-view" id="post-list-view">
-      <div class="post-list-header">
-        <h2 class="post-list-heading">Posts</h2>
-        <button class="btn-new-post-inline" id="btn-new-post-main">+ New post</button>
-      </div>
-      <div id="post-list-content">
-        <!-- Populated by renderTable() -->
-      </div>
-    </div>
+    <!-- VIEW 2: Editor (shown at /admin/edit/:slug) -->
+    <div class="signal-editor" id="view-editor" style="display:none">
 
-    <!-- Editor writing view (shown when post is open) -->
-    <div id="editor-writing-wrap" style="display:none; flex:1; flex-direction:column; overflow:hidden">
+      <!-- Top bar -->
+      <div class="editor-topbar" id="editor-topbar">
+        <a href="/admin/" class="topbar-breadcrumb" id="topbar-breadcrumb">← Posts</a>
+        <span class="topbar-sep">·</span>
+        <span class="topbar-title" id="topbar-title"></span>
+        <div class="topbar-right">
+          <span class="topbar-word-count" id="topbar-word-count"></span>
+          <span class="topbar-save-status" id="topbar-save-status">
+            <span class="topbar-save-dot" id="topbar-save-dot"></span>
+            <span id="topbar-save-text">Saved</span>
+          </span>
+          <a href="#" class="btn-preview" id="btn-view-post" style="display:none" target="_blank" rel="noopener">View ↗</a>
+          <button class="btn-publish" id="btn-publish">Publish</button>
+        </div>
+      </div>
 
-      <!-- Format bar (desktop) -->
+      <!-- Format bar -->
       <div class="editor-fmtbar" id="editor-fmtbar">
-        <button class="fmtbar-btn" data-action="h2" title="Heading 2 (Cmd+Shift+H)">H2</button>
+        <button class="fmtbar-btn" data-action="h2" title="Heading 2">H2</button>
         <button class="fmtbar-btn" data-action="h3" title="Heading 3">H3</button>
         <div class="fmtbar-sep"></div>
-        <button class="fmtbar-btn" data-action="bold" title="Bold (Cmd+B)"><strong>B</strong></button>
-        <button class="fmtbar-btn" data-action="italic" title="Italic (Cmd+I)"><em>I</em></button>
-        <button class="fmtbar-btn" data-action="quote" title="Blockquote (Cmd+Shift+.)"><em>"</em></button>
+        <button class="fmtbar-btn" data-action="bold" title="Bold (⌘B)">B</button>
+        <button class="fmtbar-btn" data-action="italic" title="Italic (⌘I)">I</button>
+        <button class="fmtbar-btn" data-action="quote" title="Blockquote">"</button>
+        <button class="fmtbar-btn" data-action="link" title="Link (⌘K)">Link</button>
         <div class="fmtbar-sep"></div>
-        <button class="fmtbar-btn" data-action="link" title="Link (Cmd+K)">Link</button>
+        <button class="fmtbar-btn" data-action="image" title="Insert image">Image</button>
+        <button class="fmtbar-btn" data-action="youtube" title="Insert YouTube">YT</button>
         <button class="fmtbar-btn" data-action="divider" title="Divider">—</button>
-        <button class="fmtbar-btn" data-action="img" title="Image">Image</button>
-        <button class="fmtbar-btn" data-action="youtube" title="YouTube">YT</button>
-        <div class="fmtbar-sep" style="margin-left:auto"></div>
-        <button class="fmtbar-btn" data-view="edit" title="Edit mode" id="view-edit">Edit</button>
-        <button class="fmtbar-btn" data-view="split" title="Split view" id="view-split">Split</button>
-        <button class="fmtbar-btn" data-view="read" title="Read view" id="view-read">Read</button>
+        <div class="fmtbar-view-group">
+          <button class="fmtbar-view-btn is-active" data-view="edit">Edit</button>
+          <button class="fmtbar-view-btn" data-view="split">Split</button>
+          <button class="fmtbar-view-btn" data-view="read">Read</button>
+        </div>
       </div>
 
       <!-- Writing surface -->
@@ -117,16 +100,16 @@
               <a href="#" class="meta-tag is-muted" id="btn-settings">Settings…</a>
             </div>
           </div>
-          <!-- Edit mode textarea -->
+          <!-- Edit mode -->
           <textarea class="editor-textarea" id="editor-textarea" placeholder="Write in markdown…"></textarea>
-          <!-- Split view (hidden by default) -->
+          <!-- Split view -->
           <div class="editor-split-view" id="editor-split-view" style="display:none">
             <div class="split-pane">
               <textarea class="editor-textarea" id="editor-textarea-split" placeholder="Write in markdown…"></textarea>
             </div>
             <div class="split-pane editor-content" id="split-preview"></div>
           </div>
-          <!-- Read view (hidden by default) -->
+          <!-- Read view -->
           <div class="editor-read-view" id="editor-read-view" style="display:none">
             <div class="writing-inner editor-content" id="read-preview"></div>
           </div>
@@ -135,32 +118,49 @@
 
       <!-- Mobile keyboard accessory bar -->
       <div class="kb-accessory-bar" id="kb-accessory-bar">
-        <button class="kb-btn is-primary" data-action="img">Image</button>
+        <button class="kb-btn is-primary" data-action="image">Image</button>
         <button class="kb-btn is-primary" data-action="youtube">YT</button>
         <div class="kb-bar-sep"></div>
         <button class="kb-btn" data-action="divider">—</button>
         <div class="kb-bar-sep"></div>
-        <button class="kb-btn" data-action="bold" data-action="bold"><strong>B</strong></button>
+        <button class="kb-btn" data-action="bold"><strong>B</strong></button>
         <button class="kb-btn" data-action="italic"><em>I</em></button>
         <button class="kb-btn" data-action="h2">H2</button>
         <button class="kb-btn" data-action="h3">H3</button>
         <button class="kb-btn" data-action="quote"><em>"</em></button>
         <button class="kb-btn" data-action="link">Link</button>
       </div>
-    </div>
 
-    <!-- Media view -->
-    <div id="media-view" style="display:none">
-      <div style="padding:var(--space-10) var(--space-10);max-width:860px">
-        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--space-8)">
-          <h2 style="font-family:var(--font-serif);font-size:32px;font-weight:700;color:var(--color-ink);line-height:1">Media</h2>
+    </div><!-- /#view-editor -->
+
+    <!-- VIEW 3: Media (shown at /admin/media) -->
+    <div id="media-view" class="media-view" style="display:none">
+      <div class="media-inner">
+        <div class="media-header">
+          <h1 class="media-heading">Media</h1>
+          <div class="media-header-actions">
+            <span class="media-storage-info" id="storage-info"></span>
+            <button class="btn-upload-media" id="btn-upload">+ Upload</button>
+          </div>
         </div>
-        <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-3)"></div>
+        <div class="media-dropzone" id="media-dropzone">
+          <div class="media-dropzone-inner">
+            <div class="dropzone-icon-lg">↑</div>
+            <div class="dropzone-label">Drop images here or click to upload</div>
+            <div class="dropzone-sub">JPEG, PNG, WebP, GIF — max 20 MB each</div>
+          </div>
+        </div>
+        <div class="media-uploads-active" id="uploads-active"></div>
+        <div class="media-grid" id="media-grid"></div>
+        <div class="media-load-more" id="load-more" style="display:none">
+          <button class="btn-load-more" id="btn-load-more">Load more</button>
+        </div>
       </div>
     </div>
 
-  </main>
-</div>
+  </div><!-- /.signal-main -->
+
+</div><!-- /.signal-app -->
 
 <!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
@@ -255,7 +255,7 @@
   </div>
 </div>
 
-<!-- Image upload bottom sheet (mobile) / inline (desktop) -->
+<!-- Image upload bottom sheet -->
 <div class="bottom-sheet-backdrop" id="image-sheet">
   <div class="bottom-sheet">
     <div class="bottom-sheet-handle"></div>
@@ -310,6 +310,27 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" id="delete-cancel">Cancel</button>
       <button class="btn btn-danger" id="delete-confirm">Delete forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- Media picker modal -->
+<div class="modal-backdrop" id="media-picker-modal" style="display:none">
+  <div class="modal modal-wide" style="display:flex;flex-direction:column;max-height:90vh">
+    <div class="modal-header">
+      <span class="modal-title">Choose image</span>
+      <button class="modal-close" id="media-picker-close">×</button>
+    </div>
+    <div class="media-picker-toolbar">
+      <input type="search" class="media-picker-search" placeholder="Search by filename…" id="media-picker-search">
+    </div>
+    <div class="media-picker-grid-wrap">
+      <div class="media-grid media-grid-picker" id="media-picker-grid"></div>
+    </div>
+    <div class="modal-footer">
+      <span class="media-picker-selected-info" id="picker-selected-info"></span>
+      <button class="btn btn-secondary" id="media-picker-cancel">Cancel</button>
+      <button class="btn btn-teal" id="media-picker-insert" disabled>Insert image</button>
     </div>
   </div>
 </div>

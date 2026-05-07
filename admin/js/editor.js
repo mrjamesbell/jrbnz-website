@@ -8,26 +8,67 @@ import { navigate } from './app.js';
 let currentSlug = null;
 let currentPost = null;
 let originalSlug = null;
-let viewMode = 'edit'; // 'edit' | 'split' | 'read'
+let viewMode = 'edit';
 let tags = [];
 let splitDebounce = null;
+
+// ── Module-level delegated handlers ───────────────────────────────────────────
+
+document.addEventListener('click', e => {
+  // YouTube remove button
+  const removeBtn = e.target.closest('[data-action="remove-youtube"]');
+  if (removeBtn) {
+    const block = removeBtn.closest('.youtube-block');
+    if (!block) return;
+    const videoId = block.dataset.videoId;
+    if (videoId && currentPost) {
+      const re = new RegExp(`\\n?<!--\\s*signal:youtube\\s+id="${videoId}"[^>]*-->\\n?`, 'g');
+      currentPost.body = (currentPost.body || '').replace(re, '\n');
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
+    block.remove();
+    return;
+  }
+
+  // YouTube width pill
+  const pill = e.target.closest('.youtube-width-pill');
+  if (pill) {
+    const block = pill.closest('.youtube-block');
+    if (!block) return;
+    const width = pill.dataset.width;
+    block.classList.remove('width-column', 'width-wide', 'width-full');
+    block.classList.add(`width-${width}`);
+    pill.closest('.youtube-width-bar').querySelectorAll('.youtube-width-pill')
+      .forEach(p => p.classList.toggle('is-active', p === pill));
+    // Update markdown
+    const videoId = block.dataset.videoId;
+    if (videoId && currentPost) {
+      currentPost.body = (currentPost.body || '').replace(
+        new RegExp(`(<!--\\s*signal:youtube\\s+id="${videoId}"\\s+)width="[^"]*"`, 'g'),
+        `$1width="${width}"`
+      );
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
+  }
+});
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 export async function openEditor(slug) {
   currentSlug = slug;
   originalSlug = slug;
 
   const isNew = slug === 'new';
-  const editorWrap = document.getElementById('editor-writing-wrap');
-  const listView = document.getElementById('post-list-view');
-  const mediaView = document.getElementById('media-view');
 
-  if (listView) listView.style.display = 'none';
-  if (mediaView) mediaView.style.display = 'none';
-  if (editorWrap) { editorWrap.style.display = 'flex'; editorWrap.style.flexDirection = 'column'; }
-
-  document.getElementById('topbar-sep').style.display = '';
-  document.getElementById('btn-publish').style.display = '';
-  document.getElementById('topbar-save-status').style.display = 'flex';
+  // Show editor, hide other views
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('media-view').style.display = 'none';
+  const editorEl = document.getElementById('view-editor');
+  if (editorEl) editorEl.style.display = 'flex';
 
   initAutosave();
 
@@ -61,14 +102,15 @@ export function closeEditor() {
   cancelScheduled();
   currentSlug = null;
   currentPost = null;
-  const editorWrap = document.getElementById('editor-writing-wrap');
-  if (editorWrap) editorWrap.style.display = 'none';
-  document.getElementById('topbar-sep').style.display = 'none';
-  document.getElementById('topbar-title').textContent = '';
-  document.getElementById('btn-publish').style.display = 'none';
-  document.getElementById('topbar-save-status').style.display = 'none';
-  document.getElementById('btn-view-post').style.display = 'none';
+  const editorEl = document.getElementById('view-editor');
+  if (editorEl) editorEl.style.display = 'none';
+  const titleEl = document.getElementById('topbar-title');
+  if (titleEl) titleEl.textContent = '';
+  const viewPostBtn = document.getElementById('btn-view-post');
+  if (viewPostBtn) viewPostBtn.style.display = 'none';
 }
+
+// ── Editor initialisation ─────────────────────────────────────────────────────
 
 function _populateEditor() {
   const titleInput = document.getElementById('post-title-input');
@@ -84,47 +126,53 @@ function _populateEditor() {
   _autoResizeTitle();
   _updatePublishButton();
 
-  if (currentPost.status === 'published') {
-    document.getElementById('btn-view-post').href = `/posts/${currentSlug}/`;
-    document.getElementById('btn-view-post').style.display = '';
+  const viewPostBtn = document.getElementById('btn-view-post');
+  if (viewPostBtn) {
+    if (currentPost.status === 'published') {
+      viewPostBtn.href = `/posts/${currentSlug}/`;
+      viewPostBtn.style.display = '';
+    } else {
+      viewPostBtn.style.display = 'none';
+    }
   }
 
-  // Attach listeners
+  // Listeners — use fresh references to avoid stacking on re-open
+  titleInput.removeEventListener('input', _onTitleChange);
   titleInput.addEventListener('input', _onTitleChange);
+  textarea.removeEventListener('input', _onBodyChange);
   textarea.addEventListener('input', _onBodyChange);
+  textarea.removeEventListener('paste', _onPaste);
   textarea.addEventListener('paste', _onPaste);
+  textarea.removeEventListener('keydown', _onKeydown);
   textarea.addEventListener('keydown', _onKeydown);
 
-  // Format bar
-  document.getElementById('editor-fmtbar').addEventListener('click', _onFmtBarClick);
-  document.getElementById('kb-accessory-bar').addEventListener('click', _onFmtBarClick);
+  // Format bar — single delegated listener
+  const fmtbar = document.getElementById('editor-fmtbar');
+  fmtbar.onclick = _onFmtBarClick;
+  document.getElementById('kb-accessory-bar').onclick = _onFmtBarClick;
 
-  // View mode buttons
-  document.getElementById('view-edit').addEventListener('click', () => _setViewMode('edit'));
-  document.getElementById('view-split').addEventListener('click', () => _setViewMode('split'));
-  document.getElementById('view-read').addEventListener('click', () => _setViewMode('read'));
   _setViewMode('edit');
 
   // Tags
-  document.getElementById('btn-add-tag').addEventListener('click', _showTagInput);
-  document.getElementById('tag-input').addEventListener('keydown', _onTagKeydown);
+  document.getElementById('btn-add-tag').onclick = _showTagInput;
+  document.getElementById('tag-input').onkeydown = _onTagKeydown;
 
   // Settings modal
-  document.getElementById('btn-settings').addEventListener('click', _openSettings);
-  document.getElementById('settings-close').addEventListener('click', _closeSettings);
-  document.getElementById('settings-cancel').addEventListener('click', _closeSettings);
-  document.getElementById('settings-save').addEventListener('click', _saveSettings);
-  document.getElementById('settings-delete').addEventListener('click', _confirmDelete);
-  document.getElementById('settings-slug').addEventListener('input', _onSlugInput);
-  document.getElementById('settings-excerpt').addEventListener('input', _onExcerptInput);
+  document.getElementById('btn-settings').onclick = _openSettings;
+  document.getElementById('settings-close').onclick = _closeSettings;
+  document.getElementById('settings-cancel').onclick = _closeSettings;
+  document.getElementById('settings-save').onclick = _saveSettings;
+  document.getElementById('settings-delete').onclick = _confirmDelete;
+  document.getElementById('settings-slug').oninput = _onSlugInput;
+  document.getElementById('settings-excerpt').oninput = _onExcerptInput;
 
   // Delete modal
-  document.getElementById('delete-close').addEventListener('click', _closeDelete);
-  document.getElementById('delete-cancel').addEventListener('click', _closeDelete);
-  document.getElementById('delete-confirm').addEventListener('click', _deletePost);
+  document.getElementById('delete-close').onclick = _closeDelete;
+  document.getElementById('delete-cancel').onclick = _closeDelete;
+  document.getElementById('delete-confirm').onclick = _deletePost;
 
   // Publish
-  document.getElementById('btn-publish').addEventListener('click', _publish);
+  document.getElementById('btn-publish').onclick = _publish;
 }
 
 function _onTitleChange() {
@@ -146,7 +194,6 @@ function _onPaste(e) {
   const text = e.clipboardData.getData('text');
   if (!text) return;
 
-  // YouTube URL detection
   const videoId = extractVideoId(text);
   if (videoId && text.trim() === text) {
     e.preventDefault();
@@ -158,7 +205,6 @@ function _onPaste(e) {
     return;
   }
 
-  // Markdown paste detection
   if (text.length > 200 && (text.includes('#') || text.includes('**') || text.includes('['))) {
     showToast('Markdown detected — pasted as-is. Switch to Read view to preview.');
   }
@@ -176,11 +222,14 @@ function _onKeydown(e) {
 }
 
 function _onFmtBarClick(e) {
+  // View mode pill
+  const viewBtn = e.target.closest('.fmtbar-view-btn');
+  if (viewBtn) { _setViewMode(viewBtn.dataset.view); return; }
+
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
-  const action = btn.dataset.action;
   const textarea = _getActiveTextarea();
-  _applyFormat(action, textarea);
+  _applyFormat(btn.dataset.action, textarea);
 }
 
 function _getActiveTextarea() {
@@ -190,11 +239,11 @@ function _getActiveTextarea() {
 
 function _applyFormat(action, textarea) {
   switch (action) {
-    case 'bold':   _wrapSelection(textarea, '**', '**'); break;
-    case 'italic': _wrapSelection(textarea, '_', '_'); break;
-    case 'h2':     _prefixLine(textarea, '## '); break;
-    case 'h3':     _prefixLine(textarea, '### '); break;
-    case 'quote':  _prefixLine(textarea, '> '); break;
+    case 'bold':    _wrapSelection(textarea, '**', '**'); break;
+    case 'italic':  _wrapSelection(textarea, '_', '_'); break;
+    case 'h2':      _prefixLine(textarea, '## '); break;
+    case 'h3':      _prefixLine(textarea, '### '); break;
+    case 'quote':   _prefixLine(textarea, '> '); break;
     case 'divider': _insertAtCursor(textarea, '\n---\n'); break;
     case 'link': {
       const url = prompt('URL:');
@@ -207,6 +256,7 @@ function _applyFormat(action, textarea) {
       textarea.dispatchEvent(new Event('input'));
       break;
     }
+    case 'image':
     case 'img':
       openImageSheet(textarea);
       break;
@@ -228,8 +278,7 @@ function _applyFormat(action, textarea) {
 function _wrapSelection(textarea, before, after) {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const selected = value.slice(start, end);
-  const newVal = value.slice(0, start) + before + selected + after + value.slice(end);
-  textarea.value = newVal;
+  textarea.value = value.slice(0, start) + before + selected + after + value.slice(end);
   textarea.selectionStart = start + before.length;
   textarea.selectionEnd = end + before.length;
   textarea.dispatchEvent(new Event('input'));
@@ -265,12 +314,9 @@ function _setViewMode(mode) {
   const editArea = document.getElementById('editor-textarea');
   const splitView = document.getElementById('editor-split-view');
   const readView = document.getElementById('editor-read-view');
-  const writingInner = editArea.closest('.writing-inner');
 
-  // Update active button
-  ['edit', 'split', 'read'].forEach(m => {
-    const btn = document.getElementById(`view-${m}`);
-    if (btn) btn.classList.toggle('is-active', m === mode);
+  document.querySelectorAll('.fmtbar-view-btn').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.view === mode);
   });
 
   if (mode === 'edit') {
@@ -281,7 +327,6 @@ function _setViewMode(mode) {
     editArea.style.display = 'none';
     splitView.style.display = 'flex';
     readView.style.display = 'none';
-    // Sync content
     const splitTA = document.getElementById('editor-textarea-split');
     splitTA.value = currentPost.body || '';
     splitTA.removeEventListener('input', _onSplitInput);
@@ -314,6 +359,7 @@ function _updateSplitPreview() {
 function _updateTitleDisplay() {
   const title = currentPost.title || 'Untitled';
   document.getElementById('topbar-title').textContent = title;
+  document.title = `${title} — Signal Admin`;
 }
 
 function _updateWordCount() {
@@ -421,7 +467,6 @@ async function _publish() {
   btn.textContent = 'Publishing…';
 
   try {
-    // Save first
     await saveNow(() => ({
       slug: currentSlug,
       title: currentPost.title,
@@ -451,18 +496,17 @@ async function _publish() {
   }
 }
 
-// Settings modal
+// ── Settings modal ────────────────────────────────────────────────────────────
 
 function _openSettings(e) {
   e && e.preventDefault();
-  const modal = document.getElementById('settings-modal');
   document.getElementById('settings-slug').value = currentSlug;
   document.getElementById('settings-date').value = currentPost.date || new Date().toISOString().slice(0, 10);
   document.getElementById('settings-excerpt').value = currentPost.excerpt || '';
   document.getElementById('settings-cover').value = currentPost.coverImage || '';
   _updateSlugPreview();
   _updateExcerptCount();
-  modal.style.display = 'flex';
+  document.getElementById('settings-modal').style.display = 'flex';
 }
 
 function _closeSettings() {
@@ -481,9 +525,7 @@ function _updateSlugPreview() {
   if (el) el.textContent = document.getElementById('settings-slug').value || '';
 }
 
-function _onExcerptInput() {
-  _updateExcerptCount();
-}
+function _onExcerptInput() { _updateExcerptCount(); }
 
 function _updateExcerptCount() {
   const val = document.getElementById('settings-excerpt').value;
@@ -497,16 +539,12 @@ async function _saveSettings() {
   const excerpt = document.getElementById('settings-excerpt').value;
   const coverImage = document.getElementById('settings-cover').value.trim() || null;
 
-  if (!newSlug) {
-    showToast('Slug cannot be empty', 'error');
-    return;
-  }
+  if (!newSlug) { showToast('Slug cannot be empty', 'error'); return; }
 
   currentPost.date = date;
   currentPost.excerpt = excerpt;
   currentPost.coverImage = coverImage;
 
-  // Handle slug rename
   if (newSlug !== currentSlug) {
     try {
       const res = await fetch(`/api/posts/${currentSlug}/rename`, {
@@ -529,8 +567,6 @@ async function _saveSettings() {
   }
 
   _closeSettings();
-
-  // Save updated meta
   _triggerSave();
   showToast('Settings saved', 'default', 1500);
 }

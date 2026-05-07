@@ -11,15 +11,11 @@ export function extractVideoId(url) {
   return null;
 }
 
-export function insertYouTubeBlock(textarea, videoId) {
-  const block = `\n<!-- signal:youtube id="${videoId}" -->\n`;
-  insertAtCursor(textarea, block);
-}
-
-function insertAtCursor(textarea, text) {
+export function insertYouTubeBlock(textarea, videoId, width = 'column') {
+  const block = `\n<!-- signal:youtube id="${videoId}" width="${width}" -->\n`;
   const { selectionStart: start, selectionEnd: end, value } = textarea;
-  textarea.value = value.slice(0, start) + text + value.slice(end);
-  textarea.selectionStart = textarea.selectionEnd = start + text.length;
+  textarea.value = value.slice(0, start) + block + value.slice(end);
+  textarea.selectionStart = textarea.selectionEnd = start + block.length;
   textarea.dispatchEvent(new Event('input'));
   textarea.focus();
 }
@@ -35,18 +31,29 @@ export async function fetchYouTubeTitle(videoId) {
   }
 }
 
-export function renderYouTubePreview(videoId, title) {
-  return `<div class="youtube-block">
-    <div class="youtube-thumb">
-      <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <div class="youtube-play" style="display:none"></div>
-    </div>
-    <div class="youtube-info">
-      <div class="youtube-title">${escHtml(title || 'YouTube video')}</div>
-      <div class="youtube-url">youtube.com/watch?v=${videoId}</div>
-      <div class="youtube-note">Renders as embed on publish</div>
-    </div>
-  </div>`;
+export function renderYouTubeBlock(videoId, title, width = 'column') {
+  const t = escHtml(title || 'Loading…');
+  return `<div class="youtube-block width-${width}" data-video-id="${videoId}">
+  <div class="youtube-thumb-wrap" id="yt-thumb-${videoId}">
+    <img class="youtube-thumb-img"
+      src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg"
+      alt="Video thumbnail"
+      onerror="this.parentElement.classList.add('no-thumb'); this.remove()">
+    <div class="youtube-play-btn"><div class="youtube-play-triangle"></div></div>
+    <button class="youtube-remove-btn" data-action="remove-youtube" title="Remove">✕</button>
+  </div>
+  <div class="youtube-info-bar">
+    <div class="youtube-title" id="yt-title-${videoId}">${t}</div>
+    <div class="youtube-url-text">youtube.com/watch?v=${videoId}</div>
+    <div class="youtube-embed-note">Embeds as video on publish</div>
+  </div>
+  <div class="youtube-width-bar">
+    <span class="youtube-width-label">Width</span>
+    <button class="youtube-width-pill ${width === 'column' ? 'is-active' : ''}" data-width="column">Column</button>
+    <button class="youtube-width-pill ${width === 'wide' ? 'is-active' : ''}" data-width="wide">Wide</button>
+    <button class="youtube-width-pill ${width === 'full' ? 'is-active' : ''}" data-width="full">Full</button>
+  </div>
+</div>`;
 }
 
 function escHtml(str) {

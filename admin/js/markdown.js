@@ -1,4 +1,4 @@
-import { extractVideoId, renderYouTubePreview, fetchYouTubeTitle } from './youtube.js';
+import { extractVideoId, renderYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
 
 let markedReady = false;
 const ytTitleCache = {};
@@ -13,18 +13,20 @@ function getMarked() {
 
     const origHtml = renderer.html.bind(renderer);
     renderer.html = function (html) {
-      // Detect <!-- signal:youtube id="..." -->
-      const ytMatch = html.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"\s*-->/);
+      // Detect <!-- signal:youtube id="..." width="..." -->
+      const ytMatch = html.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?\s*-->/);
       if (ytMatch) {
         const videoId = ytMatch[1];
+        const width = ytMatch[2] || 'column';
         const cached = ytTitleCache[videoId];
         if (!cached) {
-          // Async title fetch — re-renders don't block
           fetchYouTubeTitle(videoId).then(title => {
             ytTitleCache[videoId] = title;
+            const el = document.getElementById(`yt-title-${videoId}`);
+            if (el) el.textContent = title;
           });
         }
-        return renderYouTubePreview(videoId, cached);
+        return renderYouTubeBlock(videoId, cached, width);
       }
       return origHtml(html);
     };

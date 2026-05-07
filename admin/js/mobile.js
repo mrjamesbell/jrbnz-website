@@ -8,10 +8,3 @@ export function initMobile() {
     bar.style.display = keyboardUp ? 'flex' : '';
   });
 }
-
-export function initSidebarToggle(openSidebar, closeSidebar) {
-  const btn = document.getElementById('btn-menu');
-  const overlay = document.getElementById('sidebar-overlay');
-  if (btn) btn.addEventListener('click', openSidebar);
-  if (overlay) overlay.addEventListener('click', closeSidebar);
-}
