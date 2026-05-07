@@ -181,7 +181,27 @@ function fmtDateShort(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
 
-function buildPostHtml({ title, date, tags, contentHtml }) {
+function buildPostNav(prev, next) {
+  const prevItem = prev
+    ? `<a href="/posts/${esc(prev.slug)}/" class="post-nav-item post-nav-prev">
+    <span class="post-nav-direction">← Older</span>
+    <span class="post-nav-title">${esc(prev.title)}</span>
+  </a>`
+    : `<div class="post-nav-item post-nav-ghost"></div>`;
+  const nextItem = next
+    ? `<a href="/posts/${esc(next.slug)}/" class="post-nav-item post-nav-next">
+    <span class="post-nav-direction">Newer →</span>
+    <span class="post-nav-title">${esc(next.title)}</span>
+  </a>`
+    : `<div class="post-nav-item post-nav-ghost"></div>`;
+  return `<nav class="post-nav">
+  ${prevItem}
+  <a href="/posts/" class="post-nav-item post-nav-all">All posts</a>
+  ${nextItem}
+</nav>`;
+}
+
+function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
   const tagLinks = tags.map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   const year = new Date().getFullYear();
   return `<!DOCTYPE html>
@@ -205,6 +225,9 @@ function buildPostHtml({ title, date, tags, contentHtml }) {
     <li><a href="/posts/">Blog</a></li>
   </ul>
 </nav>
+<script>
+(function(){var p=location.pathname;document.querySelectorAll('.site-nav .nav-links a').forEach(function(a){var h=a.getAttribute('href');if(h&&h!=='/'&&p.startsWith(h))a.classList.add('active');});})();
+</script>
 <header class="page-header"><h1>${esc(title)}</h1></header>
 <section class="content-section">
   <div class="post-meta">
@@ -212,7 +235,7 @@ function buildPostHtml({ title, date, tags, contentHtml }) {
     ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
   </div>
   <div class="post-content">${contentHtml}</div>
-  <a href="/posts/" class="back-link">← All posts</a>
+  ${buildPostNav(prev, next)}
 </section>
 <footer class="footer">
   <div class="footer-fineprint">&copy; ${year} James Bell</div>
@@ -253,6 +276,9 @@ function buildIndexHtml(posts) {
     <li><a href="/posts/">Blog</a></li>
   </ul>
 </nav>
+<script>
+(function(){var p=location.pathname;document.querySelectorAll('.site-nav .nav-links a').forEach(function(a){var h=a.getAttribute('href');if(h&&h!=='/'&&p.startsWith(h))a.classList.add('active');});})();
+</script>
 <header class="page-header"><h1>Blog</h1></header>
 <section class="content-section">
   ${published.length ? `<ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
@@ -277,7 +303,7 @@ async function r2Put(key, content, contentType) {
   }
   try {
     execSync(
-      `CLOUDFLARE_API_TOKEN="${process.env.CLOUDFLARE_API_TOKEN}" CLOUDFLARE_ACCOUNT_ID="${ACCOUNT_ID}" ${WRANGLER} r2 object put "${BUCKET}/${key}" --file "${tmp}" --content-type "${contentType}"`,
+      `CLOUDFLARE_API_TOKEN="${process.env.CLOUDFLARE_API_TOKEN}" CLOUDFLARE_ACCOUNT_ID="${ACCOUNT_ID}" ${WRANGLER} r2 object put "${BUCKET}/${key}" --file "${tmp}" --content-type "${contentType}" --remote`,
       { stdio: 'pipe' }
     );
   } finally {
@@ -328,7 +354,9 @@ async function main() {
   }
 
   const files = (await readdir(IMPORT_DIR)).filter(f => f.endsWith('.md') && !f.startsWith('.'));
-  const indexEntries = [];
+
+  // Pass 1: parse, download images, upload drafts — collect post data
+  const collectedPosts = [];
 
   for (const file of files) {
     const raw = await readFile(join(IMPORT_DIR, file), 'utf8');
@@ -343,7 +371,7 @@ async function main() {
     const title = meta.title || slug;
     const date = parseDate(meta.published_date);
     const tags = parseTags(meta.tags);
-    console.log(`\nImporting: ${title} (${slug})`);
+    console.log(`\nParsing: ${title} (${slug})`);
 
     // Download and reupload images
     const imageUrls = findImages(content);
@@ -362,23 +390,32 @@ async function main() {
       }
     }
 
-    // Rewrite image URLs in content
     const rewrittenContent = rewriteImageUrls(content, urlMap);
 
     // Save draft.md (clean content, no frontmatter)
     await r2Put(`posts/${slug}/draft.md`, rewrittenContent, 'text/markdown');
 
-    // Build and save index.html
-    const contentHtml = mdToHtml(rewrittenContent);
-    const postHtml = buildPostHtml({ title, date, tags, contentHtml });
-    await r2Put(`posts/${slug}/index.html`, postHtml, 'text/html');
-
-    indexEntries.push({ slug, title, date, tags, status: 'published' });
-    console.log(`  ✓ Done`);
+    collectedPosts.push({ slug, title, date, tags, rewrittenContent });
   }
 
-  // Sort by date descending and save index.json
-  indexEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Sort by date descending (newest first)
+  collectedPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Pass 2: build HTML with prev/next navigation
+  const indexEntries = [];
+
+  for (let i = 0; i < collectedPosts.length; i++) {
+    const post = collectedPosts[i];
+    const prev = collectedPosts[i + 1] || null; // older post
+    const next = collectedPosts[i - 1] || null; // newer post
+    const contentHtml = mdToHtml(post.rewrittenContent);
+    const postHtml = buildPostHtml({ title: post.title, date: post.date, tags: post.tags, contentHtml, prev, next });
+    await r2Put(`posts/${post.slug}/index.html`, postHtml, 'text/html');
+    indexEntries.push({ slug: post.slug, title: post.title, date: post.date, tags: post.tags, status: 'published' });
+    console.log(`  ✓ ${post.title}`);
+  }
+
+  // Save index.json
   await r2Put('posts/index.json', JSON.stringify(indexEntries, null, 2), 'application/json');
 
   // Build and save index.html

@@ -21,4 +21,9 @@ async function loadPartial(id, url) {
         loadPartial('site-header', '/partials/header.html'),
         loadPartial('site-footer', '/partials/footer.html'),
     ]);
+    const path = window.location.pathname;
+    document.querySelectorAll('.site-nav .nav-links a').forEach(function (a) {
+        const href = a.getAttribute('href');
+        if (href && href !== '/' && path.startsWith(href)) a.classList.add('active');
+    });
 })();

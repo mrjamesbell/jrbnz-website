@@ -85,14 +85,15 @@ a:hover {
     font-size: 20px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: rgba(252, 244, 218, 0.6);
+    color: oklch(44% 0.09 185 / 0.55);
     border-bottom: 2px solid transparent;
     transition: color 0.2s ease, border-color 0.2s ease;
 }
 
-.site-nav .nav-links a:hover {
-    color: var(--text-color);
-    border-bottom-color: var(--text-color);
+.site-nav .nav-links a:hover,
+.site-nav .nav-links a.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
 }
 
 /* Page header */
