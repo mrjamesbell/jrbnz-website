@@ -127,6 +127,7 @@ body {
    ════════════════════════════════════════════ */
 .post-list-view {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   background: var(--color-cream);
 }
@@ -473,6 +474,7 @@ body {
 /* ── Writing surface ── */
 .editor-writing {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 56px 0 80px;
 }
@@ -617,6 +619,7 @@ body {
    ════════════════════════════════════════════ */
 .media-view {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   background: var(--color-cream);
 }

@@ -116,7 +116,7 @@
 }
 
 .writing-inner {
-  max-width: var(--editor-max-width);
+  max-width: clamp(680px, 75vw, 1200px);
   margin: 0 auto;
   padding: 0 var(--space-10);
 }
