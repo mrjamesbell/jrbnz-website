@@ -340,6 +340,11 @@ export async function onRequest(context) {
       if (method === 'GET') return handleListMedia(env);
     } else if (slug === 'presign') {
       if (method === 'POST') return handlePresignMedia(request, env);
+    } else if (slug === 'upload' && action && method === 'PUT') {
+      const key = decodeURIComponent(action);
+      const ct = request.headers.get('Content-Type') || 'application/octet-stream';
+      await env.BLOG.put(key, request.body, { httpMetadata: { contentType: ct } });
+      return new Response(null, { status: 200 });
     } else {
       if (method === 'DELETE') return handleDeleteMedia(env, slug);
     }
