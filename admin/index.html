@@ -75,11 +75,11 @@
     <div class="post-list-view" id="post-list-view">
       <div class="post-list-header">
         <h2 class="post-list-heading">Posts</h2>
-        <button class="btn-new-post" id="btn-new-post-main">+ New post</button>
+        <button class="btn-new-post-inline" id="btn-new-post-main">+ New post</button>
       </div>
-      <table class="post-list-table" id="post-list-table">
-        <tbody id="post-list-tbody"></tbody>
-      </table>
+      <div id="post-list-content">
+        <!-- Populated by renderTable() -->
+      </div>
     </div>
 
     <!-- Editor writing view (shown when post is open) -->
@@ -150,9 +150,13 @@
     </div>
 
     <!-- Media view -->
-    <div id="media-view" style="display:none; flex:1; overflow-y:auto; padding:var(--space-8)">
-      <h2 style="font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--color-ink);margin-bottom:var(--space-6)">Media library</h2>
-      <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--space-3)"></div>
+    <div id="media-view" style="display:none">
+      <div style="padding:var(--space-10) var(--space-10);max-width:860px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--space-8)">
+          <h2 style="font-family:var(--font-serif);font-size:32px;font-weight:700;color:var(--color-ink);line-height:1">Media</h2>
+        </div>
+        <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-3)"></div>
+      </div>
     </div>
 
   </main>
@@ -193,6 +197,30 @@
       <button class="btn btn-danger" id="settings-delete" style="margin-right:auto">Delete post</button>
       <button class="btn btn-secondary" id="settings-cancel">Cancel</button>
       <button class="btn btn-primary" id="settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- New post modal -->
+<div class="modal-backdrop" id="new-post-modal" style="display:none">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">New post</span>
+      <button class="modal-close" id="new-post-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label class="field-label" for="new-post-title">Title</label>
+        <input class="field-input" type="text" id="new-post-title" placeholder="Post title…" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label" for="new-post-slug">Slug <span id="new-post-slug-hint" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--color-cream-text-ghost)"></span></label>
+        <input class="field-input" type="text" id="new-post-slug" placeholder="auto-generated" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="new-post-cancel">Cancel</button>
+      <button class="btn btn-teal" id="new-post-create">Create &amp; edit</button>
     </div>
   </div>
 </div>
