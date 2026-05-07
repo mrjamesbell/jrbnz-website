@@ -228,8 +228,8 @@ function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
 <script>
 (function(){var p=location.pathname;document.querySelectorAll('.site-nav .nav-links a').forEach(function(a){var h=a.getAttribute('href');if(h&&h!=='/'&&p.startsWith(h))a.classList.add('active');});})();
 </script>
-<header class="page-header"><h1>${esc(title)}</h1></header>
 <section class="content-section">
+  <h1 class="post-title">${esc(title)}</h1>
   <div class="post-meta">
     <time datetime="${esc(date)}">${fmtDate(date)}</time>
     ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}

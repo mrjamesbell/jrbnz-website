@@ -156,6 +156,7 @@
 }
 
 /* Also constrain old posts that predate the .post-body wrapper */
+.content-section > .post-title,
 .content-section > .post-meta,
 .content-section > .post-content,
 .content-section > .back-link,
@@ -165,14 +166,15 @@
   margin-right: auto;
 }
 
-/* Post title inside content (intermediate scale between page header and body) */
+/* Post title inside content */
 .post-title {
   font-family: 'Lora', serif;
-  font-size: clamp(24px, 3.5vw, 40px);
+  font-size: clamp(32px, 4.5vw, 52px);
   font-weight: 700;
   color: var(--background-color);
-  line-height: 1.25;
+  line-height: 1.2;
   margin-bottom: 20px;
+  padding-top: 8px;
 }
 
 /* Image alignment */
