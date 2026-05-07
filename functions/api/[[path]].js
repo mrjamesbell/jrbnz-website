@@ -458,7 +458,7 @@ async function handlePresignMedia(request, env) {
   // Upload directly through the Worker (proxy upload)
   // Return a worker-proxied URL so the client uploads to /api/media/upload/:key
   const uploadUrl = `/api/media/upload/${encodeURIComponent(key)}`;
-  const publicUrl = `https://jrbnz-blog.r2.dev/${key}`;
+  const publicUrl = `/${key}`;
   return json({ uploadUrl, publicUrl, key });
 }
 
@@ -527,6 +527,37 @@ async function handleGetPost(env, slug) {
   return json({ ...meta, body });
 }
 
+async function migrateMediaToPost(env, slug, body) {
+  // Match both /media/... and https://jrbnz-blog.r2.dev/media/... URLs
+  const re = /(?:https:\/\/jrbnz-blog\.r2\.dev)?(\/media\/[^\s"')>]+)/g;
+  const migrations = [];
+  let match;
+  while ((match = re.exec(body)) !== null) {
+    migrations.push(match[1]); // e.g. /media/1234-photo.jpg
+  }
+  if (!migrations.length) return body;
+
+  let updated = body;
+  await Promise.all(migrations.map(async (mediaPath) => {
+    const srcKey = mediaPath.slice(1); // strip leading /  → media/1234-photo.jpg
+    const filename = srcKey.split('/').pop();
+    const destKey = `posts/media/${slug}/${filename}`;
+    try {
+      const obj = await env.BLOG.get(srcKey);
+      if (!obj) return; // already moved or doesn't exist
+      const ct = obj.httpMetadata?.contentType || 'application/octet-stream';
+      await env.BLOG.put(destKey, obj.body, { httpMetadata: { contentType: ct } });
+      await env.BLOG.delete(srcKey);
+      // Rewrite both URL forms to the post-relative path
+      const destUrl = `/${destKey}`;
+      updated = updated
+        .replaceAll(`https://jrbnz-blog.r2.dev${mediaPath}`, destUrl)
+        .replaceAll(mediaPath, destUrl);
+    } catch {}
+  }));
+  return updated;
+}
+
 async function handleSaveDraft(request, env, slug) {
   const data = await request.json();
   const posts = await getIndex(env);
@@ -546,7 +577,8 @@ async function handleSaveDraft(request, env, slug) {
     status: posts[idx].status === 'published' ? 'published' : 'draft',
   };
 
-  const body = data.body ?? data.markdown ?? '';
+  let body = data.body ?? data.markdown ?? '';
+  body = await migrateMediaToPost(env, slug, body);
   await env.BLOG.put(`posts/${slug}/draft.md`, body, { httpMetadata: { contentType: 'text/markdown' } });
   await saveIndex(env, posts);
   return json(posts[idx]);
