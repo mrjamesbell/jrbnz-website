@@ -478,9 +478,13 @@ body {
 }
 
 .writing-inner {
-  max-width: clamp(680px, 60vw, 1100px);
+  max-width: 740px;
   margin: 0 auto;
   padding: 0 48px;
+}
+
+@media (min-width: 1400px) {
+  .writing-inner { max-width: 800px; }
 }
 
 .post-title-input {
