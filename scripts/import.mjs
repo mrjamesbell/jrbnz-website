@@ -282,12 +282,14 @@ function buildIndexHtml(posts) {
 </script>
 <header class="page-header"><h1>Blog</h1></header>
 <section class="content-section">
-  <div class="tag-filter-bar" id="tag-filter-bar" hidden>
-    Posts tagged <strong id="tag-filter-label"></strong>
-    <a href="/posts/" class="tag-filter-clear">× Show all</a>
-  </div>
   ${published.length ? `<ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
-  ${tagLinks ? `<div class="tags-footer">${tagLinks}</div>` : ''}
+  ${tagLinks ? `<div class="tags-footer">
+    <div class="tag-filter-bar" id="tag-filter-bar" hidden>
+      Posts tagged <strong id="tag-filter-label"></strong>
+      <a href="/posts/" class="tag-filter-clear">× Show all</a>
+    </div>
+    ${tagLinks}
+  </div>` : ''}
 </section>
 <script src="/scripts/blog.js"></script>
 <footer class="footer">
