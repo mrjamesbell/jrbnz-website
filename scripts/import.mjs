@@ -181,27 +181,7 @@ function fmtDateShort(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
 
-function buildPostNav(prev, next) {
-  const prevItem = prev
-    ? `<a href="/posts/${esc(prev.slug)}/" class="post-nav-item post-nav-prev">
-    <span class="post-nav-direction">← Older</span>
-    <span class="post-nav-title">${esc(prev.title)}</span>
-  </a>`
-    : `<div class="post-nav-item post-nav-ghost"></div>`;
-  const nextItem = next
-    ? `<a href="/posts/${esc(next.slug)}/" class="post-nav-item post-nav-next">
-    <span class="post-nav-direction">Newer →</span>
-    <span class="post-nav-title">${esc(next.title)}</span>
-  </a>`
-    : `<div class="post-nav-item post-nav-ghost"></div>`;
-  return `<nav class="post-nav">
-  ${prevItem}
-  <a href="/posts/" class="post-nav-item post-nav-all">All posts</a>
-  ${nextItem}
-</nav>`;
-}
-
-function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
+function buildPostHtml({ title, date, tags, contentHtml }) {
   const tagLinks = tags.map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   const year = new Date().getFullYear();
   return `<!DOCTYPE html>
@@ -217,6 +197,17 @@ function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
 <link rel="stylesheet" href="/styles/blog.css">
 </head>
 <body>
+<nav class="site-nav">
+  <a href="/" class="nav-logo">JRBNZ</a>
+  <ul class="nav-links">
+    <li><a href="/now/">Now</a></li>
+    <li><a href="/photos/">Photos</a></li>
+    <li><a href="/posts/">Blog</a></li>
+  </ul>
+</nav>
+<script>
+(function(){var p=location.pathname;document.querySelectorAll('.site-nav .nav-links a').forEach(function(a){var h=a.getAttribute('href');if(h&&h!=='/'&&p.startsWith(h))a.classList.add('active');});})();
+</script>
 <header class="page-header"><h1>Blog</h1></header>
 <section class="content-section">
   <h1 class="post-title">${esc(title)}</h1>
@@ -225,7 +216,7 @@ function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
     ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
   </div>
   <div class="post-content">${contentHtml}</div>
-  ${buildPostNav(prev, next)}
+  <a href="/posts/" class="back-link">← All posts</a>
 </section>
 <footer class="footer">
   <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
@@ -398,15 +389,13 @@ async function main() {
   // Sort by date descending (newest first)
   collectedPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Pass 2: build HTML with prev/next navigation
+  // Pass 2: build post HTML
   const indexEntries = [];
 
   for (let i = 0; i < collectedPosts.length; i++) {
     const post = collectedPosts[i];
-    const prev = collectedPosts[i + 1] || null; // older post
-    const next = collectedPosts[i - 1] || null; // newer post
     const contentHtml = mdToHtml(post.rewrittenContent);
-    const postHtml = buildPostHtml({ title: post.title, date: post.date, tags: post.tags, contentHtml, prev, next });
+    const postHtml = buildPostHtml({ title: post.title, date: post.date, tags: post.tags, contentHtml });
     await r2Put(`posts/${post.slug}/index.html`, postHtml, 'text/html');
     indexEntries.push({ slug: post.slug, title: post.title, date: post.date, tags: post.tags, status: 'published' });
     console.log(`  ✓ ${post.title}`);

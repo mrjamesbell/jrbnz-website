@@ -193,30 +193,19 @@ const SITE_HEAD = (title) => `<!DOCTYPE html>
 </head>
 <body>`;
 
-function buildPostNav(prev, next) {
-  const prevItem = prev
-    ? `<a href="/posts/${esc(prev.slug)}/" class="post-nav-item post-nav-prev">
-    <span class="post-nav-direction">← Older</span>
-    <span class="post-nav-title">${esc(prev.title)}</span>
-  </a>`
-    : `<div class="post-nav-item post-nav-ghost"></div>`;
-  const nextItem = next
-    ? `<a href="/posts/${esc(next.slug)}/" class="post-nav-item post-nav-next">
-    <span class="post-nav-direction">Newer →</span>
-    <span class="post-nav-title">${esc(next.title)}</span>
-  </a>`
-    : `<div class="post-nav-item post-nav-ghost"></div>`;
-  return `<nav class="post-nav">
-  ${prevItem}
-  <a href="/posts/" class="post-nav-item post-nav-all">All posts</a>
-  ${nextItem}
-</nav>`;
-}
 
-function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
+function buildPostHtml({ title, date, tags, contentHtml }) {
   const tagLinks = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   const year = new Date().getFullYear();
   return `${SITE_HEAD(title)}
+<nav class="site-nav">
+  <a href="/" class="nav-logo">JRBNZ</a>
+  <ul class="nav-links">
+    <li><a href="/now/">Now</a></li>
+    <li><a href="/photos/">Photos</a></li>
+    <li><a href="/posts/" class="active">Blog</a></li>
+  </ul>
+</nav>
 <header class="page-header"><h1>Blog</h1></header>
 <section class="content-section">
   <h1 class="post-title">${esc(title)}</h1>
@@ -225,7 +214,7 @@ function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
     ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
   </div>
   <div class="post-content">${contentHtml}</div>
-  ${buildPostNav(prev, next)}
+  <a href="/posts/" class="back-link">← All posts</a>
 </section>
 <footer class="footer">
   <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
@@ -302,13 +291,7 @@ async function rebuildPostHtml(env, slug, posts) {
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-
-  const published = posts.filter(p => p.status === 'published').sort((a, b) => new Date(a.date) - new Date(b.date));
-  const idx = published.findIndex(p => p.slug === slug);
-  const prev = idx > 0 ? published[idx - 1] : null;
-  const next = idx < published.length - 1 ? published[idx + 1] : null;
-
-  const html = buildPostHtml({ ...post, contentHtml, prev, next });
+  const html = buildPostHtml({ ...post, contentHtml });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -564,20 +547,10 @@ async function handlePublish(env, slug) {
   posts[idx].status = 'published';
   posts[idx].updatedAt = new Date().toISOString();
 
-  // Build with prev/next neighbours
-  const published = posts.filter(p => p.status === 'published').sort((a, b) => new Date(a.date) - new Date(b.date));
-  const pi = published.findIndex(p => p.slug === slug);
-  const prev = pi > 0 ? published[pi - 1] : null;
-  const next = pi < published.length - 1 ? published[pi + 1] : null;
-
-  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, prev, next });
+  const postHtml = buildPostHtml({ ...posts[idx], contentHtml });
   await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
   await saveIndex(env, posts);
   await rebuildIndexHtml(env, posts);
-
-  // Rebuild neighbours' HTML so their prev/next links update
-  if (prev) await rebuildPostHtml(env, prev.slug, posts);
-  if (next) await rebuildPostHtml(env, next.slug, posts);
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
 }
