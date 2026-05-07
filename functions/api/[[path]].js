@@ -421,13 +421,25 @@ async function handleSaveAuthor(request, env) {
 // ── Media handlers ────────────────────────────────────────────────────────────
 
 async function handleListMedia(env) {
-  const listed = await env.BLOG.list({ prefix: 'media/' });
-  const items = listed.objects.map(o => ({
+  const [uploaded, imported] = await Promise.all([
+    env.BLOG.list({ prefix: 'media/' }),
+    env.BLOG.list({ prefix: 'posts/media/', limit: 500 }),
+  ]);
+
+  const toItem = (o, publicUrl) => ({
     key: o.key,
-    url: `https://jrbnz-blog.r2.dev/${o.key}`,
+    filename: o.key.split('/').pop(),
+    publicUrl,
+    url: publicUrl,
     size: o.size,
-    uploaded: o.uploaded
-  }));
+    uploaded: o.uploaded,
+  });
+
+  const items = [
+    ...uploaded.objects.map(o => toItem(o, `https://jrbnz-blog.r2.dev/${o.key}`)),
+    ...imported.objects.map(o => toItem(o, `/${o.key}`)),
+  ];
+
   return json(items);
 }
 
