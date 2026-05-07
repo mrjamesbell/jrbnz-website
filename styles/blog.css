@@ -177,6 +177,27 @@
   margin: 2em 0;
 }
 
+/* All posts button at end of post */
+.all-posts-btn {
+  display: inline-block;
+  margin-top: 40px;
+  padding: 10px 22px;
+  border: 1.5px solid oklch(18% 0.01 50 / 0.3);
+  border-bottom: 1.5px solid oklch(18% 0.01 50 / 0.3);
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--background-color);
+  background: transparent;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.all-posts-btn:hover {
+  border-color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+  background: oklch(44% 0.09 185 / 0.07);
+  color: var(--background-color);
+}
+
 /* Post body wrapper — constrains readable column */
 .post-body {
   max-width: 80vw;

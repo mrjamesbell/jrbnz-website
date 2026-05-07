@@ -216,7 +216,7 @@ function buildPostHtml({ title, date, tags, contentHtml }) {
     ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
   </div>
   <div class="post-content">${contentHtml}</div>
-  <a href="/posts/" class="back-link">← All posts</a>
+  <a href="/posts/" class="all-posts-btn">← All posts</a>
 </section>
 <footer class="footer">
   <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
