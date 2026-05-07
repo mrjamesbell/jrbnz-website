@@ -217,17 +217,6 @@ function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
 <link rel="stylesheet" href="/styles/blog.css">
 </head>
 <body>
-<nav class="site-nav">
-  <a href="/" class="nav-logo">JRBNZ</a>
-  <ul class="nav-links">
-    <li><a href="/now/">Now</a></li>
-    <li><a href="/photos/">Photos</a></li>
-    <li><a href="/posts/">Blog</a></li>
-  </ul>
-</nav>
-<script>
-(function(){var p=location.pathname;document.querySelectorAll('.site-nav .nav-links a').forEach(function(a){var h=a.getAttribute('href');if(h&&h!=='/'&&p.startsWith(h))a.classList.add('active');});})();
-</script>
 <header class="page-header"><h1>Blog</h1></header>
 <section class="content-section">
   <h1 class="post-title">${esc(title)}</h1>

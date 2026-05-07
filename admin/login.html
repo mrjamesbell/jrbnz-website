@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Signal — Login</title>
+<link rel="stylesheet" href="/admin/css/design-tokens.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font-sans); background: var(--color-dark-base); }
+
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-5);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--color-dark-surface);
+  border: var(--border-dark2);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-8) var(--space-10);
+}
+
+.login-logo {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-dark-text-muted);
+  margin-bottom: var(--space-8);
+}
+
+.login-heading {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-dark-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.login-sub {
+  font-size: var(--text-sm);
+  color: var(--color-dark-text-muted);
+  margin-bottom: var(--space-8);
+}
+
+.login-field {
+  margin-bottom: var(--space-4);
+}
+
+.login-label {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-dark-text-muted);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.login-input {
+  width: 100%;
+  background: var(--color-dark-raised);
+  border: var(--border-dark2);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+  color: var(--color-dark-text-primary);
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  height: 36px;
+}
+
+.login-input:focus {
+  border-color: var(--color-teal);
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: var(--space-6);
+  padding: var(--space-2) 0;
+  background: var(--color-teal);
+  color: var(--color-cream);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  letter-spacing: var(--tracking-wide);
+  cursor: pointer;
+  height: 36px;
+  transition: opacity var(--transition-fast);
+}
+
+.login-submit:hover { opacity: 0.88; }
+.login-submit:disabled { opacity: 0.5; cursor: default; }
+
+.login-error {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  text-align: center;
+  display: none;
+}
+
+.login-lockout {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-amber);
+  text-align: center;
+  display: none;
+}
+</style>
+</head>
+<body>
+<div class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Signal Admin</div>
+    <h1 class="login-heading">Welcome back</h1>
+    <p class="login-sub">jrbnz.com</p>
+    <form id="login-form">
+      <div class="login-field">
+        <label class="login-label" for="password">Password</label>
+        <input class="login-input" type="password" id="password" autocomplete="current-password" required autofocus>
+      </div>
+      <button class="login-submit" type="submit" id="submit-btn">Sign in</button>
+      <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+      <div class="login-lockout" id="login-lockout"></div>
+    </form>
+  </div>
+</div>
+<script>
+(function () {
+  var form = document.getElementById('login-form');
+  var btn = document.getElementById('submit-btn');
+  var errEl = document.getElementById('login-error');
+  var lockoutEl = document.getElementById('login-lockout');
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var pw = document.getElementById('password').value;
+    errEl.style.display = 'none';
+    lockoutEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    try {
+      var res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      });
+      if (res.ok) {
+        window.location.href = '/admin/';
+      } else if (res.status === 429) {
+        var data = await res.json();
+        lockoutEl.textContent = data.error || 'Too many attempts. Please wait.';
+        lockoutEl.style.display = 'block';
+        btn.disabled = true;
+        btn.textContent = 'Sign in';
+        // Auto-retry after lockout period
+        if (data.retryAfter) {
+          setTimeout(function () {
+            btn.disabled = false;
+            lockoutEl.style.display = 'none';
+          }, data.retryAfter * 1000);
+        }
+      } else {
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      }
+    } catch (err) {
+      errEl.textContent = 'Network error. Try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+    }
+  });
+})();
+</script>
+</body>
+</html>

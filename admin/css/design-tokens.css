@@ -1,0 +1,123 @@
+/*
+ * Signal Admin — Design Tokens
+ * jrbnz.com blogging platform
+ *
+ * All colour, typography, spacing, and animation values live here.
+ * Import this file first; all other CSS files depend on these variables.
+ */
+
+:root {
+
+  /* ── Colour: Site identity ── */
+  --color-ink:          #1c1c1c;   /* near-black — primary text on cream */
+  --color-cream:        #f0ede8;   /* warm off-white — writing surface bg */
+  --color-cream-mid:    #f8f5f0;   /* slightly darker cream — toolbar bg  */
+  --color-cream-dark:   #ede9e2;   /* image placeholder, hover states      */
+  --color-teal:         #1a9e8f;   /* accent — tags, links, active states, publish btn */
+  --color-teal-dim:     rgba(26,158,143,0.15); /* teal border on tag pills */
+  --color-amber:        #c4813a;   /* draft indicator dot                  */
+
+  /* ── Colour: Dark chrome (rail, sidebar, post list) ── */
+  --color-dark-base:    #141414;   /* rail background                      */
+  --color-dark-surface: #111111;   /* sidebar background                   */
+  --color-dark-raised:  #1a1a1a;   /* active sidebar item, input bg        */
+  --color-dark-border:  #1e1e1e;   /* subtle borders in dark chrome        */
+  --color-dark-border2: #2a2a2a;   /* stronger borders, dividers           */
+
+  /* ── Colour: Text on dark chrome ── */
+  --color-dark-text-primary:   #f0ede8; /* headings, post titles            */
+  --color-dark-text-secondary: #bbbbbb; /* body text in list                */
+  --color-dark-text-muted:     #555555; /* meta, dates, icons               */
+  --color-dark-text-ghost:     #333333; /* section labels, dividers         */
+
+  /* ── Colour: Text on cream (editor) ── */
+  --color-cream-text-primary:   #1c1c1c; /* post title, body text          */
+  --color-cream-text-secondary: #2a2a2a; /* body prose                     */
+  --color-cream-text-muted:     #888888; /* meta row dates                 */
+  --color-cream-text-ghost:     #aaaaaa; /* word count, saved indicator     */
+
+  /* ── Colour: Cream surface borders ── */
+  --color-cream-border:     #ddd9d2;  /* hr, section dividers, field edges  */
+  --color-cream-border-mid: #cccccc;  /* image action pill borders          */
+
+  /* ── Colour: Status ── */
+  --color-saved:   #1a9e8f;  /* autosave dot — same as teal               */
+  --color-draft:   #c4813a;  /* draft pip — amber                         */
+  --color-danger:  #c0392b;  /* delete, destructive actions               */
+
+  /* ── Typography ── */
+  --font-serif:  Georgia, 'Times New Roman', serif;
+  --font-sans:   -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono:   'SF Mono', 'Fira Mono', 'Consolas', monospace;
+
+  /* Type scale */
+  --text-xs:   10px;
+  --text-sm:   11px;
+  --text-base: 13px;
+  --text-md:   15px;
+  --text-lg:   17px;   /* body prose in editor                           */
+  --text-xl:   22px;   /* H2 in editor                                   */
+  --text-2xl:  28px;   /* H1 / post title in editor (desktop)            */
+  --text-3xl:  34px;   /* post title large (desktop wide)                */
+
+  /* Line heights */
+  --leading-tight:  1.2;
+  --leading-snug:   1.4;
+  --leading-normal: 1.6;
+  --leading-prose:  1.82;  /* body text in editor — generous for reading  */
+
+  /* Letter spacing */
+  --tracking-tight:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-wider:  0.08em;
+  --tracking-widest: 0.1em;
+
+  /* ── Spacing ── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* ── Layout ── */
+  --rail-width:        48px;
+  --sidebar-width:     210px;
+  --editor-max-width:  680px;  /* max measure for prose — ~65ch at 17px    */
+  --topbar-height:     44px;
+  --fmtbar-height:     38px;
+  --mobile-kbbar-height: 42px;
+
+  /* ── Radius ── */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-pill: 999px;
+
+  /* ── Borders ── */
+  --border-dark:   1px solid var(--color-dark-border);
+  --border-dark2:  1px solid var(--color-dark-border2);
+  --border-cream:  1px solid var(--color-cream-border);
+
+  /* ── Shadows ── */
+  /* Intentionally none — flat design. Focus rings only. */
+  --focus-ring: 0 0 0 2px var(--color-teal);
+
+  /* ── Transitions ── */
+  --transition-fast:   80ms ease;
+  --transition-base:   150ms ease;
+  --transition-slow:   250ms ease;
+
+  /* ── Z-index stack ── */
+  --z-base:    1;
+  --z-toolbar: 10;
+  --z-overlay: 100;
+  --z-modal:   200;
+  --z-toast:   300;
+}
