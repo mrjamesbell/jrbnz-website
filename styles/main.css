@@ -152,14 +152,14 @@ a:hover {
 /* Footer */
 .footer {
     padding: 40px 40px;
-    background: var(--background-color);
-    color: var(--text-color);
+    background: var(--text-color);
+    color: var(--background-color);
     text-align: center;
 }
 
 .footer-fineprint {
     font-size: 19px;
-    color: rgba(252, 244, 218, 0.45);
+    color: oklch(18% 0.01 50 / 0.45);
     line-height: 1.6;
 }
 

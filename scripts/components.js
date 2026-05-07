@@ -26,4 +26,7 @@ async function loadPartial(id, url) {
         const href = a.getAttribute('href');
         if (href && href !== '/' && path.startsWith(href)) a.classList.add('active');
     });
+    document.querySelectorAll('.footer-year').forEach(function (el) {
+        el.textContent = new Date().getFullYear();
+    });
 })();

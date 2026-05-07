@@ -239,7 +239,7 @@ function buildPostHtml({ title, date, tags, contentHtml, prev, next }) {
   ${buildPostNav(prev, next)}
 </section>
 <footer class="footer">
-  <div class="footer-fineprint">&copy; ${year} James Bell</div>
+  <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
   <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
 </footer>
 </body>
@@ -286,7 +286,7 @@ function buildIndexHtml(posts) {
   ${tagLinks ? `<div class="tags-footer">${tagLinks}</div>` : ''}
 </section>
 <footer class="footer">
-  <div class="footer-fineprint">&copy; ${year} James Bell</div>
+  <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
   <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
 </footer>
 </body>
