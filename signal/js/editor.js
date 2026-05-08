@@ -717,44 +717,51 @@ function _revertChanges() {
 
 async function _publish() {
   const btn = document.getElementById('btn-publish');
-  if (!currentSlug || currentSlug === 'new') {
+  if (!currentSlug || currentSlug === 'new' || !currentPost) {
     showToast('Save the post first', 'error');
     return;
   }
+
+  // Snapshot values before any async work so they're safe if editor closes mid-flight
+  const slug = currentSlug;
+  const payload = {
+    slug,
+    title: currentPost.title,
+    body: currentPost.body,
+    tags: currentPost.tags,
+    date: currentPost.date,
+    excerpt: currentPost.excerpt,
+    coverImage: currentPost.coverImage,
+    wordCount: currentPost.wordCount
+  };
+
   btn.disabled = true;
   btn.textContent = 'Publishing…';
 
   try {
-    await saveNow(() => ({
-      slug: currentSlug,
-      title: currentPost.title,
-      body: currentPost.body,
-      tags: currentPost.tags,
-      date: currentPost.date,
-      excerpt: currentPost.excerpt,
-      coverImage: currentPost.coverImage,
-      wordCount: currentPost.wordCount
-    }));
+    await saveNow(() => payload);
 
-    const res = await fetch(`/api/posts/${currentSlug}/publish`, { method: 'POST' });
+    const res = await fetch(`/api/posts/${slug}/publish`, { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
 
-    currentPost.status = 'published';
-    _snapshot = _takeSnapshot();
-    _isDirty = false;
-    _updatePublishButton();
-    _updateRevertButton();
+    if (currentPost) {
+      currentPost.status = 'published';
+      _snapshot = _takeSnapshot();
+      _isDirty = false;
+      _updatePublishButton();
+      _updateRevertButton();
+    }
     invalidatePostCache();
 
     const viewBtn = document.getElementById('btn-view-post');
-    if (viewBtn) { viewBtn.href = data.url || `/posts/${currentSlug}/`; viewBtn.style.display = ''; }
+    if (viewBtn) { viewBtn.href = data.url || `/posts/${slug}/`; viewBtn.style.display = ''; }
 
     showToast('Published — View post ↗', 'success', 4000);
   } catch (e) {
     showToast('Publish failed — ' + e.message, 'error');
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 

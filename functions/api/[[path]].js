@@ -221,8 +221,8 @@ const SITE_HEAD = (title) => `<!DOCTYPE html>
 
 function buildAuthorCard(author) {
   if (!author || !author.name) return '';
-  const twitterUrl = author.twitter
-    ? (author.twitter.startsWith('http') ? author.twitter : `https://x.com/${author.twitter.replace('@', '')}`)
+  const threadsUrl = author.threads
+    ? (author.threads.startsWith('http') ? author.threads : `https://threads.net/${author.threads.replace('@', '')}`)
     : '';
   const instagramUrl = author.instagram
     ? (author.instagram.startsWith('http') ? author.instagram : `https://instagram.com/${author.instagram.replace('@', '')}`)
@@ -230,16 +230,19 @@ function buildAuthorCard(author) {
   const linkedinUrl = author.linkedin
     ? (author.linkedin.startsWith('http') ? author.linkedin : `https://linkedin.com/in/${author.linkedin}`)
     : '';
+  const flickrUrl = author.flickr
+    ? (author.flickr.startsWith('http') ? author.flickr : `https://flickr.com/photos/${author.flickr}`)
+    : '';
   return `<div class="author-card">
   ${author.headshotUrl ? `<img class="author-avatar" src="${esc(author.headshotUrl)}" alt="${esc(author.name)}">` : ''}
   <div class="author-details">
     <div class="author-name">${esc(author.name)}</div>
     ${author.bio ? `<div class="author-bio">${esc(author.bio)}</div>` : ''}
     <div class="author-social">
-      ${twitterUrl ? `<a href="${esc(twitterUrl)}" class="social-link" rel="noopener">&#x1D54F;</a>` : ''}
+      ${threadsUrl ? `<a href="${esc(threadsUrl)}" class="social-link" rel="noopener">Threads</a>` : ''}
       ${instagramUrl ? `<a href="${esc(instagramUrl)}" class="social-link" rel="noopener">Instagram</a>` : ''}
       ${linkedinUrl ? `<a href="${esc(linkedinUrl)}" class="social-link" rel="noopener">LinkedIn</a>` : ''}
-      ${author.website ? `<a href="${esc(author.website)}" class="social-link" rel="noopener">Website</a>` : ''}
+      ${flickrUrl ? `<a href="${esc(flickrUrl)}" class="social-link" rel="noopener">Flickr</a>` : ''}
     </div>
   </div>
 </div>`;
@@ -464,23 +467,23 @@ function handleLogout() {
 async function handleGetAuthor(env) {
   try {
     const obj = await env.BLOG.get('settings/author.json');
-    if (!obj) return json({ name: 'James Bell', bio: '', headshotUrl: '', twitter: '', instagram: '', linkedin: '', website: '' });
+    if (!obj) return json({ name: 'James Bell', bio: '', headshotUrl: '', threads: '', instagram: '', linkedin: '', flickr: '' });
     return json(await obj.json());
   } catch {
-    return json({ name: 'James Bell', bio: '', headshotUrl: '', twitter: '', instagram: '', linkedin: '', website: '' });
+    return json({ name: 'James Bell', bio: '', headshotUrl: '', threads: '', instagram: '', linkedin: '', flickr: '' });
   }
 }
 
 async function handleSaveAuthor(request, env) {
-  const { name, bio, headshotUrl, twitter, instagram, linkedin, website } = await request.json();
+  const { name, bio, headshotUrl, threads, instagram, linkedin, flickr } = await request.json();
   const data = {
     name: name || '',
     bio: bio || '',
     headshotUrl: headshotUrl || '',
-    twitter: twitter || '',
+    threads: threads || '',
     instagram: instagram || '',
     linkedin: linkedin || '',
-    website: website || '',
+    flickr: flickr || '',
   };
   await env.BLOG.put('settings/author.json', JSON.stringify(data), { httpMetadata: { contentType: 'application/json' } });
   return json(data);

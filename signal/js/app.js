@@ -306,10 +306,10 @@ function openAuthorModal(e) {
     document.getElementById('author-name').value = data.name || '';
     document.getElementById('author-bio').value = data.bio || '';
     document.getElementById('author-headshot').value = data.headshotUrl || '';
-    document.getElementById('author-twitter').value = data.twitter || '';
+    document.getElementById('author-threads').value = data.threads || '';
     document.getElementById('author-instagram').value = data.instagram || '';
     document.getElementById('author-linkedin').value = data.linkedin || '';
-    document.getElementById('author-website').value = data.website || '';
+    document.getElementById('author-flickr').value = data.flickr || '';
     _updateHeadshotPreview(data.headshotUrl || '');
     document.getElementById('author-modal').style.display = 'flex';
   }).catch(() => { document.getElementById('author-modal').style.display = 'flex'; });
@@ -323,15 +323,15 @@ async function saveAuthor() {
   const name = document.getElementById('author-name').value.trim();
   const bio = document.getElementById('author-bio').value.trim();
   const headshotUrl = document.getElementById('author-headshot').value.trim();
-  const twitter = document.getElementById('author-twitter').value.trim();
+  const threads = document.getElementById('author-threads').value.trim();
   const instagram = document.getElementById('author-instagram').value.trim();
   const linkedin = document.getElementById('author-linkedin').value.trim();
-  const website = document.getElementById('author-website').value.trim();
+  const flickr = document.getElementById('author-flickr').value.trim();
   try {
     const res = await fetch('/api/author', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, bio, headshotUrl, twitter, instagram, linkedin, website })
+      body: JSON.stringify({ name, bio, headshotUrl, threads, instagram, linkedin, flickr })
     });
     if (!res.ok) throw new Error(await res.text());
     closeAuthorModal();
