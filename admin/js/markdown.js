@@ -1,4 +1,5 @@
 import { extractVideoId, renderYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
+import { renderImageBlock } from './image-upload.js';
 
 let markedReady = false;
 const ytTitleCache = {};
@@ -41,13 +42,8 @@ function getMarked() {
         const src = srcM?.[1] || '';
         const alt = altM?.[1] || '';
         const layout = layoutM?.[1] || 'full';
-        const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
-        const isFloat = cls === 'leftalign' || cls === 'rightalign';
         const w = widthM ? parseInt(widthM[1], 10) : 100;
-        const styleStr = w < 100
-          ? `max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}`
-          : 'max-width:100%';
-        if (src) return `<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''} loading="lazy" style="${styleStr}">`;
+        if (src) return renderImageBlock(src, alt, layout, w);
       }
 
       return origHtml(token);

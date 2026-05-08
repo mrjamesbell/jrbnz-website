@@ -62,6 +62,35 @@ export async function cropImage(file, cropRect, outputWidth) {
 
 // ── Insert helpers ────────────────────────────────────────────────────────────
 
+export function renderImageBlock(src, alt, layout, width) {
+  const validLayout = ['full', 'left', 'right', 'centre'].includes(layout) ? layout : 'full';
+  const isFull = validLayout === 'full';
+  const pct = isFull ? 100 : Math.max(10, Math.min(100, parseInt(width, 10) || 100));
+
+  const escSrc = _esc(src);
+  const escAlt = _esc(alt || '');
+  const dispAlt = escAlt;
+
+  return `<div class="image-block" data-src="${escSrc}" data-alt="${escAlt}" data-layout="${validLayout}" data-width="${pct}">
+  <div class="image-thumb-wrap">
+    <img class="image-thumb-img" src="${escSrc}" alt="${escAlt}" loading="lazy">
+    <button class="image-remove-btn" data-action="remove-image" title="Remove">✕</button>
+  </div>
+  ${dispAlt ? `<div class="image-info-bar"><div class="image-alt-text">${dispAlt}</div></div>` : ''}
+  <div class="image-controls-bar">
+    <span class="image-ctrl-label">Layout</span>
+    <button class="image-layout-btn ${validLayout === 'full' ? 'is-active' : ''}" data-layout="full">Full</button>
+    <button class="image-layout-btn ${validLayout === 'left' ? 'is-active' : ''}" data-layout="left">Left</button>
+    <button class="image-layout-btn ${validLayout === 'centre' ? 'is-active' : ''}" data-layout="centre">Centre</button>
+    <button class="image-layout-btn ${validLayout === 'right' ? 'is-active' : ''}" data-layout="right">Right</button>
+    <span class="image-ctrl-sep"></span>
+    <span class="image-ctrl-label${isFull ? ' is-muted' : ''}">Width</span>
+    <input class="image-width-input" type="number" min="10" max="100" step="5" value="${pct}"${isFull ? ' disabled' : ''}>
+    <span class="image-ctrl-unit">%</span>
+  </div>
+</div>`;
+}
+
 export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const alt = (altText || '').replace(/"/g, '&quot;');

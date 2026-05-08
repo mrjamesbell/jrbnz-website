@@ -133,7 +133,9 @@
 .post-content ul,
 .post-content ol {
   padding-left: 1.5em;
+  margin-top: 0.4em;
   margin-bottom: 1.2em;
+  margin-left: 0;
 }
 
 .post-content li {
@@ -175,6 +177,13 @@
   border: none;
   border-top: 1px solid oklch(18% 0.01 50 / 0.2);
   margin: 2em 0;
+}
+
+.youtube-embed {
+  margin: 1.5em 0;
+  border: 15px solid #fff;
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 /* All posts button at end of post */
@@ -339,6 +348,7 @@ img.leftalign {
 /* Mobile */
 @media (max-width: 768px) {
   .post-body,
+  .content-section > .post-title,
   .content-section > .post-meta,
   .content-section > .post-content,
   .content-section > .back-link,

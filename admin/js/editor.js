@@ -78,33 +78,97 @@ document.addEventListener('click', e => {
       _triggerSave();
     }
   }
+
+  // Image remove button
+  const removeImgBtn = e.target.closest('[data-action="remove-image"]');
+  if (removeImgBtn) {
+    const block = removeImgBtn.closest('.image-block');
+    if (!block) return;
+    const src = block.dataset.src;
+    if (src && currentPost) {
+      const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(`\\n?<!--\\s*signal:image\\s+src="${escapedSrc}"[^>]*-->\\n?`, 'g');
+      currentPost.body = (currentPost.body || '').replace(re, '\n');
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
+    block.remove();
+    return;
+  }
+
+  // Image layout button
+  const layoutBtn = e.target.closest('.image-layout-btn');
+  if (layoutBtn) {
+    const block = layoutBtn.closest('.image-block');
+    if (!block) return;
+    const layout = layoutBtn.dataset.layout;
+    const isFull = layout === 'full';
+    block.dataset.layout = layout;
+    layoutBtn.closest('.image-controls-bar').querySelectorAll('.image-layout-btn')
+      .forEach(p => p.classList.toggle('is-active', p === layoutBtn));
+    const wi = block.querySelector('.image-width-input');
+    const widthLabel = block.querySelectorAll('.image-ctrl-label')[1];
+    if (wi) wi.disabled = isFull;
+    if (widthLabel) widthLabel.classList.toggle('is-muted', isFull);
+    const width = isFull ? 100 : parseInt(wi?.value || '100', 10);
+    if (isFull) {
+      block.dataset.width = '100';
+      if (wi) wi.value = 100;
+    }
+    const src = block.dataset.src;
+    if (src && currentPost) {
+      currentPost.body = _rebuildImageComment(currentPost.body, src, block.dataset.alt || '', layout, String(width));
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
+  }
 });
 
 document.addEventListener('input', e => {
-  const widthInput = e.target.closest('.youtube-width-input');
-  if (!widthInput) return;
-  const block = widthInput.closest('.youtube-block');
-  if (!block) return;
-  const pct = Math.max(20, Math.min(100, parseInt(widthInput.value, 10) || 100));
+  // YouTube width input
+  const ytWidthInput = e.target.closest('.youtube-width-input');
+  if (ytWidthInput) {
+    const block = ytWidthInput.closest('.youtube-block');
+    if (!block) return;
+    const pct = Math.max(20, Math.min(100, parseInt(ytWidthInput.value, 10) || 100));
 
-  // Switch out of Wide/Full mode when a number is typed
-  block.classList.remove('width-wide', 'width-full');
-  const align = block.dataset.align || 'center';
-  block.classList.remove('align-left', 'align-center', 'align-right');
-  block.classList.add(`align-${align}`);
-  block.style.width = `${pct}%`;
-  block.dataset.width = String(pct);
-  block.querySelectorAll('.youtube-size-preset').forEach(p => p.classList.remove('is-active'));
-  block.querySelectorAll('.youtube-align-pill').forEach(p => p.classList.toggle('is-active', p.dataset.align === align));
-  block.querySelectorAll('.youtube-ctrl-label').forEach(el => el.classList.remove('is-muted'));
-  widthInput.disabled = false;
+    block.classList.remove('width-wide', 'width-full');
+    const align = block.dataset.align || 'center';
+    block.classList.remove('align-left', 'align-center', 'align-right');
+    block.classList.add(`align-${align}`);
+    block.style.width = `${pct}%`;
+    block.dataset.width = String(pct);
+    block.querySelectorAll('.youtube-size-preset').forEach(p => p.classList.remove('is-active'));
+    block.querySelectorAll('.youtube-align-pill').forEach(p => p.classList.toggle('is-active', p.dataset.align === align));
+    block.querySelectorAll('.youtube-ctrl-label').forEach(el => el.classList.remove('is-muted'));
+    ytWidthInput.disabled = false;
 
-  const videoId = block.dataset.videoId;
-  if (videoId && currentPost) {
-    currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, String(pct), align);
-    const ta = document.getElementById('editor-textarea');
-    if (ta) ta.value = currentPost.body;
-    _triggerSave();
+    const videoId = block.dataset.videoId;
+    if (videoId && currentPost) {
+      currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, String(pct), align);
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
+    return;
+  }
+
+  // Image width input
+  const imgWidthInput = e.target.closest('.image-width-input');
+  if (imgWidthInput) {
+    const block = imgWidthInput.closest('.image-block');
+    if (!block) return;
+    const pct = Math.max(10, Math.min(100, parseInt(imgWidthInput.value, 10) || 100));
+    block.dataset.width = String(pct);
+    const src = block.dataset.src;
+    if (src && currentPost) {
+      currentPost.body = _rebuildImageComment(currentPost.body, src, block.dataset.alt || '', block.dataset.layout || 'full', String(pct));
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
   }
 });
 
@@ -371,6 +435,14 @@ function _rebuildYouTubeComment(body, videoId, width, align) {
     new RegExp(`<!--\\s*signal:youtube\\s+id="${videoId}"[^>]*-->`, 'g'),
     `<!-- signal:youtube id="${videoId}" width="${width}" align="${align}" -->`
   );
+}
+
+function _rebuildImageComment(body, src, alt, layout, width) {
+  const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`<!--\\s*signal:image\\s+src="${escapedSrc}"[^>]*-->`, 'g');
+  const escapedAlt = (alt || '').replace(/"/g, '&quot;');
+  const widthAttr = layout !== 'full' ? ` width="${width}"` : '';
+  return (body || '').replace(re, `<!-- signal:image src="${src}" alt="${escapedAlt}" layout="${layout}"${widthAttr} -->`);
 }
 
 function _prefixLine(textarea, prefix) {
