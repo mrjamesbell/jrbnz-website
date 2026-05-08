@@ -250,7 +250,7 @@ function buildAuthorCard(author) {
 }
 
 function buildPostHtml({ title, date, tags, contentHtml, author }) {
-  const tagLinks = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
+  const mastheadTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   const year = new Date().getFullYear();
   const authorCard = buildAuthorCard(author);
   return `${SITE_HEAD(title)}
@@ -262,20 +262,40 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
     <li><a href="/posts/" class="active">Blog</a></li>
   </ul>
 </nav>
-<header class="page-header"><h1>Blog</h1></header>
-<section class="content-section">
-  <h1 class="post-title">${esc(title)}</h1>
-  <div class="post-meta">
-    <time datetime="${esc(date)}">${fmtDate(date)}</time>
-    ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
+<header class="post-masthead">
+  <div class="post-masthead-inner">
+    <a href="/posts/" class="post-masthead-back">← All posts</a>
+    <h1 class="post-masthead-title">${esc(title)}</h1>
+    <div class="post-masthead-meta">
+      <time class="post-masthead-date" datetime="${esc(date)}">${fmtDate(date)}</time>
+      ${mastheadTags ? `<div class="post-masthead-tags">${mastheadTags}</div>` : ''}
+    </div>
   </div>
-  <div class="post-content">${contentHtml}</div>
-  ${authorCard}
-  <a href="/posts/" class="all-posts-btn">← All posts</a>
+</header>
+<section class="content-section">
+  <div class="post-body">
+    <div class="post-content">${contentHtml}</div>
+    ${authorCard}
+    <a href="/posts/" class="back-to-posts">← All posts</a>
+  </div>
 </section>
 <footer class="footer">
-  <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
-  <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  <div class="footer-left">
+    <a href="/" class="footer-logo">JRBNZ</a>
+    <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  </div>
+  <div class="footer-right">
+    <nav class="footer-nav">
+      <a href="/now/">Now</a>
+      <a href="/photos/">Photos</a>
+      <a href="/posts/">Blog</a>
+    </nav>
+    <a href="/feed.xml" class="footer-rss">
+      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
+      RSS Feed
+    </a>
+  </div>
 </footer>
 </body>
 </html>`;
@@ -286,14 +306,20 @@ function buildIndexHtml(posts) {
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const items = published.map(p => `
+  const items = published.map(p => {
+    const tagsText = (p.tags || []).map(t => `#${esc(t)}`).join(' · ');
+    return `
   <li class="post-list-item" data-tags="${esc((p.tags || []).join(','))}">
     <time>${fmtDateShort(p.date)}</time>
-    <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a>
-  </li>`).join('');
+    <div>
+      <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a>
+      ${tagsText ? `<div class="post-item-tags">${tagsText}</div>` : ''}
+    </div>
+  </li>`;
+  }).join('');
 
   const allTags = [...new Set(published.flatMap(p => p.tags || []))].sort();
-  const tagLinks = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
+  const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
   return `${SITE_HEAD('Blog - James Bell')}
@@ -305,21 +331,38 @@ function buildIndexHtml(posts) {
     <li><a href="/posts/" class="active">Blog</a></li>
   </ul>
 </nav>
-<header class="page-header"><h1>Blog</h1></header>
+<header class="index-masthead">
+  <h1 class="index-masthead-title">Blog</h1>
+</header>
 <section class="content-section">
-  ${published.length ? `<ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
-  ${tagLinks ? `<div class="tags-footer">
+  <div class="post-list-wrap">
+    ${published.length ? `
     <div class="tag-filter-bar" id="tag-filter-bar" hidden>
       Posts tagged <strong id="tag-filter-label"></strong>
-      <a href="/posts/" class="tag-filter-clear">× Show all</a>
+      <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
     </div>
-    ${tagLinks}
-  </div>` : ''}
+    <ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
+    ${tagChips ? `<div class="tags-section">${tagChips}</div>` : ''}
+  </div>
 </section>
 <script src="/scripts/blog.js"></script>
 <footer class="footer">
-  <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
-  <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  <div class="footer-left">
+    <a href="/" class="footer-logo">JRBNZ</a>
+    <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  </div>
+  <div class="footer-right">
+    <nav class="footer-nav">
+      <a href="/now/">Now</a>
+      <a href="/photos/">Photos</a>
+      <a href="/posts/">Blog</a>
+    </nav>
+    <a href="/feed.xml" class="footer-rss">
+      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
+      RSS Feed
+    </a>
+  </div>
 </footer>
 </body></html>`;
 }

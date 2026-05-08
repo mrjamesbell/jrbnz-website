@@ -1,31 +1,41 @@
 /* Post list */
 .post-list {
   list-style: none;
-  margin-bottom: 40px;
 }
 
 .post-list-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0 24px;
   align-items: baseline;
-  gap: 16px;
-  padding: 10px 0;
+  padding: 13px 0;
 }
 
 .post-list-item time {
-  font-size: 19px;
-  color: oklch(18% 0.01 50 / 0.6);
+  font-size: 15px;
+  color: oklch(18% 0.01 50 / 0.38);
   white-space: nowrap;
-  min-width: 120px;
+  font-family: 'Lora', serif;
+  padding-top: 2px;
 }
 
 .post-list-item a {
-  font-size: 24px;
+  font-size: 23px;
   color: var(--background-color);
+  line-height: 1.3;
   border-bottom: none;
+  transition: color 0.15s;
 }
 
 .post-list-item a:hover {
   color: var(--accent-color);
+}
+
+.post-item-tags {
+  grid-column: 2;
+  margin-top: 3px;
+  font-size: 12px;
+  color: oklch(18% 0.01 50 / 0.28);
 }
 
 /* Tags */
@@ -46,22 +56,23 @@
   margin-top: 40px;
 }
 
-/* Tag filter bar */
+/* Tag filter notice */
 .tag-filter-bar {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-  padding: 10px 16px;
-  background: oklch(44% 0.14 36 / 0.1);
-  border-left: 3px solid var(--accent-color);
-  border-radius: 0 4px 4px 0;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 11px 16px;
+  background: var(--background-color);
+  border-radius: 4px;
   font-size: 15px;
-  color: var(--background-color);
+  color: var(--text-color);
 }
 
 .tag-filter-bar strong {
-  color: var(--accent-color);
+  color: oklch(72% 0.14 36);
+  font-style: normal;
 }
 
 .tag-filter-clear {
@@ -125,9 +136,9 @@
   max-width: 100%;
   height: auto;
   border-radius: 2px;
-  margin: 1.5em 0;
+  margin: 2em 0;
   display: block;
-  border: 15px solid #fff;
+  border: 12px solid oklch(91% 0.01 75);
 }
 
 .post-content ul,
@@ -144,11 +155,24 @@
 }
 
 .post-content blockquote {
-  border-left: 3px solid var(--accent-color);
-  padding: 0 0 0 20px;
-  margin: 1.5em 0;
-  color: oklch(18% 0.01 50 / 0.75);
+  margin: 2.2em 0;
+  padding: 24px 28px;
+  background: var(--background-color);
+  color: oklch(88% 0.008 75);
   font-style: italic;
+  line-height: 1.75;
+  border-radius: 3px;
+}
+
+.post-content blockquote::before {
+  content: '\201C';
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3em;
+  line-height: 0.55;
+  color: oklch(72% 0.14 36);
+  display: block;
+  margin-bottom: 12px;
+  font-style: normal;
 }
 
 .post-content code {
@@ -180,8 +204,8 @@
 }
 
 .youtube-embed {
-  margin: 1.5em 0;
-  border: 15px solid #fff;
+  margin: 2em 0;
+  border: 12px solid oklch(91% 0.01 75);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -209,29 +233,14 @@
 
 /* Post body wrapper — constrains readable column */
 .post-body {
-  max-width: 80vw;
+  max-width: 72ch;
   margin: 0 auto;
 }
 
-/* Also constrain old posts that predate the .post-body wrapper */
-.content-section > .post-title,
-.content-section > .post-meta,
-.content-section > .post-content,
-.content-section > .author-card,
-.content-section > .all-posts-btn,
-.content-section > .back-link,
-.content-section > .post-nav {
-  max-width: 80vw;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Post list page — constrain to same column as post body */
-.content-section > .post-list,
-.content-section > .tags-footer {
-  max-width: 80vw;
-  margin-left: auto;
-  margin-right: auto;
+/* Post list — wider than reading column */
+.post-list-wrap {
+  max-width: min(960px, 92vw);
+  margin: 0 auto;
 }
 
 /* Post title inside content */
@@ -485,4 +494,239 @@ img.leftalign {
     gap: 14px;
     padding: 20px;
   }
+
+  .post-list-item {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .post-item-tags {
+    grid-column: 1;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-right {
+    align-items: flex-start;
+  }
+}
+
+/* ── Post masthead ── */
+.post-masthead {
+  background: var(--background-color);
+  padding: 24px var(--gutter) 52px;
+}
+
+.post-masthead-inner {
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+.post-masthead-back {
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.07em;
+  color: oklch(78% 0.012 75);
+  border-bottom: none;
+  margin-bottom: 32px;
+  transition: color 0.2s;
+}
+
+.post-masthead-back:hover {
+  color: var(--text-color);
+  border-bottom: none;
+}
+
+.post-masthead-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(40px, 5.5vw, 72px);
+  line-height: 0.96;
+  letter-spacing: 0.01em;
+  color: var(--text-color);
+  margin-bottom: 32px;
+}
+
+.post-masthead-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.post-masthead-date {
+  font-family: 'Lora', serif;
+  font-size: 17px;
+  color: oklch(78% 0.012 75);
+}
+
+.post-masthead-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.post-masthead-tags .post-tag {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: oklch(72% 0.14 36);
+  border: 1px solid oklch(72% 0.14 36 / 0.35);
+  border-bottom: 1px solid oklch(72% 0.14 36 / 0.35);
+  padding: 3px 10px;
+  border-radius: 3px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.post-masthead-tags .post-tag:hover {
+  color: var(--text-color);
+  border-color: oklch(72% 0.14 36 / 0.7);
+  border-bottom-color: oklch(72% 0.14 36 / 0.7);
+  background: oklch(72% 0.14 36 / 0.1);
+}
+
+/* ── Blog index masthead ── */
+.index-masthead {
+  background: var(--background-color);
+  padding: 24px var(--gutter) 52px;
+}
+
+.index-masthead-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 10vw, 140px);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  color: var(--text-color);
+}
+
+/* ── Back to posts button ── */
+.back-to-posts {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 52px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  letter-spacing: 0.07em;
+  color: oklch(18% 0.01 50 / 0.5);
+  border: 1.5px solid oklch(18% 0.01 50 / 0.2);
+  border-radius: 4px;
+  padding: 10px 20px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.back-to-posts:hover {
+  color: var(--accent-color);
+  border-color: oklch(44% 0.14 36 / 0.5);
+  border-bottom-color: oklch(44% 0.14 36 / 0.5);
+}
+
+/* ── Tag cloud (index page) ── */
+.tags-section {
+  margin-top: 44px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: oklch(18% 0.01 50 / 0.35);
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid oklch(18% 0.01 50 / 0.14);
+  border-bottom: 1px solid oklch(18% 0.01 50 / 0.14);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tag-chip:hover {
+  color: var(--accent-color);
+  border-color: oklch(44% 0.14 36 / 0.35);
+  border-bottom-color: oklch(44% 0.14 36 / 0.35);
+}
+
+/* ── Enhanced footer ── */
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  text-align: left;
+  padding: 52px var(--gutter);
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 0.03em;
+  color: oklch(68% 0.015 75);
+  line-height: 1;
+  border-bottom: none;
+}
+
+.footer-logo:hover {
+  color: oklch(78% 0.015 75);
+  border-bottom: none;
+}
+
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.footer-nav {
+  display: flex;
+  gap: 22px;
+}
+
+.footer-nav a {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: oklch(42% 0.07 36);
+  border-bottom: none;
+  transition: color 0.2s;
+}
+
+.footer-nav a:hover {
+  color: oklch(72% 0.14 36);
+  border-bottom: none;
+}
+
+.footer-rss {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.07em;
+  color: oklch(52% 0.01 75);
+  border-bottom: none;
+  transition: color 0.2s;
+}
+
+.footer-rss:hover {
+  color: oklch(72% 0.14 36);
+  border-bottom: none;
+}
+
+.footer-rss-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
 }
