@@ -94,9 +94,14 @@ function mdToHtml(md) {
     const line = lines[i];
 
     // YouTube signal block
-    const ytMatch = line.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"\s*-->/);
+    const ytMatch = line.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?(?:\s+align="([^"]*)")?\s*-->/);
     if (ytMatch) {
-      out.push(`<div class="youtube-embed"><iframe width="100%" height="400" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen loading="lazy"></iframe></div>`);
+      const ytId = ytMatch[1];
+      const rawWidth = ytMatch[2] || '100';
+      const ytAlign = ['left', 'center', 'right'].includes(ytMatch[3]) ? ytMatch[3] : 'center';
+      const ytPct = ['column', 'wide', 'full'].includes(rawWidth) ? '100' : String(Math.max(20, Math.min(100, parseInt(rawWidth, 10) || 100)));
+      const alignStyle = ytAlign === 'center' ? 'margin-left:auto;margin-right:auto;' : ytAlign === 'right' ? 'margin-left:auto;' : '';
+      out.push(`<div class="youtube-embed" style="width:${ytPct}%;${alignStyle}"><iframe width="100%" height="400" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen loading="lazy"></iframe></div>`);
       i++;
       continue;
     }

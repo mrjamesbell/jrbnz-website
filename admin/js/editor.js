@@ -34,27 +34,42 @@ document.addEventListener('click', e => {
     return;
   }
 
-  // YouTube width pill
-  const pill = e.target.closest('.youtube-width-pill');
-  if (pill) {
-    const block = pill.closest('.youtube-block');
+  // YouTube align pill
+  const alignPill = e.target.closest('.youtube-align-pill');
+  if (alignPill) {
+    const block = alignPill.closest('.youtube-block');
     if (!block) return;
-    const width = pill.dataset.width;
-    block.classList.remove('width-column', 'width-wide', 'width-full');
-    block.classList.add(`width-${width}`);
-    pill.closest('.youtube-width-bar').querySelectorAll('.youtube-width-pill')
-      .forEach(p => p.classList.toggle('is-active', p === pill));
-    // Update markdown
+    const align = alignPill.dataset.align;
+    block.classList.remove('align-left', 'align-center', 'align-right');
+    block.classList.add(`align-${align}`);
+    block.dataset.align = align;
+    alignPill.closest('.youtube-controls-bar').querySelectorAll('.youtube-align-pill')
+      .forEach(p => p.classList.toggle('is-active', p === alignPill));
     const videoId = block.dataset.videoId;
     if (videoId && currentPost) {
-      currentPost.body = (currentPost.body || '').replace(
-        new RegExp(`(<!--\\s*signal:youtube\\s+id="${videoId}"\\s+)width="[^"]*"`, 'g'),
-        `$1width="${width}"`
-      );
+      currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, block.dataset.width || '100', align);
       const ta = document.getElementById('editor-textarea');
       if (ta) ta.value = currentPost.body;
       _triggerSave();
     }
+  }
+});
+
+document.addEventListener('input', e => {
+  const widthInput = e.target.closest('.youtube-width-input');
+  if (!widthInput) return;
+  const block = widthInput.closest('.youtube-block');
+  if (!block) return;
+  const pct = Math.max(20, Math.min(100, parseInt(widthInput.value, 10) || 100));
+  block.style.width = `${pct}%`;
+  block.dataset.width = String(pct);
+  const videoId = block.dataset.videoId;
+  const align = block.dataset.align || 'center';
+  if (videoId && currentPost) {
+    currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, String(pct), align);
+    const ta = document.getElementById('editor-textarea');
+    if (ta) ta.value = currentPost.body;
+    _triggerSave();
   }
 });
 
@@ -314,6 +329,13 @@ function _wrapSelection(textarea, before, after) {
   textarea.selectionEnd = end + before.length;
   textarea.dispatchEvent(new Event('input'));
   textarea.focus();
+}
+
+function _rebuildYouTubeComment(body, videoId, width, align) {
+  return (body || '').replace(
+    new RegExp(`<!--\\s*signal:youtube\\s+id="${videoId}"[^>]*-->`, 'g'),
+    `<!-- signal:youtube id="${videoId}" width="${width}" align="${align}" -->`
+  );
 }
 
 function _prefixLine(textarea, prefix) {

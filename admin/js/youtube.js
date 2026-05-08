@@ -11,8 +11,8 @@ export function extractVideoId(url) {
   return null;
 }
 
-export function insertYouTubeBlock(textarea, videoId, width = 'column') {
-  const block = `\n<!-- signal:youtube id="${videoId}" width="${width}" -->\n`;
+export function insertYouTubeBlock(textarea, videoId, width = '100', align = 'center') {
+  const block = `\n<!-- signal:youtube id="${videoId}" width="${width}" align="${align}" -->\n`;
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   textarea.value = value.slice(0, start) + block + value.slice(end);
   textarea.selectionStart = textarea.selectionEnd = start + block.length;
@@ -31,9 +31,14 @@ export async function fetchYouTubeTitle(videoId) {
   }
 }
 
-export function renderYouTubeBlock(videoId, title, width = 'column') {
+export function renderYouTubeBlock(videoId, title, width = '100', align = 'center') {
+  // Handle legacy width values (column/wide/full → 100%)
+  const pct = ['column', 'wide', 'full'].includes(String(width))
+    ? '100'
+    : String(Math.max(20, Math.min(100, parseInt(width, 10) || 100)));
+  const validAlign = ['left', 'center', 'right'].includes(align) ? align : 'center';
   const t = escHtml(title || 'Loading…');
-  return `<div class="youtube-block width-${width}" data-video-id="${videoId}">
+  return `<div class="youtube-block align-${validAlign}" data-video-id="${videoId}" data-width="${pct}" data-align="${validAlign}" style="width:${pct}%">
   <div class="youtube-thumb-wrap" id="yt-thumb-${videoId}">
     <img class="youtube-thumb-img"
       src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg"
@@ -47,11 +52,15 @@ export function renderYouTubeBlock(videoId, title, width = 'column') {
     <div class="youtube-url-text">youtube.com/watch?v=${videoId}</div>
     <div class="youtube-embed-note">Embeds as video on publish</div>
   </div>
-  <div class="youtube-width-bar">
-    <span class="youtube-width-label">Width</span>
-    <button class="youtube-width-pill ${width === 'column' ? 'is-active' : ''}" data-width="column">Column</button>
-    <button class="youtube-width-pill ${width === 'wide' ? 'is-active' : ''}" data-width="wide">Wide</button>
-    <button class="youtube-width-pill ${width === 'full' ? 'is-active' : ''}" data-width="full">Full</button>
+  <div class="youtube-controls-bar">
+    <span class="youtube-ctrl-label">Width</span>
+    <input class="youtube-width-input" type="number" min="20" max="100" step="5" value="${pct}">
+    <span class="youtube-ctrl-unit">%</span>
+    <span class="youtube-ctrl-sep"></span>
+    <span class="youtube-ctrl-label">Align</span>
+    <button class="youtube-align-pill ${validAlign === 'left' ? 'is-active' : ''}" data-align="left">Left</button>
+    <button class="youtube-align-pill ${validAlign === 'center' ? 'is-active' : ''}" data-align="center">Center</button>
+    <button class="youtube-align-pill ${validAlign === 'right' ? 'is-active' : ''}" data-align="right">Right</button>
   </div>
 </div>`;
 }

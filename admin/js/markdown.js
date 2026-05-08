@@ -15,11 +15,12 @@ function getMarked() {
     renderer.html = function (token) {
       const html = typeof token === 'string' ? token : (token.raw || token.text || '');
 
-      // Detect <!-- signal:youtube id="..." width="..." -->
-      const ytMatch = html.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?\s*-->/);
+      // Detect <!-- signal:youtube id="..." width="..." align="..." -->
+      const ytMatch = html.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?(?:\s+align="([^"]*)")?\s*-->/);
       if (ytMatch) {
         const videoId = ytMatch[1];
-        const width = ytMatch[2] || 'column';
+        const width = ytMatch[2] || '100';
+        const align = ytMatch[3] || 'center';
         const cached = ytTitleCache[videoId];
         if (!cached) {
           fetchYouTubeTitle(videoId).then(title => {
@@ -28,7 +29,7 @@ function getMarked() {
             if (el) el.textContent = title;
           });
         }
-        return renderYouTubeBlock(videoId, cached, width);
+        return renderYouTubeBlock(videoId, cached, width, align);
       }
 
       // Detect <!-- signal:image src="..." alt="..." layout="..." width="..." -->
