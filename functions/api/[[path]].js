@@ -336,13 +336,15 @@ function buildIndexHtml(posts) {
 </header>
 <section class="content-section">
   <div class="post-list-wrap">
-    ${published.length ? `
-    <div class="tag-filter-bar" id="tag-filter-bar" hidden>
-      Posts tagged <strong id="tag-filter-label"></strong>
-      <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
-    </div>
-    <ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
-    ${tagChips ? `<div class="tags-section">${tagChips}</div>` : ''}
+    ${published.length ? `<ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
+    ${tagChips ? `
+    <div class="tags-box">
+      <div class="tag-filter-bar" id="tag-filter-bar" hidden>
+        Posts tagged <strong id="tag-filter-label"></strong>
+        <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
+      </div>
+      <div class="tags-section">${tagChips}</div>
+    </div>` : ''}
   </div>
 </section>
 <script src="/scripts/blog.js"></script>
