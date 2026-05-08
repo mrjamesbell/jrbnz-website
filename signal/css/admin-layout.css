@@ -500,8 +500,6 @@ body {
 
 #btn-ai-review {
   color: var(--color-teal);
-  font-size: 11px;
-  letter-spacing: 0.02em;
 }
 
 #btn-ai-review:hover {
@@ -570,10 +568,11 @@ body {
 .review-panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 48px;
-  font-size: 16px;
-  line-height: 1.7;
+  padding: 20px 48px;
+  font-size: 13px;
+  line-height: 1.65;
   color: var(--color-cream-text-primary);
+  font-family: var(--font-sans);
 }
 
 .review-panel-body p { margin-bottom: 0.8em; }
