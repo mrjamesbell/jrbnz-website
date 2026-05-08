@@ -41,18 +41,15 @@ export async function cropImage(file, cropRect, outputWidth) {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
+      const srcX = cropRect.x * img.naturalWidth;
+      const srcY = cropRect.y * img.naturalHeight;
+      const srcW = cropRect.width * img.naturalWidth;
+      const srcH = cropRect.height * img.naturalHeight;
       const canvas = document.createElement('canvas');
       canvas.width = outputWidth;
-      canvas.height = Math.round(outputWidth * (cropRect.height / cropRect.width));
+      canvas.height = Math.round(outputWidth * srcH / srcW);
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(
-        img,
-        cropRect.x * img.naturalWidth,
-        cropRect.y * img.naturalHeight,
-        cropRect.width * img.naturalWidth,
-        cropRect.height * img.naturalHeight,
-        0, 0, canvas.width, canvas.height
-      );
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
       canvas.toBlob(resolve, 'image/jpeg', 0.88);
     };
