@@ -5,6 +5,6 @@ export async function onRequest({ request, env }) {
 
   // Unknown route — serve the admin SPA and let the client-side router handle it
   const url = new URL(request.url);
-  url.pathname = '/admin/index.html';
+  url.pathname = '/signal/index.html';
   return env.ASSETS.fetch(url);
 }

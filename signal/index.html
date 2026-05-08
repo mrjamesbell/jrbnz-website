@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Signal Admin</title>
-<link rel="stylesheet" href="/admin/css/design-tokens.css">
-<link rel="stylesheet" href="/admin/css/admin-layout.css">
-<link rel="stylesheet" href="/admin/css/editor-components.css">
-<link rel="stylesheet" href="/admin/css/youtube-block.css">
-<link rel="stylesheet" href="/admin/css/image-block.css">
-<link rel="stylesheet" href="/admin/css/mobile.css">
+<link rel="stylesheet" href="/signal/css/design-tokens.css">
+<link rel="stylesheet" href="/signal/css/admin-layout.css">
+<link rel="stylesheet" href="/signal/css/editor-components.css">
+<link rel="stylesheet" href="/signal/css/youtube-block.css">
+<link rel="stylesheet" href="/signal/css/image-block.css">
+<link rel="stylesheet" href="/signal/css/mobile.css">
 <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 </head>
 <body>
@@ -18,11 +18,11 @@
 
   <!-- Rail -->
   <nav class="signal-rail" id="rail">
-    <a href="/admin/" class="rail-logo" title="Signal">SIGNAL</a>
-    <a href="/admin/" class="rail-icon is-active" id="rail-posts" title="Posts" data-route="list">
+    <a href="/signal/" class="rail-logo" title="Signal">SIGNAL</a>
+    <a href="/signal/" class="rail-icon is-active" id="rail-posts" title="Posts" data-route="list">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.5H2V3zm0 4h12v1.5H2V7zm0 4h8v1.5H2V11z"/></svg>
     </a>
-    <a href="/admin/media" class="rail-icon" id="rail-media" title="Media" data-route="media">
+    <a href="/signal/media" class="rail-icon" id="rail-media" title="Media" data-route="media">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="5.5" cy="6.5" r="1.5"/><path d="M1 11l3.5-3.5 3 3 2-2 5 5"/></svg>
     </a>
     <div class="rail-spacer"></div>
@@ -35,7 +35,7 @@
   <!-- Main content -->
   <div class="signal-main">
 
-    <!-- VIEW 1: Post list (shown at /admin/) -->
+    <!-- VIEW 1: Post list (shown at /signal/) -->
     <div class="post-list-view" id="view-list">
       <div class="post-list-inner">
         <div class="post-list-header">
@@ -50,12 +50,12 @@
       </div>
     </div>
 
-    <!-- VIEW 2: Editor (shown at /admin/edit/:slug) -->
+    <!-- VIEW 2: Editor (shown at /signal/edit/:slug) -->
     <div class="signal-editor" id="view-editor" style="display:none">
 
       <!-- Top bar -->
       <div class="editor-topbar" id="editor-topbar">
-        <a href="/admin/" class="topbar-breadcrumb" id="topbar-breadcrumb">← Posts</a>
+        <a href="/signal/" class="topbar-breadcrumb" id="topbar-breadcrumb">← Posts</a>
         <span class="topbar-sep">·</span>
         <span class="topbar-title" id="topbar-title"></span>
         <div class="topbar-right">
@@ -136,7 +136,7 @@
 
     </div><!-- /#view-editor -->
 
-    <!-- VIEW 3: Media (shown at /admin/media) -->
+    <!-- VIEW 3: Media (shown at /signal/media) -->
     <div id="media-view" class="media-view" style="display:none">
       <div class="media-inner">
         <div class="media-header">
@@ -245,9 +245,32 @@
         <textarea class="field-input" id="author-bio" rows="3" style="height:auto;resize:none" placeholder="Short bio…"></textarea>
       </div>
       <div>
-        <label class="field-label" for="author-headshot">Headshot URL</label>
-        <input class="field-input" type="url" id="author-headshot" placeholder="https://…">
-        <p class="field-hint">Link to image in R2 or elsewhere.</p>
+        <label class="field-label">Headshot</label>
+        <div class="headshot-picker">
+          <div class="headshot-preview-wrap" id="headshot-preview-wrap">
+            <img class="headshot-preview-img" id="headshot-preview-img" src="" alt="" style="display:none">
+            <span class="headshot-placeholder" id="headshot-placeholder">No photo</span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-upload">Upload photo</button>
+          <input type="hidden" id="author-headshot">
+          <input type="file" id="headshot-file-input" accept="image/*" style="display:none">
+        </div>
+      </div>
+      <div>
+        <label class="field-label" for="author-twitter">Twitter / X</label>
+        <input class="field-input" type="text" id="author-twitter" placeholder="@handle or https://x.com/…">
+      </div>
+      <div>
+        <label class="field-label" for="author-instagram">Instagram</label>
+        <input class="field-input" type="text" id="author-instagram" placeholder="@handle or https://instagram.com/…">
+      </div>
+      <div>
+        <label class="field-label" for="author-linkedin">LinkedIn</label>
+        <input class="field-input" type="text" id="author-linkedin" placeholder="username or https://linkedin.com/in/…">
+      </div>
+      <div>
+        <label class="field-label" for="author-website">Website</label>
+        <input class="field-input" type="url" id="author-website" placeholder="https://…">
       </div>
     </div>
     <div class="modal-footer">
@@ -346,6 +369,7 @@
           <button class="crop-ratio-pill" data-aspect="1.3333">4:3</button>
           <button class="crop-ratio-pill" data-aspect="1.7778">16:9</button>
           <button class="crop-ratio-pill" data-aspect="1.5">3:2</button>
+          <button class="crop-ratio-pill" data-aspect="1" data-circle="true">Circle</button>
         </div>
       </div>
     </div>
@@ -416,6 +440,6 @@
   </div>
 </div>
 
-<script type="module" src="/admin/js/app.js"></script>
+<script type="module" src="/signal/js/app.js"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Signal — Login</title>
-<link rel="stylesheet" href="/admin/css/design-tokens.css">
+<link rel="stylesheet" href="/signal/css/design-tokens.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: var(--font-sans); background: var(--color-dark-base); }
@@ -156,7 +156,7 @@ html, body { height: 100%; font-family: var(--font-sans); background: var(--colo
         body: JSON.stringify({ password: pw })
       });
       if (res.ok) {
-        window.location.href = '/admin/';
+        window.location.href = '/signal/';
       } else if (res.status === 429) {
         var data = await res.json();
         lockoutEl.textContent = data.error || 'Too many attempts. Please wait.';

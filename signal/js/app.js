@@ -3,18 +3,19 @@ import { initMobile } from './mobile.js';
 import { fmtDateShort, relativeTime, slugify } from './markdown.js';
 import { showToast } from './toast.js';
 import { initMedia } from './media.js';
+import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-08.3';
+const BUILD = '2026-05-08.4';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
 (async function boot() {
   try {
     const res = await fetch('/api/auth/check');
-    if (!res.ok) { window.location.href = '/admin/login.html'; return; }
-  } catch { window.location.href = '/admin/login.html'; return; }
+    if (!res.ok) { window.location.href = '/signal/login.html'; return; }
+  } catch { window.location.href = '/signal/login.html'; return; }
 
   document.getElementById('app').style.display = 'flex';
   const buildEl = document.getElementById('build-label');
@@ -33,7 +34,7 @@ const BUILD = '2026-05-08.3';
   // Topbar breadcrumb interception
   document.getElementById('topbar-breadcrumb')?.addEventListener('click', e => {
     e.preventDefault();
-    navigate('/admin/');
+    navigate('/signal/');
   });
 
   // New post button
@@ -63,10 +64,64 @@ const BUILD = '2026-05-08.3';
   document.getElementById('author-save').addEventListener('click', saveAuthor);
   document.getElementById('author-logout').addEventListener('click', logout);
 
+  // Headshot upload button
+  document.getElementById('btn-headshot-upload').addEventListener('click', () => {
+    document.getElementById('headshot-file-input').click();
+  });
+  document.getElementById('headshot-file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    openCropModal(file, async (croppedBlob) => {
+      await _uploadHeadshot(croppedBlob);
+    }, { circle: true });
+  });
+
   // Route on load
   _route(window.location.pathname);
   window.addEventListener('popstate', () => _route(window.location.pathname));
 })();
+
+// ── Headshot upload ───────────────────────────────────────────────────────────
+
+async function _uploadHeadshot(blob) {
+  try {
+    const filename = `headshot-${Date.now()}.jpg`;
+    const presignRes = await fetch('/api/media/presign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename, contentType: blob.type || 'image/jpeg' })
+    });
+    if (!presignRes.ok) throw new Error('Presign failed');
+    const { uploadUrl, key } = await presignRes.json();
+
+    await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': blob.type || 'image/jpeg' },
+      body: blob
+    });
+
+    const publicUrl = `https://jrbnz-blog.r2.dev/${key}`;
+    document.getElementById('author-headshot').value = publicUrl;
+    _updateHeadshotPreview(publicUrl);
+  } catch (e) {
+    showToast('Upload failed: ' + e.message, 'error');
+  }
+}
+
+function _updateHeadshotPreview(url) {
+  const img = document.getElementById('headshot-preview-img');
+  const placeholder = document.getElementById('headshot-placeholder');
+  if (url) {
+    img.src = url;
+    img.style.display = '';
+    if (placeholder) placeholder.style.display = 'none';
+  } else {
+    img.src = '';
+    img.style.display = 'none';
+    if (placeholder) placeholder.style.display = '';
+  }
+}
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 
@@ -77,8 +132,8 @@ function navigate(path, replace = false) {
 }
 
 function _route(path) {
-  const editMatch = path.match(/^\/admin\/edit\/(.+)$/);
-  const mediaMatch = path === '/admin/media';
+  const editMatch = path.match(/^\/signal\/edit\/(.+)$/);
+  const mediaMatch = path === '/signal/media';
 
   if (editMatch) {
     _setRailActive('list');
@@ -135,10 +190,10 @@ function renderList(posts) {
   if (!draftsEl || !publishedEl) return;
 
   const drafts = posts
-    .filter(p => p.status !== 'published')
+    .filter(p => p.status !== 'published' || p.hasDraftChanges)
     .sort((a, b) => new Date(b.updatedAt || b.date) - new Date(a.updatedAt || a.date));
   const published = posts
-    .filter(p => p.status === 'published')
+    .filter(p => p.status === 'published' && !p.hasDraftChanges)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   draftsEl.innerHTML = drafts.map(listItem).join('');
@@ -147,24 +202,25 @@ function renderList(posts) {
   document.querySelectorAll('.post-list-item').forEach(el => {
     el.addEventListener('click', e => {
       e.preventDefault();
-      navigate(`/admin/edit/${el.dataset.slug}`);
+      navigate(`/signal/edit/${el.dataset.slug}`);
     });
   });
 }
 
 function listItem(p) {
   const isDraft = p.status !== 'published';
+  const hasEdits = p.status === 'published' && p.hasDraftChanges;
   const tags = (p.tags || []).map(t => `#${t}`).join(' ');
   const wc = p.wordCount ? `${p.wordCount} words` : '';
-  const dateStr = isDraft
+  const dateStr = (isDraft || hasEdits)
     ? relativeTime(p.updatedAt || p.date)
     : fmtDateShort(p.date);
-  const statusClass = isDraft ? 'is-draft' : 'is-published';
-  const statusLabel = isDraft ? 'draft' : 'published';
+  const statusClass = isDraft ? 'is-draft' : hasEdits ? 'is-draft' : 'is-published';
+  const statusLabel = isDraft ? 'draft' : hasEdits ? 'published · edits' : 'published';
 
-  return `<a class="post-list-item" href="/admin/edit/${esc(p.slug)}" data-slug="${esc(p.slug)}">
+  return `<a class="post-list-item" href="/signal/edit/${esc(p.slug)}" data-slug="${esc(p.slug)}">
     <div class="post-list-item-body">
-      <div class="post-list-title">${isDraft ? '<span class="draft-pip"></span>' : ''}${esc(p.title || 'Untitled')}</div>
+      <div class="post-list-title">${(isDraft || hasEdits) ? '<span class="draft-pip"></span>' : ''}${esc(p.title || 'Untitled')}</div>
       <div class="post-list-meta">
         <span>${esc(dateStr)}</span>
         ${tags ? `<span class="post-list-tags">${esc(tags)}</span>` : ''}
@@ -233,7 +289,7 @@ async function createPost() {
     const post = await res.json();
     allPosts.unshift(post);
     closeNewPostModal();
-    navigate(`/admin/edit/${post.slug}`);
+    navigate(`/signal/edit/${post.slug}`);
   } catch (e) {
     showToast('Failed: ' + e.message, 'error');
   } finally {
@@ -250,6 +306,11 @@ function openAuthorModal(e) {
     document.getElementById('author-name').value = data.name || '';
     document.getElementById('author-bio').value = data.bio || '';
     document.getElementById('author-headshot').value = data.headshotUrl || '';
+    document.getElementById('author-twitter').value = data.twitter || '';
+    document.getElementById('author-instagram').value = data.instagram || '';
+    document.getElementById('author-linkedin').value = data.linkedin || '';
+    document.getElementById('author-website').value = data.website || '';
+    _updateHeadshotPreview(data.headshotUrl || '');
     document.getElementById('author-modal').style.display = 'flex';
   }).catch(() => { document.getElementById('author-modal').style.display = 'flex'; });
 }
@@ -262,11 +323,15 @@ async function saveAuthor() {
   const name = document.getElementById('author-name').value.trim();
   const bio = document.getElementById('author-bio').value.trim();
   const headshotUrl = document.getElementById('author-headshot').value.trim();
+  const twitter = document.getElementById('author-twitter').value.trim();
+  const instagram = document.getElementById('author-instagram').value.trim();
+  const linkedin = document.getElementById('author-linkedin').value.trim();
+  const website = document.getElementById('author-website').value.trim();
   try {
     const res = await fetch('/api/author', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, bio, headshotUrl })
+      body: JSON.stringify({ name, bio, headshotUrl, twitter, instagram, linkedin, website })
     });
     if (!res.ok) throw new Error(await res.text());
     closeAuthorModal();
@@ -278,7 +343,7 @@ async function saveAuthor() {
 
 async function logout() {
   try { await fetch('/api/auth/logout', { method: 'POST' }); } finally {
-    window.location.href = '/admin/login.html';
+    window.location.href = '/signal/login.html';
   }
 }
 

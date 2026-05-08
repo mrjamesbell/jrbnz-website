@@ -219,9 +219,36 @@ const SITE_HEAD = (title) => `<!DOCTYPE html>
 <body>`;
 
 
-function buildPostHtml({ title, date, tags, contentHtml }) {
+function buildAuthorCard(author) {
+  if (!author || !author.name) return '';
+  const twitterUrl = author.twitter
+    ? (author.twitter.startsWith('http') ? author.twitter : `https://x.com/${author.twitter.replace('@', '')}`)
+    : '';
+  const instagramUrl = author.instagram
+    ? (author.instagram.startsWith('http') ? author.instagram : `https://instagram.com/${author.instagram.replace('@', '')}`)
+    : '';
+  const linkedinUrl = author.linkedin
+    ? (author.linkedin.startsWith('http') ? author.linkedin : `https://linkedin.com/in/${author.linkedin}`)
+    : '';
+  return `<div class="author-card">
+  ${author.headshotUrl ? `<img class="author-avatar" src="${esc(author.headshotUrl)}" alt="${esc(author.name)}">` : ''}
+  <div class="author-details">
+    <div class="author-name">${esc(author.name)}</div>
+    ${author.bio ? `<div class="author-bio">${esc(author.bio)}</div>` : ''}
+    <div class="author-social">
+      ${twitterUrl ? `<a href="${esc(twitterUrl)}" class="social-link" rel="noopener">&#x1D54F;</a>` : ''}
+      ${instagramUrl ? `<a href="${esc(instagramUrl)}" class="social-link" rel="noopener">Instagram</a>` : ''}
+      ${linkedinUrl ? `<a href="${esc(linkedinUrl)}" class="social-link" rel="noopener">LinkedIn</a>` : ''}
+      ${author.website ? `<a href="${esc(author.website)}" class="social-link" rel="noopener">Website</a>` : ''}
+    </div>
+  </div>
+</div>`;
+}
+
+function buildPostHtml({ title, date, tags, contentHtml, author }) {
   const tagLinks = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   const year = new Date().getFullYear();
+  const authorCard = buildAuthorCard(author);
   return `${SITE_HEAD(title)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
@@ -239,6 +266,7 @@ function buildPostHtml({ title, date, tags, contentHtml }) {
     ${tagLinks ? `<div class="post-tags">${tagLinks}</div>` : ''}
   </div>
   <div class="post-content">${contentHtml}</div>
+  ${authorCard}
   <a href="/posts/" class="all-posts-btn">← All posts</a>
 </section>
 <footer class="footer">
@@ -316,7 +344,9 @@ async function rebuildPostHtml(env, slug, posts) {
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-  const html = buildPostHtml({ ...post, contentHtml });
+  const authorObj = await env.BLOG.get('settings/author.json');
+  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
+  const html = buildPostHtml({ ...post, contentHtml, author });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -434,16 +464,24 @@ function handleLogout() {
 async function handleGetAuthor(env) {
   try {
     const obj = await env.BLOG.get('settings/author.json');
-    if (!obj) return json({ name: 'James Bell', bio: '', headshotUrl: '' });
+    if (!obj) return json({ name: 'James Bell', bio: '', headshotUrl: '', twitter: '', instagram: '', linkedin: '', website: '' });
     return json(await obj.json());
   } catch {
-    return json({ name: 'James Bell', bio: '', headshotUrl: '' });
+    return json({ name: 'James Bell', bio: '', headshotUrl: '', twitter: '', instagram: '', linkedin: '', website: '' });
   }
 }
 
 async function handleSaveAuthor(request, env) {
-  const { name, bio, headshotUrl } = await request.json();
-  const data = { name: name || '', bio: bio || '', headshotUrl: headshotUrl || '' };
+  const { name, bio, headshotUrl, twitter, instagram, linkedin, website } = await request.json();
+  const data = {
+    name: name || '',
+    bio: bio || '',
+    headshotUrl: headshotUrl || '',
+    twitter: twitter || '',
+    instagram: instagram || '',
+    linkedin: linkedin || '',
+    website: website || '',
+  };
   await env.BLOG.put('settings/author.json', JSON.stringify(data), { httpMetadata: { contentType: 'application/json' } });
   return json(data);
 }
@@ -590,6 +628,7 @@ async function handleSaveDraft(request, env, slug) {
   if (idx === -1) return json({ error: 'Not found' }, 404);
 
   const now = new Date().toISOString();
+  const isPublished = posts[idx].status === 'published';
   posts[idx] = {
     ...posts[idx],
     title: data.title ?? posts[idx].title,
@@ -599,7 +638,8 @@ async function handleSaveDraft(request, env, slug) {
     coverImage: data.coverImage !== undefined ? data.coverImage : posts[idx].coverImage,
     wordCount: data.wordCount ?? posts[idx].wordCount,
     updatedAt: now,
-    status: posts[idx].status === 'published' ? 'published' : 'draft',
+    status: isPublished ? 'published' : 'draft',
+    hasDraftChanges: isPublished ? true : false,
   };
 
   let body = data.body ?? data.markdown ?? '';
@@ -619,9 +659,13 @@ async function handlePublish(env, slug) {
   const contentHtml = mdToHtml(body);
 
   posts[idx].status = 'published';
+  posts[idx].hasDraftChanges = false;
   posts[idx].updatedAt = new Date().toISOString();
 
-  const postHtml = buildPostHtml({ ...posts[idx], contentHtml });
+  const authorObj = await env.BLOG.get('settings/author.json');
+  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
+
+  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, author });
   await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
   await saveIndex(env, posts);
   await rebuildIndexHtml(env, posts);

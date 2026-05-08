@@ -940,3 +940,48 @@ body {
 
   .media-inner { padding: 28px 20px 60px; }
 }
+
+/* ════════════════════════════════════════════
+   HEADSHOT PICKER
+   ════════════════════════════════════════════ */
+.headshot-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headshot-preview-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-cream-dark);
+  border: var(--border-cream);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.headshot-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.headshot-placeholder {
+  font-size: var(--text-xs);
+  color: var(--color-cream-text-ghost);
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+/* Circle crop overlay on the crop-box */
+.crop-box.is-circle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  pointer-events: none;
+}

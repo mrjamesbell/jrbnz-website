@@ -821,7 +821,7 @@ async function _saveSettings() {
       }
       originalSlug = newSlug;
       currentSlug = newSlug;
-      navigate(`/admin/edit/${newSlug}`, true);
+      navigate(`/signal/edit/${newSlug}`, true);
     } catch (e) {
       showToast('Rename failed: ' + e.message, 'error');
       return;
@@ -849,7 +849,7 @@ async function _deletePost() {
     const res = await fetch(`/api/posts/${currentSlug}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(await res.text());
     showToast('Post deleted', 'default');
-    navigate('/admin/');
+    navigate('/signal/');
   } catch (e) {
     showToast('Delete failed: ' + e.message, 'error');
   }

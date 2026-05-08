@@ -162,18 +162,28 @@ export function openImageOptionsModal(textarea, publicUrl, altHint) {
 let _cropFile = null;
 let _cropOnComplete = null;
 let _cropAspect = null;
+let _cropCircle = false;
 let _cropBox = { x: 0, y: 0, w: 0, h: 0 };
 let _cropDrag = null;
 
-export function openCropModal(file, onComplete) {
+export function openCropModal(file, onComplete, options = {}) {
   _cropFile = file;
   _cropOnComplete = onComplete;
   _cropAspect = null;
+  _cropCircle = !!(options && options.circle);
   _cropDrag = null;
 
   const modal = document.getElementById('crop-modal');
   const cropImg = document.getElementById('crop-img');
   const box = document.getElementById('crop-box');
+
+  // Apply circle mode defaults
+  if (_cropCircle) {
+    _cropAspect = 1;
+    box.classList.add('is-circle');
+  } else {
+    box.classList.remove('is-circle');
+  }
 
   const objectUrl = URL.createObjectURL(file);
   cropImg.onload = () => {
@@ -185,11 +195,26 @@ export function openCropModal(file, onComplete) {
   modal.style.display = 'flex';
 
   // Aspect ratio buttons
+  const circleActivePill = _cropCircle
+    ? modal.querySelector('[data-circle="true"]')
+    : null;
   modal.querySelectorAll('[data-aspect]').forEach(btn => {
-    btn.classList.toggle('is-active', btn.dataset.aspect === 'free');
+    // In circle mode, activate the Circle pill; otherwise default to Free
+    if (_cropCircle) {
+      btn.classList.toggle('is-active', btn.dataset.circle === 'true');
+    } else {
+      btn.classList.toggle('is-active', btn.dataset.aspect === 'free' && !btn.dataset.circle);
+    }
     btn.onclick = () => {
-      _cropAspect = btn.dataset.aspect === 'free' ? null : parseFloat(btn.dataset.aspect);
+      const isCircle = btn.dataset.circle === 'true';
+      _cropCircle = isCircle;
+      _cropAspect = (btn.dataset.aspect === 'free' && !isCircle) ? null : parseFloat(btn.dataset.aspect);
       modal.querySelectorAll('[data-aspect]').forEach(b => b.classList.toggle('is-active', b === btn));
+      if (_cropCircle) {
+        box.classList.add('is-circle');
+      } else {
+        box.classList.remove('is-circle');
+      }
       if (_cropAspect) _enforceAspect();
       _updateCropOverlay();
     };
@@ -247,6 +272,9 @@ export function openCropModal(file, onComplete) {
 function _closeCropModal() {
   const modal = document.getElementById('crop-modal');
   if (modal) modal.style.display = 'none';
+  const box = document.getElementById('crop-box');
+  if (box) box.classList.remove('is-circle');
+  _cropCircle = false;
   _cropDrag = null;
 }
 
