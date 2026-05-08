@@ -105,6 +105,17 @@ export async function openEditor(slug) {
 }
 
 export function closeEditor() {
+  // Commit any text typed in the tag input that wasn't confirmed with Enter
+  const tagInput = document.getElementById('tag-input');
+  if (tagInput && tagInput.value.trim() && currentPost) {
+    const val = tagInput.value.trim().replace(/^#/, '');
+    if (val && !tags.includes(val)) {
+      tags.push(val);
+      currentPost.tags = tags;
+      _markDirty();
+    }
+  }
+
   if (_isDirty && currentSlug && currentPost) {
     const slug = currentSlug;
     const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, wordCount: currentPost.wordCount };
@@ -167,6 +178,7 @@ function _populateEditor() {
   // Tags
   document.getElementById('btn-add-tag').onclick = _showTagInput;
   document.getElementById('tag-input').onkeydown = _onTagKeydown;
+  document.getElementById('tag-input').onblur = _onTagBlur;
 
   // Settings modal
   document.getElementById('btn-settings').onclick = _openSettings;
@@ -209,8 +221,11 @@ function _onPaste(e) {
   const text = e.clipboardData.getData('text');
   if (!text) return;
 
-  const videoId = extractVideoId(text);
-  if (videoId && text.trim() === text) {
+  // Intercept if the clipboard looks like a standalone YouTube URL
+  // (single line, under 300 chars — handles URLs with trailing whitespace/newlines)
+  const trimmed = text.trim();
+  const videoId = !trimmed.includes('\n') && trimmed.length < 300 ? extractVideoId(trimmed) : null;
+  if (videoId) {
     e.preventDefault();
     const textarea = document.getElementById('editor-textarea');
     insertYouTubeBlock(textarea, videoId);
@@ -443,6 +458,23 @@ function _onTagKeydown(e) {
     _renderTags();
     _triggerSave();
   }
+}
+
+function _onTagBlur() {
+  const input = document.getElementById('tag-input');
+  if (!input) return;
+  const val = input.value.trim().replace(/^#/, '');
+  if (val && !tags.includes(val)) {
+    tags.push(val);
+    currentPost.tags = tags;
+    _renderTags();
+    _markDirty();
+    _triggerSave();
+  }
+  input.value = '';
+  input.style.display = 'none';
+  const addBtn = document.getElementById('btn-add-tag');
+  if (addBtn) addBtn.style.display = '';
 }
 
 function _triggerSave() {
