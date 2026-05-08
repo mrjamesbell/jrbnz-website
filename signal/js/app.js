@@ -64,7 +64,7 @@ const BUILD = '2026-05-08.4';
   document.getElementById('author-save').addEventListener('click', saveAuthor);
   document.getElementById('author-logout').addEventListener('click', logout);
 
-  // Headshot upload button
+  // Headshot buttons
   document.getElementById('btn-headshot-upload').addEventListener('click', () => {
     document.getElementById('headshot-file-input').click();
   });
@@ -75,6 +75,25 @@ const BUILD = '2026-05-08.4';
     openCropModal(file, async (croppedBlob) => {
       await _uploadHeadshot(croppedBlob);
     }, { circle: true });
+  });
+  document.getElementById('btn-headshot-media').addEventListener('click', _openHeadshotMediaPicker);
+  document.getElementById('btn-headshot-url').addEventListener('click', () => {
+    const row = document.getElementById('headshot-url-row');
+    row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+    if (row.style.display === 'flex') document.getElementById('headshot-url-input').focus();
+  });
+  document.getElementById('btn-headshot-url-set').addEventListener('click', () => {
+    const url = document.getElementById('headshot-url-input').value.trim();
+    if (url) {
+      document.getElementById('author-headshot').value = url;
+      _updateHeadshotPreview(url);
+      document.getElementById('headshot-url-row').style.display = 'none';
+      document.getElementById('headshot-url-input').value = '';
+    }
+  });
+  document.getElementById('headshot-url-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-headshot-url-set').click(); }
+    if (e.key === 'Escape') { document.getElementById('headshot-url-row').style.display = 'none'; }
   });
 
   // Route on load
@@ -121,6 +140,92 @@ function _updateHeadshotPreview(url) {
     img.style.display = 'none';
     if (placeholder) placeholder.style.display = '';
   }
+}
+
+async function _openHeadshotMediaPicker() {
+  const modal = document.getElementById('media-picker-modal');
+  const grid = document.getElementById('media-picker-grid');
+  const insertBtn = document.getElementById('media-picker-insert');
+  const closeBtn = document.getElementById('media-picker-close');
+  const cancelBtn = document.getElementById('media-picker-cancel');
+  const searchEl = document.getElementById('media-picker-search');
+  const infoEl = document.getElementById('picker-selected-info');
+
+  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
+  insertBtn.disabled = true;
+  insertBtn.textContent = 'Use as headshot';
+  if (infoEl) infoEl.textContent = '';
+  if (searchEl) searchEl.value = '';
+  modal.style.display = 'flex';
+
+  try {
+    const res = await fetch('/api/media?limit=48');
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.items || []);
+    if (!items.length) {
+      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
+    } else {
+      grid.innerHTML = items.map(item => {
+        const url = _escAttr(item.publicUrl || item.url || '');
+        const name = _escAttr(item.filename || '');
+        return `<div class="media-item" data-url="${url}">
+          <img src="${url}" alt="${name}" loading="lazy">
+          <div class="media-item-overlay">
+            <div class="media-item-filename">${name}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  } catch {
+    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
+  }
+
+  const onGridClick = e => {
+    const item = e.target.closest('.media-item');
+    if (!item) return;
+    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
+    item.classList.add('is-selected');
+    insertBtn.disabled = false;
+    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
+  };
+  grid.addEventListener('click', onGridClick);
+
+  if (searchEl) {
+    searchEl.oninput = e => {
+      const q = e.target.value.toLowerCase();
+      grid.querySelectorAll('.media-item').forEach(item => {
+        const name = item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '';
+        item.style.display = name.includes(q) ? '' : 'none';
+      });
+    };
+  }
+
+  const close = () => {
+    modal.style.display = 'none';
+    grid.removeEventListener('click', onGridClick);
+    insertBtn.textContent = 'Insert image';
+    insertBtn.onclick = null;
+    if (closeBtn) closeBtn.onclick = null;
+    if (cancelBtn) cancelBtn.onclick = null;
+    if (searchEl) searchEl.oninput = null;
+  };
+
+  insertBtn.onclick = () => {
+    const selected = grid.querySelector('.media-item.is-selected');
+    if (selected) {
+      const url = selected.dataset.url;
+      document.getElementById('author-headshot').value = url;
+      _updateHeadshotPreview(url);
+    }
+    close();
+  };
+  if (closeBtn) closeBtn.onclick = close;
+  if (cancelBtn) cancelBtn.onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+}
+
+function _escAttr(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────

@@ -950,6 +950,23 @@ body {
   gap: 12px;
 }
 
+.headshot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.headshot-url-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.headshot-url-row .field-input {
+  flex: 1;
+}
+
 .headshot-preview-wrap {
   width: 56px;
   height: 56px;

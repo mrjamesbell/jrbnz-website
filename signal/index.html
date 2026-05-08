@@ -251,10 +251,18 @@
             <img class="headshot-preview-img" id="headshot-preview-img" src="" alt="" style="display:none">
             <span class="headshot-placeholder" id="headshot-placeholder">No photo</span>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-upload">Upload photo</button>
-          <input type="hidden" id="author-headshot">
-          <input type="file" id="headshot-file-input" accept="image/*" style="display:none">
+          <div class="headshot-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-upload">Upload</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-media">Choose from R2</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-url">URL</button>
+          </div>
         </div>
+        <div class="headshot-url-row" id="headshot-url-row" style="display:none">
+          <input class="field-input" type="url" id="headshot-url-input" placeholder="https://…">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-url-set">Set</button>
+        </div>
+        <input type="hidden" id="author-headshot">
+        <input type="file" id="headshot-file-input" accept="image/*" style="display:none">
       </div>
       <div>
         <label class="field-label" for="author-threads">Threads</label>

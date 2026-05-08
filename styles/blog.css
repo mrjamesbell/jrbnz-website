@@ -349,56 +349,65 @@ img.leftalign {
 .author-card {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 24px;
   margin: 48px 0 32px;
-  padding: 28px;
-  border-top: 2px solid oklch(18% 0.01 50 / 0.15);
+  padding: 24px 28px 20px;
+  border: 2px solid oklch(44% 0.09 185 / 0.45);
+  border-radius: 6px;
+  background: oklch(44% 0.09 185 / 0.06);
 }
 
 .author-avatar {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 3px solid #fff;
+  border: 3px solid var(--accent-color);
 }
 
 .author-details {
   flex: 1;
+  min-width: 0;
 }
 
 .author-name {
   font-family: 'Lora', serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
+  font-style: italic;
   color: var(--background-color);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  line-height: 1.2;
 }
 
 .author-bio {
   font-size: 15px;
-  line-height: 1.6;
-  color: oklch(18% 0.01 50 / 0.75);
-  margin-bottom: 10px;
+  line-height: 1.65;
+  color: oklch(18% 0.01 50 / 0.72);
+  margin-bottom: 0;
 }
 
 .author-social {
   display: flex;
-  gap: 14px;
+  gap: 20px;
   flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid oklch(44% 0.09 185 / 0.25);
 }
 
 .social-link {
-  font-size: 14px;
+  font-size: 13px;
   font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--accent-color);
   border-bottom: none;
+  text-transform: uppercase;
 }
 
 .social-link:hover {
-  opacity: 0.8;
+  opacity: 0.75;
   border-bottom: none;
 }
 
