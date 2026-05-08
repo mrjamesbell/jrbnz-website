@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-08.5';
+const BUILD = '2026-05-08.6';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -210,14 +210,24 @@ async function _openHeadshotMediaPicker() {
     if (searchEl) searchEl.oninput = null;
   };
 
-  insertBtn.onclick = () => {
+  insertBtn.onclick = async () => {
     const selected = grid.querySelector('.media-item.is-selected');
-    if (selected) {
-      const url = selected.dataset.url;
+    if (!selected) return;
+    const url = selected.dataset.url;
+    close();
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+      const file = new File([blob], `headshot.${ext}`, { type: blob.type });
+      openCropModal(file, async (croppedBlob) => {
+        await _uploadHeadshot(croppedBlob);
+      }, { circle: true });
+    } catch {
+      showToast('Could not load image for cropping', 'error');
       document.getElementById('author-headshot').value = url;
       _updateHeadshotPreview(url);
     }
-    close();
   };
   if (closeBtn) closeBtn.onclick = close;
   if (cancelBtn) cancelBtn.onclick = close;

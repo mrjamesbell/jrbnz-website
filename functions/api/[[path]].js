@@ -239,10 +239,10 @@ function buildAuthorCard(author) {
     <div class="author-name">${esc(author.name)}</div>
     ${author.bio ? `<div class="author-bio">${esc(author.bio)}</div>` : ''}
     <div class="author-social">
-      ${threadsUrl ? `<a href="${esc(threadsUrl)}" class="social-link" rel="noopener">Threads</a>` : ''}
-      ${instagramUrl ? `<a href="${esc(instagramUrl)}" class="social-link" rel="noopener">Instagram</a>` : ''}
-      ${linkedinUrl ? `<a href="${esc(linkedinUrl)}" class="social-link" rel="noopener">LinkedIn</a>` : ''}
-      ${flickrUrl ? `<a href="${esc(flickrUrl)}" class="social-link" rel="noopener">Flickr</a>` : ''}
+      ${threadsUrl ? `<a href="${esc(threadsUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Threads</a>` : ''}
+      ${instagramUrl ? `<a href="${esc(instagramUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Instagram</a>` : ''}
+      ${linkedinUrl ? `<a href="${esc(linkedinUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">LinkedIn</a>` : ''}
+      ${flickrUrl ? `<a href="${esc(flickrUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Flickr</a>` : ''}
     </div>
   </div>
 </div>`;
