@@ -17,7 +17,9 @@ const BUILD = '2026-05-08.14';
     if (!res.ok) { window.location.href = '/signal/login.html'; return; }
   } catch { window.location.href = '/signal/login.html'; return; }
 
-  document.getElementById('app').style.display = 'flex';
+  const appEl = document.getElementById('app');
+  appEl.style.display = 'flex';
+  requestAnimationFrame(() => appEl.classList.add('is-entering'));
   const buildEl = document.getElementById('build-label');
   if (buildEl) buildEl.textContent = `build ${BUILD}`;
 
@@ -280,9 +282,21 @@ function _setRailActive(route) {
 
 // ── View management ───────────────────────────────────────────────────────────
 
+function _animateIn(el) {
+  el.classList.remove('is-entering');
+  void el.offsetWidth;
+  el.classList.add('is-entering');
+}
+
 function _showView(view) {
-  document.getElementById('view-list').style.display = view === 'list' ? '' : 'none';
-  document.getElementById('media-view').style.display = view === 'media' ? '' : 'none';
+  const listEl = document.getElementById('view-list');
+  const mediaEl = document.getElementById('media-view');
+  const showList = view === 'list';
+  const showMedia = view === 'media';
+  listEl.style.display = showList ? '' : 'none';
+  mediaEl.style.display = showMedia ? '' : 'none';
+  if (showList) _animateIn(listEl);
+  if (showMedia) _animateIn(mediaEl);
   // view-editor visibility managed by openEditor / closeEditor
 }
 

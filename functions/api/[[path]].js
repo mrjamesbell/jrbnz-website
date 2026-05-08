@@ -215,6 +215,7 @@ const SITE_HEAD = (title) => `<!DOCTYPE html>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles/main.css">
 <link rel="stylesheet" href="/styles/blog.css">
+<link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 </head>
 <body>`;
 

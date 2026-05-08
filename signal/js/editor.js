@@ -184,7 +184,12 @@ export async function openEditor(slug) {
   document.getElementById('view-list').style.display = 'none';
   document.getElementById('media-view').style.display = 'none';
   const editorEl = document.getElementById('view-editor');
-  if (editorEl) editorEl.style.display = 'flex';
+  if (editorEl) {
+    editorEl.style.display = 'flex';
+    editorEl.classList.remove('is-entering');
+    void editorEl.offsetWidth;
+    editorEl.classList.add('is-entering');
+  }
 
   initAutosave();
 
@@ -755,6 +760,11 @@ async function _publish() {
       _isDirty = false;
       _updatePublishButton();
       _updateRevertButton();
+      const btnEl = document.getElementById('btn-publish');
+      if (btnEl) {
+        btnEl.classList.add('just-published');
+        setTimeout(() => btnEl.classList.remove('just-published'), 450);
+      }
     }
     invalidatePostCache();
 

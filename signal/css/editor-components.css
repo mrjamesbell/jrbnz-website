@@ -88,8 +88,8 @@
 /* Specific button font treatments */
 .fmtbar-btn[data-action="bold"]      { font-weight: 700; font-family: var(--font-serif); }
 .fmtbar-btn[data-action="italic"]    { font-style: italic; font-family: var(--font-serif); }
-.fmtbar-btn[data-action="h2"]        { font-weight: 700; font-size: var(--text-xs); }
-.fmtbar-btn[data-action="h3"]        { font-weight: 700; font-size: var(--text-xs); }
+.fmtbar-btn[data-action="h2"]        { font-weight: 700; }
+.fmtbar-btn[data-action="h3"]        { font-weight: 700; }
 .fmtbar-btn[data-action="quote"]     { font-family: var(--font-serif); font-style: italic; }
 
 
@@ -242,6 +242,11 @@
   min-height: 400px;
   padding: 0;
   /* Override browser monospace default */
+}
+
+.editor-textarea::selection,
+.post-title-input::selection {
+  background: oklch(70% 0.10 185 / 0.28);
 }
 
 .editor-textarea::placeholder {
@@ -691,6 +696,12 @@
   border-top: var(--border-cream);
 }
 
+.modal-footer-start {
+  margin-right: auto;
+  display: flex;
+  gap: var(--space-2);
+}
+
 /* Modal form fields */
 .field-label {
   font-size: var(--text-xs);
@@ -922,12 +933,14 @@
   text-decoration: none;
 }
 
-.btn-primary {
+.btn-primary,
+.btn-teal {
   background: var(--color-teal);
   color: var(--color-dark-text-primary);
 }
 
-.btn-primary:hover { opacity: 0.85; }
+.btn-primary:hover,
+.btn-teal:hover { opacity: 0.85; }
 
 .btn-secondary {
   background: none;
@@ -940,12 +953,10 @@
   color: var(--color-cream-text-primary);
 }
 
-.btn-teal {
-  background: var(--color-teal);
-  color: var(--color-dark-text-primary);
+.btn-sm {
+  padding: 4px var(--space-3);
+  font-size: var(--text-xs);
 }
-
-.btn-teal:hover { opacity: 0.88; }
 
 .btn-danger {
   background: none;
@@ -1013,4 +1024,42 @@
   color: var(--color-cream-text-ghost);
   font-family: var(--font-sans);
   margin-right: auto;
+}
+
+
+/* ════════════════════════════════════════════
+   DELIGHT — Entrance, tactility, moments
+   ════════════════════════════════════════════ */
+
+/* Editor view entrance — reuses view-enter keyframe from admin-layout.css */
+.signal-editor.is-entering {
+  animation: view-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Button press tactility */
+.btn:active      { transform: scale(0.97); }
+.btn-publish:active,
+.btn-new-post:active { transform: scale(0.96); }
+.fmtbar-btn:active   { transform: scale(0.92); }
+.kb-btn:active       { transform: scale(0.93); }
+
+/* Publish success — brief swell when the post goes live */
+@keyframes publish-confirm {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+.btn-publish.just-published {
+  animation: publish-confirm 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-editor.is-entering      { animation: none; }
+  .btn:active,
+  .btn-publish:active,
+  .btn-new-post:active,
+  .fmtbar-btn:active,
+  .kb-btn:active                  { transform: none; }
+  .btn-publish.just-published     { animation: none; }
 }

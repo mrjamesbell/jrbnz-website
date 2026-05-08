@@ -50,11 +50,11 @@
   --font-sans:   -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-mono:   'SF Mono', 'Fira Mono', 'Consolas', monospace;
 
-  /* Type scale — 20px minimum across all UI */
-  --text-xs:   20px;
-  --text-sm:   20px;
-  --text-base: 20px;
-  --text-md:   22px;
+  /* Type scale */
+  --text-xs:   16px;  /* labels, pills, hints, format bar buttons   */
+  --text-sm:   18px;  /* meta dates, captions, secondary chrome      */
+  --text-base: 20px;  /* primary chrome text, inputs, sheet labels   */
+  --text-md:   22px;  /* topbar title, editor h3, mobile body prose  */
   --text-lg:   26px;   /* body prose in editor                           */
   --text-xl:   30px;   /* H2 in editor                                   */
   --text-2xl:  36px;   /* H1 / post title in editor (desktop)            */
