@@ -32,13 +32,26 @@ export async function fetchYouTubeTitle(videoId) {
 }
 
 export function renderYouTubeBlock(videoId, title, width = '100', align = 'center') {
-  // Handle legacy width values (column/wide/full → 100%)
-  const pct = ['column', 'wide', 'full'].includes(String(width))
+  const isWide = width === 'wide';
+  const isFull = width === 'full';
+  // Legacy "column" → numeric 100
+  const isLegacyColumn = width === 'column';
+  const isBreakout = isWide || isFull;
+
+  const pct = isBreakout || isLegacyColumn
     ? '100'
     : String(Math.max(20, Math.min(100, parseInt(width, 10) || 100)));
   const validAlign = ['left', 'center', 'right'].includes(align) ? align : 'center';
+
+  const blockClass = isBreakout
+    ? `youtube-block width-${width}`
+    : `youtube-block align-${validAlign}`;
+  const blockStyle = isBreakout ? '' : ` style="width:${pct}%"`;
+  const storedWidth = isBreakout ? width : pct;
+
   const t = escHtml(title || 'Loading…');
-  return `<div class="youtube-block align-${validAlign}" data-video-id="${videoId}" data-width="${pct}" data-align="${validAlign}" style="width:${pct}%">
+
+  return `<div class="${blockClass}" data-video-id="${videoId}" data-width="${storedWidth}" data-align="${validAlign}"${blockStyle}>
   <div class="youtube-thumb-wrap" id="yt-thumb-${videoId}">
     <img class="youtube-thumb-img"
       src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg"
@@ -54,13 +67,15 @@ export function renderYouTubeBlock(videoId, title, width = '100', align = 'cente
   </div>
   <div class="youtube-controls-bar">
     <span class="youtube-ctrl-label">Width</span>
-    <input class="youtube-width-input" type="number" min="20" max="100" step="5" value="${pct}">
+    <input class="youtube-width-input" type="number" min="20" max="100" step="5" value="${pct}"${isBreakout ? ' disabled' : ''}>
     <span class="youtube-ctrl-unit">%</span>
+    <button class="youtube-size-preset ${isWide ? 'is-active' : ''}" data-preset="wide">Wide</button>
+    <button class="youtube-size-preset ${isFull ? 'is-active' : ''}" data-preset="full">Full</button>
     <span class="youtube-ctrl-sep"></span>
-    <span class="youtube-ctrl-label">Align</span>
-    <button class="youtube-align-pill ${validAlign === 'left' ? 'is-active' : ''}" data-align="left">Left</button>
-    <button class="youtube-align-pill ${validAlign === 'center' ? 'is-active' : ''}" data-align="center">Center</button>
-    <button class="youtube-align-pill ${validAlign === 'right' ? 'is-active' : ''}" data-align="right">Right</button>
+    <span class="youtube-ctrl-label${isBreakout ? ' is-muted' : ''}">Align</span>
+    <button class="youtube-align-pill ${!isBreakout && validAlign === 'left' ? 'is-active' : ''}" data-align="left">Left</button>
+    <button class="youtube-align-pill ${!isBreakout && validAlign === 'center' ? 'is-active' : ''}" data-align="center">Center</button>
+    <button class="youtube-align-pill ${!isBreakout && validAlign === 'right' ? 'is-active' : ''}" data-align="right">Right</button>
   </div>
 </div>`;
 }

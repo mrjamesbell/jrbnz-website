@@ -34,6 +34,31 @@ document.addEventListener('click', e => {
     return;
   }
 
+  // YouTube size preset (Wide / Full)
+  const sizePreset = e.target.closest('.youtube-size-preset');
+  if (sizePreset) {
+    const block = sizePreset.closest('.youtube-block');
+    if (!block) return;
+    const preset = sizePreset.dataset.preset; // "wide" or "full"
+    block.classList.remove('align-left', 'align-center', 'align-right', 'width-wide', 'width-full');
+    block.classList.add(`width-${preset}`);
+    block.style.width = '';
+    block.dataset.width = preset;
+    block.querySelectorAll('.youtube-size-preset').forEach(p => p.classList.toggle('is-active', p === sizePreset));
+    block.querySelectorAll('.youtube-align-pill').forEach(p => p.classList.remove('is-active'));
+    block.querySelectorAll('.youtube-ctrl-label').forEach((el, i) => { if (i === 1) el.classList.add('is-muted'); });
+    const wi = block.querySelector('.youtube-width-input');
+    if (wi) wi.disabled = true;
+    const videoId = block.dataset.videoId;
+    if (videoId && currentPost) {
+      currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, preset, block.dataset.align || 'center');
+      const ta = document.getElementById('editor-textarea');
+      if (ta) ta.value = currentPost.body;
+      _triggerSave();
+    }
+    return;
+  }
+
   // YouTube align pill
   const alignPill = e.target.closest('.youtube-align-pill');
   if (alignPill) {
@@ -61,10 +86,20 @@ document.addEventListener('input', e => {
   const block = widthInput.closest('.youtube-block');
   if (!block) return;
   const pct = Math.max(20, Math.min(100, parseInt(widthInput.value, 10) || 100));
+
+  // Switch out of Wide/Full mode when a number is typed
+  block.classList.remove('width-wide', 'width-full');
+  const align = block.dataset.align || 'center';
+  block.classList.remove('align-left', 'align-center', 'align-right');
+  block.classList.add(`align-${align}`);
   block.style.width = `${pct}%`;
   block.dataset.width = String(pct);
+  block.querySelectorAll('.youtube-size-preset').forEach(p => p.classList.remove('is-active'));
+  block.querySelectorAll('.youtube-align-pill').forEach(p => p.classList.toggle('is-active', p.dataset.align === align));
+  block.querySelectorAll('.youtube-ctrl-label').forEach(el => el.classList.remove('is-muted'));
+  widthInput.disabled = false;
+
   const videoId = block.dataset.videoId;
-  const align = block.dataset.align || 'center';
   if (videoId && currentPost) {
     currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, String(pct), align);
     const ta = document.getElementById('editor-textarea');

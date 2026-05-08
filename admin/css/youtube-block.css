@@ -14,7 +14,7 @@
   /* width applied via inline style; alignment via class below */
 }
 
-/* ── Alignment ── */
+/* ── Alignment (percentage mode) ── */
 .youtube-block.align-center {
   margin-left: auto;
   margin-right: auto;
@@ -26,6 +26,23 @@
 
 .youtube-block.align-right {
   margin-left: auto;
+}
+
+/* ── Break-out modes (Wide / Full) ── */
+.youtube-block.width-wide {
+  margin-left: -48px;
+  margin-right: -48px;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+.youtube-block.width-full {
+  margin-left: calc(-48px - 20px);
+  margin-right: calc(-48px - 20px);
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
 }
 
 /* ── Thumbnail — always 16:9, never clips ── */
@@ -147,6 +164,11 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-right: 2px;
+  transition: opacity var(--transition-fast);
+}
+
+.youtube-ctrl-label.is-muted {
+  opacity: 0.35;
 }
 
 .youtube-ctrl-unit {
@@ -182,7 +204,8 @@
   margin: 0;
 }
 
-.youtube-align-pill {
+.youtube-align-pill,
+.youtube-size-preset {
   font-size: var(--text-xs);
   padding: 3px 10px;
   border: var(--border-cream);
@@ -194,15 +217,23 @@
   transition: all var(--transition-fast);
 }
 
-.youtube-align-pill.is-active {
+.youtube-align-pill.is-active,
+.youtube-size-preset.is-active {
   border-color: var(--color-teal);
   color: var(--color-teal);
   font-weight: 600;
 }
 
-.youtube-align-pill:hover:not(.is-active) {
+.youtube-align-pill:hover:not(.is-active),
+.youtube-size-preset:hover:not(.is-active) {
   border-color: var(--color-cream-border-mid);
   color: var(--color-cream-text-primary);
+}
+
+.youtube-align-pill[disabled] {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ── Rendered embed (Preview mode) ── */
