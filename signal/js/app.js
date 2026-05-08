@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-08.8';
+const BUILD = '2026-05-08.9';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -118,7 +118,7 @@ async function _uploadHeadshot(blob) {
       body: JSON.stringify({ filename, contentType: 'image/jpeg' })
     });
     if (!presignRes.ok) throw new Error('Presign failed');
-    const { uploadUrl, key } = await presignRes.json();
+    const { uploadUrl, publicUrl } = await presignRes.json();
 
     const uploadRes = await fetch(uploadUrl, {
       method: 'PUT',
@@ -127,7 +127,6 @@ async function _uploadHeadshot(blob) {
     });
     if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
 
-    const publicUrl = `https://jrbnz-blog.r2.dev/${key}`;
     document.getElementById('author-headshot').value = publicUrl;
     _updateHeadshotPreview(publicUrl);
   } catch (e) {
