@@ -6,7 +6,7 @@ import { initMedia } from './media.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-08.2';
+const BUILD = '2026-05-08.3';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
