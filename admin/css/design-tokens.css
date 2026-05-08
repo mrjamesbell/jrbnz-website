@@ -33,8 +33,8 @@
   /* ── Colour: Text on cream (editor — dark mode) ── */
   --color-cream-text-primary:   #e8e4dc; /* post title, body text          */
   --color-cream-text-secondary: #b8b4aa; /* body prose                     */
-  --color-cream-text-muted:     #7e7a74; /* meta row dates                 */
-  --color-cream-text-ghost:     #504c46; /* word count, saved indicator     */
+  --color-cream-text-muted:     #9a9590; /* meta row dates                 */
+  --color-cream-text-ghost:     #7a7670; /* word count, saved indicator     */
 
   /* ── Colour: Cream surface borders ── */
   --color-cream-border:     #2e2b26;  /* hr, section dividers, field edges  */
@@ -50,15 +50,15 @@
   --font-sans:   -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-mono:   'SF Mono', 'Fira Mono', 'Consolas', monospace;
 
-  /* Type scale */
-  --text-xs:   11px;
-  --text-sm:   13px;
-  --text-base: 15px;
-  --text-md:   17px;
-  --text-lg:   20px;   /* body prose in editor                           */
-  --text-xl:   24px;   /* H2 in editor                                   */
-  --text-2xl:  30px;   /* H1 / post title in editor (desktop)            */
-  --text-3xl:  36px;   /* post title large (desktop wide)                */
+  /* Type scale — 20px minimum across all UI */
+  --text-xs:   20px;
+  --text-sm:   20px;
+  --text-base: 20px;
+  --text-md:   22px;
+  --text-lg:   26px;   /* body prose in editor                           */
+  --text-xl:   30px;   /* H2 in editor                                   */
+  --text-2xl:  36px;   /* H1 / post title in editor (desktop)            */
+  --text-3xl:  44px;   /* post title large (desktop wide)                */
 
   /* Line heights */
   --leading-tight:  1.2;
@@ -89,9 +89,9 @@
   --rail-width:        48px;
   --sidebar-width:     210px;
   --editor-max-width:  clamp(680px, 75vw, 1200px);
-  --topbar-height:     44px;
-  --fmtbar-height:     38px;
-  --mobile-kbbar-height: 42px;
+  --topbar-height:     54px;
+  --fmtbar-height:     52px;
+  --mobile-kbbar-height: 52px;
 
   /* ── Radius ── */
   --radius-sm:   4px;
