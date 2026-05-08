@@ -133,7 +133,7 @@ body {
 }
 
 .post-list-inner {
-  max-width: 860px;
+  max-width: var(--editor-max-width);
   margin: 0 auto;
   padding: 48px 48px 80px;
 }
