@@ -82,7 +82,7 @@
 
 /* Primary action buttons (img, yt) — teal tint */
 .kb-btn.is-primary {
-  background: var(--color-teal);
+  background: var(--color-accent);
   color: var(--color-dark-text-primary);
   border-color: transparent;
 }
@@ -241,7 +241,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--color-teal);
+    background: var(--color-accent);
     color: var(--color-dark-text-primary);
     border: none;
     font-size: 24px;
@@ -320,7 +320,7 @@
 
   .mobile-back-btn {
     font-size: var(--text-sm);
-    color: var(--color-teal);
+    color: var(--color-accent);
     cursor: pointer;
     font-family: var(--font-sans);
     background: none;
@@ -358,7 +358,7 @@
 
   .mobile-publish-btn {
     padding: 6px var(--space-3);
-    background: var(--color-teal);
+    background: var(--color-accent);
     color: var(--color-dark-text-primary);
     border: none;
     border-radius: var(--radius-md);
@@ -394,7 +394,7 @@
 
   .mobile-post-meta {
     font-size: var(--text-xs);
-    color: var(--color-teal);
+    color: var(--color-accent);
     font-family: var(--font-sans);
     margin-bottom: var(--space-4);
     padding-bottom: var(--space-3);

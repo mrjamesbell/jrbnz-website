@@ -157,9 +157,9 @@
 /* Tag pill — clickable, teal */
 .meta-tag {
   font-size: var(--text-sm);
-  color: var(--color-teal);
+  color: var(--color-accent);
   padding: 2px var(--space-3);
-  border: 1px solid var(--color-teal-dim);
+  border: 1px solid var(--color-accent-dim);
   border-radius: var(--radius-pill);
   cursor: pointer;
   font-family: var(--font-sans);
@@ -171,8 +171,8 @@
 }
 
 .meta-tag:hover {
-  border-color: var(--color-teal);
-  background: var(--color-teal-dim);
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
 }
 
 .meta-tag .tag-remove {
@@ -278,15 +278,15 @@
 }
 
 .editor-content a {
-  color: var(--color-teal);
+  color: var(--color-accent);
   text-decoration: underline;
-  text-decoration-color: var(--color-teal-dim);
+  text-decoration-color: var(--color-accent-dim);
   text-underline-offset: 2px;
   transition: text-decoration-color var(--transition-fast);
 }
 
 .editor-content a:hover {
-  text-decoration-color: var(--color-teal);
+  text-decoration-color: var(--color-accent);
 }
 
 .editor-content strong {
@@ -340,7 +340,7 @@
 
 /* Blockquote — teal left border, the site's signature */
 .editor-content blockquote {
-  border-left: 3px solid var(--color-teal);
+  border-left: 3px solid var(--color-accent);
   padding-left: var(--space-5);
   margin: var(--space-6) 0;
   font-style: italic;
@@ -389,7 +389,7 @@
 .image-dropzone:hover,
 .image-dropzone.is-dragging {
   background: var(--color-cream-mid);
-  border-color: var(--color-teal);
+  border-color: var(--color-accent);
 }
 
 .dropzone-icon {
@@ -434,7 +434,7 @@
   bottom: 0;
   left: 0;
   height: 3px;
-  background: var(--color-teal);
+  background: var(--color-accent);
   transition: width var(--transition-base);
   border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
 }
@@ -463,7 +463,7 @@
 
 .image-r2-badge {
   font-size: var(--text-xs);
-  color: var(--color-teal);
+  color: var(--color-accent);
   font-family: var(--font-sans);
 }
 
@@ -617,7 +617,7 @@
   transform: translateY(0);
 }
 
-.toast.is-success { background: var(--color-teal); color: var(--color-dark-text-primary); }
+.toast.is-success { background: var(--color-accent); color: var(--color-dark-text-primary); }
 .toast.is-error   { background: var(--color-danger); color: var(--color-dark-text-primary); }
 
 
@@ -727,7 +727,7 @@
 }
 
 .field-input:focus {
-  border-color: var(--color-teal);
+  border-color: var(--color-accent);
 }
 
 .field-hint {
@@ -873,8 +873,8 @@
 }
 
 .img-layout-btn.is-active {
-  background: var(--color-teal);
-  border-color: var(--color-teal);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
   color: var(--color-dark-text-primary);
 }
 
@@ -935,7 +935,7 @@
 
 .btn-primary,
 .btn-teal {
-  background: var(--color-teal);
+  background: var(--color-accent);
   color: var(--color-dark-text-primary);
 }
 
@@ -999,7 +999,7 @@
 }
 
 .media-picker-search:focus {
-  border-color: var(--color-teal);
+  border-color: var(--color-accent);
 }
 
 .media-picker-grid-wrap {

@@ -141,8 +141,8 @@
 }
 
 .image-layout-btn.is-active {
-  border-color: var(--color-teal);
-  color: var(--color-teal);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
   font-weight: 600;
 }
 

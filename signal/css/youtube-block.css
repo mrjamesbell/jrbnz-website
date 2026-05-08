@@ -143,7 +143,7 @@
 
 .youtube-embed-note {
   font-size: var(--text-xs);
-  color: var(--color-teal);
+  color: var(--color-accent);
   font-family: var(--font-sans);
 }
 
@@ -219,8 +219,8 @@
 
 .youtube-align-pill.is-active,
 .youtube-size-preset.is-active {
-  border-color: var(--color-teal);
-  color: var(--color-teal);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
   font-weight: 600;
 }
 

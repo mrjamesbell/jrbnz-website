@@ -13,8 +13,8 @@
   --color-cream:        #1e1b18;   /* warm dark — writing surface bg (dark mode)        */
   --color-cream-mid:    #161412;   /* slightly darker — toolbar / topbar bg             */
   --color-cream-dark:   #28251f;   /* input bg, hover, raised surfaces                  */
-  --color-teal:         #1a9e8f;   /* accent — tags, links, active states, publish btn  */
-  --color-teal-dim:     rgba(26,158,143,0.15); /* teal border on tag pills               */
+  --color-accent:       oklch(44% 0.14 36);        /* terracotta — tags, links, active states, publish btn */
+  --color-accent-dim:   oklch(44% 0.14 36 / 0.15); /* terracotta border on tag pills                       */
   --color-amber:        #c4813a;   /* draft indicator dot                               */
 
   /* ── Colour: Dark chrome (rail, sidebar, post list) ── */
@@ -41,14 +41,15 @@
   --color-cream-border-mid: #3d3a34;  /* image action pill borders          */
 
   /* ── Colour: Status ── */
-  --color-saved:   #1a9e8f;  /* autosave dot — same as teal               */
-  --color-draft:   #c4813a;  /* draft pip — amber                         */
-  --color-danger:  #c0392b;  /* delete, destructive actions               */
+  --color-saved:   oklch(44% 0.14 36);  /* autosave dot — terracotta      */
+  --color-draft:   #c4813a;             /* draft pip — amber               */
+  --color-danger:  #c0392b;             /* delete, destructive actions     */
 
   /* ── Typography ── */
-  --font-serif:  Georgia, 'Times New Roman', serif;
-  --font-sans:   -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-mono:   'SF Mono', 'Fira Mono', 'Consolas', monospace;
+  --font-serif:    'Lora', Georgia, 'Times New Roman', serif;
+  --font-sans:     -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-display:  'Bebas Neue', sans-serif;
+  --font-mono:     'SF Mono', 'Fira Mono', 'Consolas', monospace;
 
   /* Type scale */
   --text-xs:   16px;  /* labels, pills, hints, format bar buttons   */
@@ -107,7 +108,7 @@
 
   /* ── Shadows ── */
   /* Intentionally none — flat design. Focus rings only. */
-  --focus-ring: 0 0 0 2px var(--color-teal);
+  --focus-ring: 0 0 0 2px var(--color-accent);
 
   /* ── Transitions ── */
   --transition-fast:   80ms ease;
