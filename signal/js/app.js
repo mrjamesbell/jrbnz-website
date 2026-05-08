@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-08.7';
+const BUILD = '2026-05-08.8';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -105,26 +105,34 @@ const BUILD = '2026-05-08.7';
 // ── Headshot upload ───────────────────────────────────────────────────────────
 
 async function _uploadHeadshot(blob) {
+  if (!blob || blob.size < 100) {
+    showToast('Crop produced an invalid image', 'error');
+    return;
+  }
+  const prevUrl = document.getElementById('author-headshot').value;
   try {
     const filename = `headshot-${Date.now()}.jpg`;
     const presignRes = await fetch('/api/media/presign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename, contentType: blob.type || 'image/jpeg' })
+      body: JSON.stringify({ filename, contentType: 'image/jpeg' })
     });
     if (!presignRes.ok) throw new Error('Presign failed');
     const { uploadUrl, key } = await presignRes.json();
 
-    await fetch(uploadUrl, {
+    const uploadRes = await fetch(uploadUrl, {
       method: 'PUT',
-      headers: { 'Content-Type': blob.type || 'image/jpeg' },
+      headers: { 'Content-Type': 'image/jpeg' },
       body: blob
     });
+    if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
 
     const publicUrl = `https://jrbnz-blog.r2.dev/${key}`;
     document.getElementById('author-headshot').value = publicUrl;
     _updateHeadshotPreview(publicUrl);
   } catch (e) {
+    document.getElementById('author-headshot').value = prevUrl;
+    _updateHeadshotPreview(prevUrl);
     showToast('Upload failed: ' + e.message, 'error');
   }
 }
@@ -225,9 +233,7 @@ async function _openHeadshotMediaPicker() {
         await _uploadHeadshot(croppedBlob);
       }, { circle: true });
     } catch {
-      showToast('Could not load image for cropping', 'error');
-      document.getElementById('author-headshot').value = url;
-      _updateHeadshotPreview(url);
+      showToast('Could not load image for cropping — try the URL option instead', 'error');
     }
   };
   if (closeBtn) closeBtn.onclick = close;
