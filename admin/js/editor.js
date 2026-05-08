@@ -260,6 +260,7 @@ function _populateEditor() {
   _renderTags();
   _updateWordCount();
   _autoResizeTitle();
+  _autoResizeTextarea();
   _updatePublishButton();
 
   const viewPostBtn = document.getElementById('btn-view-post');
@@ -329,6 +330,7 @@ function _onBodyChange() {
   _markDirty();
   _triggerSave();
   if (viewMode === 'split') _updateSplitPreview();
+  if (viewMode === 'edit') _autoResizeTextarea();
 }
 
 function _onPaste(e) {
@@ -483,6 +485,7 @@ function _setViewMode(mode) {
     editArea.style.display = '';
     splitView.style.display = 'none';
     readView.style.display = 'none';
+    _autoResizeTextarea();
   } else if (mode === 'split') {
     editArea.style.display = 'none';
     splitView.style.display = 'flex';
@@ -532,6 +535,13 @@ function _autoResizeTitle() {
   const el = document.getElementById('post-title-input');
   if (!el) return;
   el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function _autoResizeTextarea() {
+  const el = document.getElementById('editor-textarea');
+  if (!el) return;
+  el.style.height = '0';
   el.style.height = el.scrollHeight + 'px';
 }
 

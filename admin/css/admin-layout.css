@@ -607,6 +607,11 @@ body {
   min-height: 60vh;
   padding: 0;
   caret-color: var(--color-teal);
+  overflow: hidden;
+}
+
+.split-pane .editor-textarea {
+  overflow-y: auto;
 }
 
 .editor-textarea::placeholder {
