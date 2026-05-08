@@ -88,6 +88,8 @@
           <button class="fmtbar-view-btn is-active" data-view="edit">Edit</button>
           <button class="fmtbar-view-btn" data-view="read">Preview</button>
         </div>
+        <div class="fmtbar-sep"></div>
+        <button class="fmtbar-btn" id="btn-ai-review" title="AI proofread &amp; review">✦ Review</button>
       </div>
 
       <!-- Writing surface -->
@@ -117,6 +119,15 @@
             <div class="writing-inner editor-content" id="read-preview"></div>
           </div>
         </div>
+      </div>
+
+      <!-- AI Review panel -->
+      <div class="review-panel" id="review-panel">
+        <div class="review-panel-header">
+          <span class="review-panel-title">✦ AI Review</span>
+          <button class="review-panel-close" id="review-panel-close">×</button>
+        </div>
+        <div class="review-panel-body editor-content" id="review-panel-body"></div>
       </div>
 
       <!-- Mobile keyboard accessory bar -->

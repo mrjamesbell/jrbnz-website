@@ -289,6 +289,8 @@ function _populateEditor() {
   document.getElementById('kb-accessory-bar').onclick = _onFmtBarClick;
 
   _setViewMode('edit');
+  _closeReviewPanel();
+  _initReviewPanel();
 
   // Tags
   document.getElementById('btn-add-tag').onclick = _showTagInput;
@@ -371,6 +373,9 @@ function _onFmtBarClick(e) {
   // View mode pill
   const viewBtn = e.target.closest('.fmtbar-view-btn');
   if (viewBtn) { _setViewMode(viewBtn.dataset.view); return; }
+
+  // AI review button (handled separately, not a data-action)
+  if (e.target.closest('#btn-ai-review')) return;
 
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
@@ -859,5 +864,43 @@ async function _deletePost() {
     navigate('/signal/');
   } catch (e) {
     showToast('Delete failed: ' + e.message, 'error');
+  }
+}
+
+// ── AI Review ─────────────────────────────────────────────────────────────────
+
+function _initReviewPanel() {
+  document.getElementById('btn-ai-review').onclick = _runReview;
+  document.getElementById('review-panel-close').onclick = _closeReviewPanel;
+}
+
+function _closeReviewPanel() {
+  document.getElementById('review-panel').classList.remove('is-open');
+}
+
+async function _runReview() {
+  if (!currentSlug || !currentPost) return;
+  const btn = document.getElementById('btn-ai-review');
+  const panel = document.getElementById('review-panel');
+  const body = document.getElementById('review-panel-body');
+
+  btn.classList.add('is-loading');
+  btn.textContent = '✦ Reviewing…';
+  body.innerHTML = '<div class="review-loading"><div class="review-spinner"></div>Reviewing your post…</div>';
+  panel.classList.add('is-open');
+
+  try {
+    const res = await fetch(`/api/posts/${currentSlug}/review`, { method: 'POST' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Error ${res.status}`);
+    }
+    const { review } = await res.json();
+    body.innerHTML = renderMarkdown(review);
+  } catch (e) {
+    body.innerHTML = `<p style="color:var(--color-danger)">Review failed: ${e.message}</p>`;
+  } finally {
+    btn.classList.remove('is-loading');
+    btn.textContent = '✦ Review';
   }
 }

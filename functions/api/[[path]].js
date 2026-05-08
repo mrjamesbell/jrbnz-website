@@ -432,6 +432,7 @@ export async function onRequest(context) {
       if (action === 'publish' && method === 'POST') return handlePublish(env, slug);
       if (action === 'unpublish' && method === 'POST') return handleUnpublish(env, slug);
       if (action === 'rename' && method === 'POST') return handleRename(request, env, slug);
+      if (action === 'review' && method === 'POST') return handleReviewPost(env, slug);
     }
   }
 
@@ -669,6 +670,56 @@ async function handleSaveDraft(request, env, slug) {
   await env.BLOG.put(`posts/${slug}/draft.md`, body, { httpMetadata: { contentType: 'text/markdown' } });
   await saveIndex(env, posts);
   return json(posts[idx]);
+}
+
+async function handleReviewPost(env, slug) {
+  const posts = await getIndex(env);
+  const post = posts.find(p => p.slug === slug);
+  if (!post) return json({ error: 'Not found' }, 404);
+
+  const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
+  const body = obj ? await obj.text() : '';
+  if (!body.trim()) return json({ error: 'Post has no content to review' }, 400);
+
+  const apiKey = env.ANTHROPIC_API_KEY;
+  if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 503);
+
+  const prompt = `You are an editorial assistant reviewing a blog post for a personal blog. The author wants honest, practical feedback.
+
+Please review the following post titled "${esc(post.title)}" and provide:
+1. **Spelling & grammar** — list any specific errors you find (quote the text)
+2. **Clarity** — anything confusing, unclear, or that could be better explained
+3. **Content** — what's missing, what could be expanded, or what doesn't quite land
+4. **One or two suggestions** — concrete things to improve the post
+
+Be direct and brief. If something is fine, say so. Use markdown formatting.
+
+---
+
+${body}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    return json({ error: `Anthropic API error ${res.status}` }, 502);
+  }
+
+  const data = await res.json();
+  const review = data.content?.[0]?.text || '';
+  return json({ review });
 }
 
 async function handlePublish(env, slug) {
