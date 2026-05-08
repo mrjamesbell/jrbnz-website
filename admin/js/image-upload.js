@@ -2,13 +2,15 @@ import { showToast } from './toast.js';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
+// ── Upload ────────────────────────────────────────────────────────────────────
+
 export async function uploadToR2(file, onProgress) {
   if (file.size > MAX_FILE_SIZE) {
     showToast('Max file size is 20 MB', 'error');
     return null;
   }
 
-  const { uploadUrl, publicUrl, key } = await fetch('/api/media/presign', {
+  const { uploadUrl, publicUrl } = await fetch('/api/media/presign', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ filename: file.name, contentType: file.type })
@@ -29,8 +31,10 @@ export async function uploadToR2(file, onProgress) {
     xhr.send(file);
   });
 
-  return { publicUrl, key };
+  return { publicUrl };
 }
+
+// ── Crop (canvas-based) ───────────────────────────────────────────────────────
 
 export async function cropImage(file, cropRect, outputWidth) {
   return new Promise(resolve => {
@@ -56,6 +60,19 @@ export async function cropImage(file, cropRect, outputWidth) {
   });
 }
 
+// ── Insert helpers ────────────────────────────────────────────────────────────
+
+export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
+  const { selectionStart: start, selectionEnd: end, value } = textarea;
+  const alt = (altText || '').replace(/"/g, '&quot;');
+  const widthAttr = width && width !== 100 ? ` width="${width}"` : '';
+  const block = `\n<!-- signal:image src="${publicUrl}" alt="${alt}" layout="${layout || 'full'}"${widthAttr} -->\n`;
+  textarea.value = value.slice(0, start) + block + value.slice(end);
+  textarea.selectionStart = textarea.selectionEnd = start + block.length;
+  textarea.dispatchEvent(new Event('input'));
+  textarea.focus();
+}
+
 export function insertImageMarkdown(textarea, publicUrl, altText) {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const block = `\n![${altText || 'Image'}](${publicUrl})\n`;
@@ -65,35 +82,272 @@ export function insertImageMarkdown(textarea, publicUrl, altText) {
   textarea.focus();
 }
 
+// ── Image options modal ───────────────────────────────────────────────────────
+
+export function openImageOptionsModal(textarea, publicUrl, altHint) {
+  const modal = document.getElementById('img-options-modal');
+  const previewImg = document.getElementById('img-options-preview-img');
+  const altInput = document.getElementById('img-options-alt');
+  const insertBtn = document.getElementById('img-options-insert');
+  const closeBtn = document.getElementById('img-options-close');
+  const cancelBtn = document.getElementById('img-options-cancel');
+
+  previewImg.src = publicUrl;
+  altInput.value = altHint || '';
+
+  let selectedLayout = 'full';
+  let selectedWidth = 100;
+
+  modal.querySelectorAll('[data-layout]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.layout === 'full');
+    btn.onclick = () => {
+      selectedLayout = btn.dataset.layout;
+      modal.querySelectorAll('[data-layout]').forEach(b => b.classList.toggle('is-active', b === btn));
+    };
+  });
+
+  modal.querySelectorAll('[data-width]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.width === '100');
+    btn.onclick = () => {
+      selectedWidth = parseInt(btn.dataset.width, 10);
+      modal.querySelectorAll('[data-width]').forEach(b => b.classList.toggle('is-active', b === btn));
+    };
+  });
+
+  modal.style.display = 'flex';
+  setTimeout(() => altInput.focus(), 60);
+
+  const close = () => { modal.style.display = 'none'; };
+  const doInsert = () => {
+    insertSignalImage(textarea, publicUrl, altInput.value.trim(), selectedLayout, selectedWidth);
+    close();
+  };
+
+  closeBtn.onclick = close;
+  cancelBtn.onclick = close;
+  insertBtn.onclick = doInsert;
+  altInput.onkeydown = e => {
+    if (e.key === 'Enter') { e.preventDefault(); doInsert(); }
+    if (e.key === 'Escape') close();
+  };
+  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+}
+
+// ── Crop modal ────────────────────────────────────────────────────────────────
+
+let _cropFile = null;
+let _cropOnComplete = null;
+let _cropAspect = null;
+let _cropBox = { x: 0, y: 0, w: 0, h: 0 };
+let _cropDrag = null;
+
+export function openCropModal(file, onComplete) {
+  _cropFile = file;
+  _cropOnComplete = onComplete;
+  _cropAspect = null;
+  _cropDrag = null;
+
+  const modal = document.getElementById('crop-modal');
+  const cropImg = document.getElementById('crop-img');
+  const box = document.getElementById('crop-box');
+
+  const objectUrl = URL.createObjectURL(file);
+  cropImg.onload = () => {
+    URL.revokeObjectURL(objectUrl);
+    // Double rAF ensures the image is painted and has a layout rect
+    requestAnimationFrame(() => requestAnimationFrame(_initCropBox));
+  };
+  cropImg.src = objectUrl;
+  modal.style.display = 'flex';
+
+  // Aspect ratio buttons
+  modal.querySelectorAll('[data-aspect]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.aspect === 'free');
+    btn.onclick = () => {
+      _cropAspect = btn.dataset.aspect === 'free' ? null : parseFloat(btn.dataset.aspect);
+      modal.querySelectorAll('[data-aspect]').forEach(b => b.classList.toggle('is-active', b === btn));
+      if (_cropAspect) _enforceAspect();
+      _updateCropOverlay();
+    };
+  });
+
+  // Drag events on the crop box
+  box.onpointerdown = e => {
+    _cropDrag = {
+      type: e.target.dataset.handle || 'move',
+      startX: e.clientX,
+      startY: e.clientY,
+      startBox: { ..._cropBox }
+    };
+    box.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  box.onpointermove = e => {
+    if (!_cropDrag) return;
+    _applyCropDrag(e.clientX - _cropDrag.startX, e.clientY - _cropDrag.startY);
+    _updateCropOverlay();
+  };
+  box.onpointerup = () => { _cropDrag = null; };
+
+  document.getElementById('crop-close').onclick = _closeCropModal;
+
+  document.getElementById('crop-skip').onclick = () => {
+    _closeCropModal();
+    _cropOnComplete(_cropFile);
+  };
+
+  document.getElementById('crop-apply').onclick = async () => {
+    const applyBtn = document.getElementById('crop-apply');
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Cropping…';
+    try {
+      const ir = _imgRect();
+      const cropRect = {
+        x: _cropBox.x / ir.w,
+        y: _cropBox.y / ir.h,
+        width: _cropBox.w / ir.w,
+        height: _cropBox.h / ir.h
+      };
+      const blob = await cropImage(_cropFile, cropRect, 1200);
+      const croppedFile = new File([blob], _cropFile.name, { type: 'image/jpeg' });
+      _closeCropModal();
+      _cropOnComplete(croppedFile);
+    } catch (e) {
+      showToast('Crop failed: ' + e.message, 'error');
+      applyBtn.disabled = false;
+      applyBtn.textContent = 'Apply crop';
+    }
+  };
+}
+
+function _closeCropModal() {
+  const modal = document.getElementById('crop-modal');
+  if (modal) modal.style.display = 'none';
+  _cropDrag = null;
+}
+
+function _imgRect() {
+  const container = document.getElementById('crop-container');
+  const img = document.getElementById('crop-img');
+  const cr = container.getBoundingClientRect();
+  const ir = img.getBoundingClientRect();
+  return { x: ir.left - cr.left, y: ir.top - cr.top, w: ir.width, h: ir.height };
+}
+
+function _initCropBox() {
+  const ir = _imgRect();
+  if (!ir.w || !ir.h) return;
+  const pad = Math.min(ir.w, ir.h) * 0.08;
+  _cropBox = { x: pad, y: pad, w: ir.w - 2 * pad, h: ir.h - 2 * pad };
+  if (_cropAspect) _enforceAspect();
+  _updateCropOverlay();
+}
+
+function _enforceAspect() {
+  if (!_cropAspect) return;
+  const ir = _imgRect();
+  const targetH = _cropBox.w / _cropAspect;
+  if (_cropBox.y + targetH <= ir.h) {
+    _cropBox.h = targetH;
+  } else {
+    _cropBox.h = ir.h - _cropBox.y;
+    _cropBox.w = _cropBox.h * _cropAspect;
+    if (_cropBox.x + _cropBox.w > ir.w) {
+      _cropBox.w = ir.w - _cropBox.x;
+      _cropBox.h = _cropBox.w / _cropAspect;
+    }
+  }
+}
+
+function _applyCropDrag(dx, dy) {
+  if (!_cropDrag) return;
+  const ir = _imgRect();
+  const sb = _cropDrag.startBox;
+  const MIN = 30;
+  let { x, y, w, h } = sb;
+
+  switch (_cropDrag.type) {
+    case 'move':
+      x = Math.max(0, Math.min(ir.w - w, sb.x + dx));
+      y = Math.max(0, Math.min(ir.h - h, sb.y + dy));
+      break;
+    case 'nw':
+      x = Math.max(0, Math.min(sb.x + sb.w - MIN, sb.x + dx));
+      y = Math.max(0, Math.min(sb.y + sb.h - MIN, sb.y + dy));
+      w = sb.x + sb.w - x;
+      h = sb.y + sb.h - y;
+      break;
+    case 'ne':
+      w = Math.max(MIN, Math.min(ir.w - sb.x, sb.w + dx));
+      y = Math.max(0, Math.min(sb.y + sb.h - MIN, sb.y + dy));
+      h = sb.y + sb.h - y;
+      break;
+    case 'sw':
+      x = Math.max(0, Math.min(sb.x + sb.w - MIN, sb.x + dx));
+      w = sb.x + sb.w - x;
+      h = Math.max(MIN, Math.min(ir.h - sb.y, sb.h + dy));
+      break;
+    case 'se':
+      w = Math.max(MIN, Math.min(ir.w - sb.x, sb.w + dx));
+      h = Math.max(MIN, Math.min(ir.h - sb.y, sb.h + dy));
+      break;
+  }
+
+  _cropBox = { x, y, w, h };
+  if (_cropAspect && _cropDrag.type !== 'move') _enforceAspect();
+}
+
+function _updateCropOverlay() {
+  const ir = _imgRect();
+  const { x, y, w, h } = _cropBox;
+  const px = v => `${Math.round(v)}px`;
+
+  const setEl = (id, top, left, width, height) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.cssText = `top:${px(top)};left:${px(left)};width:${px(Math.max(0, width))};height:${px(Math.max(0, height))}`;
+  };
+
+  setEl('crop-ov-top',    ir.y,         ir.x,         ir.w,          y);
+  setEl('crop-ov-bottom', ir.y + y + h, ir.x,         ir.w,          ir.h - y - h);
+  setEl('crop-ov-left',   ir.y + y,     ir.x,         x,             h);
+  setEl('crop-ov-right',  ir.y + y,     ir.x + x + w, ir.w - x - w,  h);
+
+  const box = document.getElementById('crop-box');
+  if (box) {
+    box.style.top = px(ir.y + y);
+    box.style.left = px(ir.x + x);
+    box.style.width = px(w);
+    box.style.height = px(h);
+  }
+}
+
+// ── Bottom sheet (image source picker) ───────────────────────────────────────
+
 export function openImageSheet(textarea) {
   const sheet = document.getElementById('image-sheet');
   const fileInput = document.getElementById('file-input');
   const cameraInput = document.getElementById('camera-input');
 
-  // Show camera option on mobile only
   const cameraOpt = document.getElementById('img-from-camera');
   if (cameraOpt) cameraOpt.style.display = /Mobi|Android/i.test(navigator.userAgent) ? '' : 'none';
 
   sheet.classList.add('is-open');
-
   const close = () => sheet.classList.remove('is-open');
 
-  // Close on backdrop click
-  const backdropClick = (e) => {
-    if (e.target === sheet) { close(); sheet.removeEventListener('click', backdropClick); }
-  };
-  sheet.addEventListener('click', backdropClick);
+  const onBackdrop = e => { if (e.target === sheet) { close(); sheet.removeEventListener('click', onBackdrop); } };
+  sheet.addEventListener('click', onBackdrop);
 
   document.getElementById('img-from-file').onclick = () => {
     close();
-    fileInput.onchange = (e) => handleFile(e.target.files[0], textarea, fileInput);
+    fileInput.onchange = e => _handleFile(e.target.files[0], textarea, fileInput);
     fileInput.click();
   };
 
   if (cameraOpt) {
     cameraOpt.onclick = () => {
       close();
-      cameraInput.onchange = (e) => handleFile(e.target.files[0], textarea, cameraInput);
+      cameraInput.onchange = e => _handleFile(e.target.files[0], textarea, cameraInput);
       cameraInput.click();
     };
   }
@@ -102,38 +356,49 @@ export function openImageSheet(textarea) {
     close();
     const url = prompt('Image URL:');
     if (url && url.startsWith('http')) {
-      insertImageMarkdown(textarea, url, '');
+      openImageOptionsModal(textarea, url);
     }
   };
 
   document.getElementById('img-from-media').onclick = () => {
     close();
-    openMediaPicker(textarea);
+    _openMediaPicker(textarea);
   };
 }
 
-async function handleFile(file, textarea, input) {
+// ── File upload flow: crop → upload → options modal ──────────────────────────
+
+function _handleFile(file, textarea, input) {
   if (!file) return;
   if (input) input.value = '';
 
-  showToast('Uploading…');
-  try {
-    const result = await uploadToR2(file, () => {});
-    if (result) {
-      insertImageMarkdown(textarea, result.publicUrl, '');
-      showToast('Image uploaded to R2', 'success');
+  openCropModal(file, async processedFile => {
+    showToast('Uploading…');
+    try {
+      const result = await uploadToR2(processedFile, () => {});
+      if (result) {
+        showToast('Uploaded', 'success', 1500);
+        openImageOptionsModal(textarea, result.publicUrl, _altHint(processedFile.name));
+      }
+    } catch (e) {
+      showToast('Upload failed: ' + e.message, 'error');
     }
-  } catch (e) {
-    showToast('Upload failed: ' + e.message, 'error');
-  }
+  });
 }
 
-async function openMediaPicker(textarea) {
+function _altHint(filename) {
+  return (filename || '')
+    .replace(/\.[^.]+$/, '')
+    .replace(/[-_]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ── Media picker modal ────────────────────────────────────────────────────────
+
+async function _openMediaPicker(textarea) {
   const modal = document.getElementById('media-picker-modal');
-  if (!modal) {
-    showToast('Media picker not available', 'error');
-    return;
-  }
+  if (!modal) { showToast('Media picker not available', 'error'); return; }
 
   const grid = document.getElementById('media-picker-grid');
   const insertBtn = document.getElementById('media-picker-insert');
@@ -194,8 +459,14 @@ async function openMediaPicker(textarea) {
 
   insertBtn.onclick = () => {
     const selected = grid.querySelector('.media-item.is-selected');
-    if (selected) insertImageMarkdown(textarea, selected.dataset.url, '');
-    close();
+    if (selected) {
+      const url = selected.dataset.url;
+      const name = selected.querySelector('.media-item-filename')?.textContent || '';
+      close();
+      openImageOptionsModal(textarea, url, _altHint(name));
+    } else {
+      close();
+    }
   };
 
   if (closeBtn) closeBtn.onclick = close;
@@ -212,6 +483,8 @@ async function openMediaPicker(textarea) {
     };
   }
 }
+
+// ── Util ──────────────────────────────────────────────────────────────────────
 
 function _esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

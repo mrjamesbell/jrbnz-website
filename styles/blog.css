@@ -247,6 +247,13 @@ img.leftalign {
   border-radius: 4px;
 }
 
+.post-content img.img-centre {
+  display: block;
+  float: none;
+  margin: 1.5em auto;
+  max-width: 65%;
+}
+
 .post-content::after {
   content: '';
   display: table;

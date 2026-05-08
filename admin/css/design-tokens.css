@@ -10,9 +10,9 @@
 
   /* ── Colour: Site identity ── */
   --color-ink:          #1c1c1c;   /* near-black — primary text on cream */
-  --color-cream:        #f0ede8;   /* warm off-white — writing surface bg */
-  --color-cream-mid:    #f8f5f0;   /* slightly darker cream — toolbar bg  */
-  --color-cream-dark:   #ede9e2;   /* image placeholder, hover states      */
+  --color-cream:        #e8e4dc;   /* warm off-white — writing surface bg */
+  --color-cream-mid:    #f0ece4;   /* slightly lighter cream — toolbar bg  */
+  --color-cream-dark:   #dedad2;   /* image placeholder, hover states      */
   --color-teal:         #1a9e8f;   /* accent — tags, links, active states, publish btn */
   --color-teal-dim:     rgba(26,158,143,0.15); /* teal border on tag pills */
   --color-amber:        #c4813a;   /* draft indicator dot                  */

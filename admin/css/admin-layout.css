@@ -378,8 +378,25 @@ body {
   letter-spacing: 0.02em;
 }
 
-.btn-publish:hover       { opacity: 0.85; }
+.btn-publish:hover        { opacity: 0.85; }
 .btn-publish.is-published { background: var(--color-teal); }
+.btn-publish.is-republish { background: var(--color-ink); }
+
+.btn-revert {
+  padding: 6px 14px;
+  border: var(--border-cream);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--color-cream-text-muted);
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.btn-revert:hover {
+  border-color: var(--color-cream-text-muted);
+  color: var(--color-ink);
+}
 
 
 /* ── Format bar ── */

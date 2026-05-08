@@ -101,11 +101,28 @@ function mdToHtml(md) {
       continue;
     }
 
-    // Signal image block
-    if (line.trim() === '<!-- signal:image' || line.match(/<!--\s*signal:image\s/)) {
-      while (i < lines.length && !lines[i].includes('<!-- /signal:image -->')) i++;
-      i++;
-      continue;
+    // Signal image block — single-line: <!-- signal:image src="..." alt="..." layout="..." width="..." -->
+    if (line.match(/<!--\s*signal:image\b.*?-->/)) {
+      const srcM = line.match(/src="([^"]*)"/);
+      const altM = line.match(/alt="([^"]*)"/);
+      const layoutM = line.match(/layout="([^"]*)"/);
+      const widthM = line.match(/width="(\d+)"/);
+      const src = mdEsc(srcM?.[1] || '');
+      const alt = mdEsc(altM?.[1] || '');
+      const layout = layoutM?.[1] || 'full';
+      const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
+      const isFloat = cls === 'leftalign' || cls === 'rightalign';
+      const w = widthM ? parseInt(widthM[1], 10) : 100;
+      const styleStr = w < 100
+        ? ` style="max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}"`
+        : '';
+      if (src) out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
+      i++; continue;
+    }
+    // Old multi-line signal:image blocks (skip)
+    if (line.match(/<!--\s*signal:image\b/) && !line.includes('-->')) {
+      while (i < lines.length && !lines[i].includes('-->')) i++;
+      i++; continue;
     }
 
     if (line.startsWith('```')) {

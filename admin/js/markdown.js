@@ -12,7 +12,9 @@ function getMarked() {
     const renderer = new marked.Renderer();
 
     const origHtml = renderer.html.bind(renderer);
-    renderer.html = function (html) {
+    renderer.html = function (token) {
+      const html = typeof token === 'string' ? token : (token.raw || token.text || '');
+
       // Detect <!-- signal:youtube id="..." width="..." -->
       const ytMatch = html.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?\s*-->/);
       if (ytMatch) {
@@ -28,7 +30,26 @@ function getMarked() {
         }
         return renderYouTubeBlock(videoId, cached, width);
       }
-      return origHtml(html);
+
+      // Detect <!-- signal:image src="..." alt="..." layout="..." width="..." -->
+      if (html.includes('signal:image')) {
+        const srcM = html.match(/src="([^"]*)"/);
+        const altM = html.match(/alt="([^"]*)"/);
+        const layoutM = html.match(/layout="([^"]*)"/);
+        const widthM = html.match(/width="(\d+)"/);
+        const src = srcM?.[1] || '';
+        const alt = altM?.[1] || '';
+        const layout = layoutM?.[1] || 'full';
+        const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
+        const isFloat = cls === 'leftalign' || cls === 'rightalign';
+        const w = widthM ? parseInt(widthM[1], 10) : 100;
+        const styleStr = w < 100
+          ? `max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}`
+          : 'max-width:100%';
+        if (src) return `<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''} loading="lazy" style="${styleStr}">`;
+      }
+
+      return origHtml(token);
     };
 
     const origImage = renderer.image.bind(renderer);

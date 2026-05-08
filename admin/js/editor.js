@@ -3,7 +3,7 @@ import { renderMarkdown, countWords, slugify, fmtDate } from './markdown.js';
 import { extractVideoId, insertYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
 import { openImageSheet } from './image-upload.js';
 import { showToast } from './toast.js';
-import { navigate } from './app.js';
+import { navigate, invalidatePostCache } from './app.js';
 
 let currentSlug = null;
 let currentPost = null;
@@ -11,6 +11,8 @@ let originalSlug = null;
 let viewMode = 'edit';
 let tags = [];
 let splitDebounce = null;
+let _snapshot = null;
+let _isDirty = false;
 
 // ── Module-level delegated handlers ───────────────────────────────────────────
 
@@ -84,6 +86,8 @@ export async function openEditor(slug) {
       coverImage: null,
       wordCount: 0
     };
+    _isDirty = false;
+    _snapshot = null;
     _populateEditor();
     return;
   }
@@ -92,6 +96,8 @@ export async function openEditor(slug) {
     const res = await fetch(`/api/posts/${slug}`);
     if (!res.ok) throw new Error('Post not found');
     currentPost = await res.json();
+    _isDirty = false;
+    _snapshot = _takeSnapshot();
     _populateEditor();
   } catch (e) {
     showToast('Failed to load post: ' + e.message, 'error');
@@ -171,14 +177,17 @@ function _populateEditor() {
   document.getElementById('delete-cancel').onclick = _closeDelete;
   document.getElementById('delete-confirm').onclick = _deletePost;
 
-  // Publish
+  // Publish / Revert
   document.getElementById('btn-publish').onclick = _publish;
+  document.getElementById('btn-revert').onclick = _revertChanges;
+  _updateRevertButton();
 }
 
 function _onTitleChange() {
   currentPost.title = document.getElementById('post-title-input').value;
   _updateTitleDisplay();
   _autoResizeTitle();
+  _markDirty();
   _triggerSave();
 }
 
@@ -186,6 +195,7 @@ function _onBodyChange() {
   const textarea = _getActiveTextarea();
   currentPost.body = textarea.value;
   _updateWordCount();
+  _markDirty();
   _triggerSave();
   if (viewMode === 'split') _updateSplitPreview();
 }
@@ -387,6 +397,7 @@ function _renderTags() {
       tags = tags.filter(t => t !== btn.dataset.remove);
       currentPost.tags = tags;
       _renderTags();
+      _markDirty();
       _triggerSave();
     });
   });
@@ -409,6 +420,7 @@ function _onTagKeydown(e) {
       tags.push(val);
       currentPost.tags = tags;
       _renderTags();
+      _markDirty();
       _triggerSave();
     }
     input.value = '';
@@ -448,13 +460,82 @@ function _triggerSave() {
 function _updatePublishButton() {
   const btn = document.getElementById('btn-publish');
   if (!btn) return;
-  if (currentPost.status === 'published') {
+  if (currentPost.status === 'published' && !_isDirty) {
     btn.textContent = 'Published';
     btn.classList.add('is-published');
+    btn.classList.remove('is-republish');
+  } else if (currentPost.status === 'published' && _isDirty) {
+    btn.textContent = 'Republish';
+    btn.classList.remove('is-published');
+    btn.classList.add('is-republish');
   } else {
     btn.textContent = 'Publish';
-    btn.classList.remove('is-published');
+    btn.classList.remove('is-published', 'is-republish');
   }
+}
+
+function _updateRevertButton() {
+  const btn = document.getElementById('btn-revert');
+  if (btn) btn.style.display = (_isDirty && _snapshot) ? '' : 'none';
+}
+
+function _markDirty() {
+  if (_isDirty) return;
+  _isDirty = true;
+  _updatePublishButton();
+  _updateRevertButton();
+}
+
+function _takeSnapshot() {
+  return {
+    title: currentPost.title,
+    body: currentPost.body,
+    tags: [...(currentPost.tags || [])],
+    date: currentPost.date,
+    excerpt: currentPost.excerpt,
+    coverImage: currentPost.coverImage
+  };
+}
+
+function _revertChanges() {
+  if (!_snapshot) return;
+  currentPost.title = _snapshot.title;
+  currentPost.body = _snapshot.body;
+  currentPost.tags = [..._snapshot.tags];
+  currentPost.date = _snapshot.date;
+  currentPost.excerpt = _snapshot.excerpt;
+  currentPost.coverImage = _snapshot.coverImage;
+  tags = [..._snapshot.tags];
+
+  document.getElementById('post-title-input').value = currentPost.title || '';
+  document.getElementById('editor-textarea').value = currentPost.body || '';
+  if (viewMode === 'split') {
+    const splitTA = document.getElementById('editor-textarea-split');
+    if (splitTA) splitTA.value = currentPost.body || '';
+    _updateSplitPreview();
+  }
+
+  _updateTitleDisplay();
+  _renderTags();
+  _updateWordCount();
+  _autoResizeTitle();
+
+  _isDirty = false;
+  _updatePublishButton();
+  _updateRevertButton();
+
+  saveNow(() => ({
+    slug: currentSlug,
+    title: currentPost.title,
+    body: currentPost.body,
+    tags: currentPost.tags,
+    date: currentPost.date,
+    excerpt: currentPost.excerpt,
+    coverImage: currentPost.coverImage,
+    wordCount: currentPost.wordCount
+  })).catch(e => showToast('Revert save failed — ' + e.message, 'error'));
+
+  showToast('Reverted', 'default', 1500);
 }
 
 async function _publish() {
@@ -483,7 +564,11 @@ async function _publish() {
     const data = await res.json();
 
     currentPost.status = 'published';
+    _snapshot = _takeSnapshot();
+    _isDirty = false;
     _updatePublishButton();
+    _updateRevertButton();
+    invalidatePostCache();
 
     const viewBtn = document.getElementById('btn-view-post');
     if (viewBtn) { viewBtn.href = data.url || `/posts/${currentSlug}/`; viewBtn.style.display = ''; }

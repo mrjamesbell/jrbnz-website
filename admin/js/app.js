@@ -4,7 +4,7 @@ import { fmtDateShort, relativeTime, slugify } from './markdown.js';
 import { showToast } from './toast.js';
 import { initMedia } from './media.js';
 
-export { navigate };
+export { navigate, invalidatePostCache };
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -109,6 +109,8 @@ function _showView(view) {
 // ── Post list ─────────────────────────────────────────────────────────────────
 
 let allPosts = [];
+
+function invalidatePostCache() { allPosts = []; }
 
 async function loadPosts() {
   if (allPosts.length === 0) await _fetchPosts();

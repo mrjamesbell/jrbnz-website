@@ -63,6 +63,7 @@
             <span id="topbar-save-text">Saved</span>
           </span>
           <a href="#" class="btn-preview" id="btn-view-post" style="display:none" target="_blank" rel="noopener">View ↗</a>
+          <button class="btn-revert" id="btn-revert" style="display:none">Revert</button>
           <button class="btn-publish" id="btn-publish">Publish</button>
         </div>
       </div>
@@ -310,6 +311,86 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" id="delete-cancel">Cancel</button>
       <button class="btn btn-danger" id="delete-confirm">Delete forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- Crop image modal -->
+<div class="modal-backdrop" id="crop-modal" style="display:none">
+  <div class="modal" style="max-width:600px;overflow:hidden">
+    <div class="modal-header">
+      <span class="modal-title">Crop image</span>
+      <button class="modal-close" id="crop-close">×</button>
+    </div>
+    <div class="modal-body" style="padding:0;gap:0">
+      <div class="crop-container" id="crop-container">
+        <img id="crop-img" alt="" draggable="false">
+        <div class="crop-overlay" id="crop-ov-top"></div>
+        <div class="crop-overlay" id="crop-ov-bottom"></div>
+        <div class="crop-overlay" id="crop-ov-left"></div>
+        <div class="crop-overlay" id="crop-ov-right"></div>
+        <div class="crop-box" id="crop-box">
+          <div class="crop-handle" data-handle="nw"></div>
+          <div class="crop-handle" data-handle="ne"></div>
+          <div class="crop-handle" data-handle="sw"></div>
+          <div class="crop-handle" data-handle="se"></div>
+        </div>
+      </div>
+      <div class="crop-toolbar">
+        <span class="field-label">Ratio</span>
+        <div class="crop-ratio-pills">
+          <button class="crop-ratio-pill is-active" data-aspect="free">Free</button>
+          <button class="crop-ratio-pill" data-aspect="1">1:1</button>
+          <button class="crop-ratio-pill" data-aspect="1.3333">4:3</button>
+          <button class="crop-ratio-pill" data-aspect="1.7778">16:9</button>
+          <button class="crop-ratio-pill" data-aspect="1.5">3:2</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="crop-skip">Skip crop</button>
+      <button class="btn btn-teal" id="crop-apply">Apply crop</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image options modal (alt text + layout) -->
+<div class="modal-backdrop" id="img-options-modal" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">Insert image</span>
+      <button class="modal-close" id="img-options-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="img-options-preview">
+        <img id="img-options-preview-img" src="" alt="">
+      </div>
+      <div>
+        <label class="field-label" for="img-options-alt">Alt text</label>
+        <input class="field-input" type="text" id="img-options-alt" placeholder="Describe the image…" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label">Layout</label>
+        <div class="img-layout-group">
+          <button class="img-layout-btn" data-layout="left">← Left</button>
+          <button class="img-layout-btn is-active" data-layout="full">Full</button>
+          <button class="img-layout-btn" data-layout="centre">Centre</button>
+          <button class="img-layout-btn" data-layout="right">Right →</button>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Size</label>
+        <div class="img-layout-group">
+          <button class="img-layout-btn" data-width="25">¼</button>
+          <button class="img-layout-btn" data-width="50">½</button>
+          <button class="img-layout-btn" data-width="75">¾</button>
+          <button class="img-layout-btn is-active" data-width="100">Full</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="img-options-cancel">Cancel</button>
+      <button class="btn btn-teal" id="img-options-insert">Insert image</button>
     </div>
   </div>
 </div>
