@@ -289,8 +289,7 @@ function _populateEditor() {
   document.getElementById('kb-accessory-bar').onclick = _onFmtBarClick;
 
   _setViewMode('edit');
-  _closeReviewPanel();
-  _initReviewPanel();
+  _initReviewBtn();
 
   // Tags
   document.getElementById('btn-add-tag').onclick = _showTagInput;
@@ -869,25 +868,41 @@ async function _deletePost() {
 
 // ── AI Review ─────────────────────────────────────────────────────────────────
 
-function _initReviewPanel() {
+function _initReviewBtn() {
   document.getElementById('btn-ai-review').onclick = _runReview;
-  document.getElementById('review-panel-close').onclick = _closeReviewPanel;
-}
-
-function _closeReviewPanel() {
-  document.getElementById('review-panel').classList.remove('is-open');
 }
 
 async function _runReview() {
   if (!currentSlug || !currentPost) return;
   const btn = document.getElementById('btn-ai-review');
-  const panel = document.getElementById('review-panel');
-  const body = document.getElementById('review-panel-body');
 
-  btn.classList.add('is-loading');
-  btn.textContent = '✦ Reviewing…';
-  body.innerHTML = '<div class="review-loading"><div class="review-spinner"></div>Reviewing your post…</div>';
-  panel.classList.add('is-open');
+  // Open synchronously before any await to bypass popup blockers
+  const reviewWin = window.open('', '_blank');
+  if (!reviewWin) {
+    showToast('Allow popups for this site to use Review', 'error');
+    return;
+  }
+
+  const loadingHtml = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Reviewing…</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #faf8f4; color: #2a2520; margin: 0; padding: 48px;
+    max-width: 740px; margin: 0 auto; }
+  .spinner { width: 20px; height: 20px; border: 2px solid #ddd;
+    border-top-color: #4a9; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading { display: flex; align-items: center; gap: 12px; color: #888;
+    margin-top: 80px; font-size: 15px; }
+</style></head><body>
+<div class="loading"><div class="spinner"></div>Reviewing your post…</div>
+</body></html>`;
+  reviewWin.document.write(loadingHtml);
+  reviewWin.document.close();
+
+  btn.disabled = true;
+  btn.textContent = '🔍 Reviewing…';
 
   try {
     const res = await fetch(`/api/posts/${currentSlug}/review`, { method: 'POST' });
@@ -896,11 +911,46 @@ async function _runReview() {
       throw new Error(err.error || `Error ${res.status}`);
     }
     const { review } = await res.json();
-    body.innerHTML = renderMarkdown(review);
+    const reviewHtml = renderMarkdown(review);
+    const title = currentPost.title ? `Review: ${currentPost.title}` : 'Post Review';
+    const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>${title}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #faf8f4; color: #2a2520; margin: 0; padding: 48px 64px 80px;
+    max-width: 740px; margin: 0 auto; line-height: 1.7; font-size: 15px; }
+  h1 { font-size: 18px; font-weight: 700; color: #3a8a72; margin: 0 0 4px;
+    letter-spacing: -0.01em; }
+  .post-title { font-size: 13px; color: #888; margin-bottom: 32px; }
+  hr { border: none; border-top: 1px solid #e5e0d8; margin: 28px 0; }
+  h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: #888; margin: 28px 0 8px; }
+  h3 { font-size: 13px; font-weight: 600; color: #555; margin: 20px 0 6px; }
+  p { margin: 0 0 14px; }
+  ul, ol { padding-left: 22px; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  strong { color: #1a1510; }
+  em { color: #555; }
+  code { background: #ede9e2; padding: 1px 5px; border-radius: 3px;
+    font-family: monospace; font-size: 13px; }
+</style></head><body>
+<h1>🔍 Post Review</h1>
+<div class="post-title">${currentPost.title || currentSlug}</div>
+<hr>
+${reviewHtml}
+</body></html>`;
+    reviewWin.document.open();
+    reviewWin.document.write(fullHtml);
+    reviewWin.document.close();
   } catch (e) {
-    body.innerHTML = `<p style="color:var(--color-danger)">Review failed: ${e.message}</p>`;
+    const errHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Review Error</title>
+<style>body{font-family:sans-serif;padding:48px;color:#c00;}</style></head>
+<body><p>Review failed: ${e.message}</p></body></html>`;
+    reviewWin.document.open();
+    reviewWin.document.write(errHtml);
+    reviewWin.document.close();
   } finally {
-    btn.classList.remove('is-loading');
-    btn.textContent = '✦ Review';
+    btn.disabled = false;
+    btn.textContent = '🔍 Review';
   }
 }
