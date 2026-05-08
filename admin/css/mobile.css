@@ -77,13 +77,13 @@
 
 .kb-btn:active {
   background: var(--color-cream-border);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 /* Primary action buttons (img, yt) — teal tint */
 .kb-btn.is-primary {
   background: var(--color-teal);
-  color: var(--color-cream);
+  color: var(--color-dark-text-primary);
   border-color: transparent;
 }
 
@@ -155,7 +155,7 @@
   font-family: var(--font-serif);
   font-size: var(--text-lg);
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   margin-bottom: var(--space-4);
 }
 
@@ -196,7 +196,7 @@
 
 .sheet-option-label {
   font-size: var(--text-base);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   font-family: var(--font-sans);
 }
 
@@ -242,7 +242,7 @@
     height: 40px;
     border-radius: 50%;
     background: var(--color-teal);
-    color: var(--color-cream);
+    color: var(--color-dark-text-primary);
     border: none;
     font-size: 24px;
     font-weight: 300;
@@ -335,7 +335,7 @@
     flex: 1;
     font-size: var(--text-sm);
     font-weight: 700;
-    color: var(--color-ink);
+    color: var(--color-cream-text-primary);
     font-family: var(--font-serif);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -359,7 +359,7 @@
   .mobile-publish-btn {
     padding: 6px var(--space-3);
     background: var(--color-teal);
-    color: var(--color-cream);
+    color: var(--color-dark-text-primary);
     border: none;
     border-radius: var(--radius-md);
     font-size: var(--text-sm);
@@ -381,7 +381,7 @@
     font-family: var(--font-serif);
     font-size: var(--text-2xl);
     font-weight: 700;
-    color: var(--color-ink);
+    color: var(--color-cream-text-primary);
     border: none;
     outline: none;
     width: 100%;

@@ -96,7 +96,7 @@
   font-family: var(--font-serif);
   font-size: 14px;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   line-height: 1.3;
 }
 
@@ -152,7 +152,7 @@
 
 .youtube-width-pill:hover:not(.is-active) {
   border-color: var(--color-cream-border-mid);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 /* ── Width variants ── */

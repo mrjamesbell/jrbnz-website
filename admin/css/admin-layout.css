@@ -19,7 +19,7 @@ html, body {
 
 body {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--text-base);
   background: var(--color-dark-base);
   color: var(--color-dark-text-primary);
   -webkit-font-smoothing: antialiased;
@@ -149,7 +149,7 @@ body {
   font-family: var(--font-serif);
   font-size: 36px;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   line-height: 1;
 }
 
@@ -159,7 +159,7 @@ body {
   gap: 6px;
   padding: 8px 18px;
   background: var(--color-teal);
-  color: var(--color-cream);
+  color: var(--color-dark-text-primary);
   border: none;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -210,7 +210,7 @@ body {
   font-family: var(--font-serif);
   font-size: 17px;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   line-height: 1.3;
   margin-bottom: 4px;
 }
@@ -304,7 +304,7 @@ body {
 
 .topbar-sep {
   font-size: 13px;
-  color: var(--color-cream-border);
+  color: var(--color-cream-text-ghost);
   font-family: var(--font-sans);
 }
 
@@ -362,13 +362,13 @@ body {
 
 .btn-preview:hover {
   border-color: var(--color-cream-text-muted);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 .btn-publish {
   padding: 6px 18px;
-  background: var(--color-ink);
-  color: var(--color-cream);
+  background: var(--color-teal);
+  color: var(--color-dark-text-primary);
   border: none;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -379,8 +379,8 @@ body {
 }
 
 .btn-publish:hover        { opacity: 0.85; }
-.btn-publish.is-published { background: var(--color-teal); }
-.btn-publish.is-republish { background: var(--color-ink); }
+.btn-publish.is-published { background: rgba(26,158,143,0.2); color: var(--color-teal); }
+.btn-publish.is-republish { background: var(--color-amber); color: var(--color-dark-text-primary); }
 
 .btn-revert {
   padding: 6px 14px;
@@ -395,7 +395,7 @@ body {
 }
 .btn-revert:hover {
   border-color: var(--color-cream-text-muted);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 
@@ -440,12 +440,12 @@ body {
 
 .fmtbar-btn:hover {
   background: var(--color-cream-dark);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 .fmtbar-btn.is-active {
   background: var(--color-cream-dark);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 .fmtbar-btn[data-action="bold"]   { font-weight: 700; font-family: var(--font-serif); font-size: 14px; }
@@ -478,13 +478,13 @@ body {
 }
 
 .fmtbar-view-btn.is-active {
-  background: var(--color-cream);
-  color: var(--color-ink);
-  border: var(--border-cream);
+  background: var(--color-teal-dim);
+  color: var(--color-teal);
+  border: 1px solid rgba(26,158,143,0.3);
 }
 
 .fmtbar-view-btn:hover:not(.is-active) {
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 
@@ -511,7 +511,7 @@ body {
   font-size: 38px;
   font-weight: 700;
   line-height: 1.15;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   border: none;
   outline: none;
   width: 100%;
@@ -573,7 +573,7 @@ body {
 }
 
 .meta-tag.is-muted:hover {
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   border-color: var(--color-cream-border-mid);
   background: none;
 }
@@ -664,7 +664,7 @@ body {
   font-family: var(--font-serif);
   font-size: 36px;
   font-weight: 700;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 .media-storage-info {
@@ -676,7 +676,7 @@ body {
 .btn-upload-media {
   padding: 8px 18px;
   background: var(--color-teal);
-  color: var(--color-cream);
+  color: var(--color-dark-text-primary);
   border: none;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -798,7 +798,7 @@ body {
   border-radius: var(--radius-md);
   border: 1px solid rgba(240,237,232,0.3);
   background: none;
-  color: var(--color-cream);
+  color: var(--color-dark-text-primary);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
@@ -816,7 +816,7 @@ body {
   width: 22px;
   height: 22px;
   background: var(--color-teal);
-  color: var(--color-cream);
+  color: var(--color-dark-text-primary);
   border-radius: 50%;
   font-size: 12px;
   display: flex;
@@ -837,7 +837,7 @@ body {
 
 .media-upload-filename {
   font-size: 13px;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   font-family: var(--font-sans);
   flex: 1;
   overflow: hidden;
@@ -891,7 +891,7 @@ body {
 
 .btn-load-more:hover {
   border-color: var(--color-cream-border-mid);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
 }
 
 

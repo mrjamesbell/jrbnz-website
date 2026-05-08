@@ -9,13 +9,13 @@
 :root {
 
   /* ── Colour: Site identity ── */
-  --color-ink:          #1c1c1c;   /* near-black — primary text on cream */
-  --color-cream:        #e8e4dc;   /* warm off-white — writing surface bg */
-  --color-cream-mid:    #f0ece4;   /* slightly lighter cream — toolbar bg  */
-  --color-cream-dark:   #dedad2;   /* image placeholder, hover states      */
-  --color-teal:         #1a9e8f;   /* accent — tags, links, active states, publish btn */
-  --color-teal-dim:     rgba(26,158,143,0.15); /* teal border on tag pills */
-  --color-amber:        #c4813a;   /* draft indicator dot                  */
+  --color-ink:          #1c1c1c;   /* near-black — used for dark buttons, dark surfaces */
+  --color-cream:        #1e1b18;   /* warm dark — writing surface bg (dark mode)        */
+  --color-cream-mid:    #161412;   /* slightly darker — toolbar / topbar bg             */
+  --color-cream-dark:   #28251f;   /* input bg, hover, raised surfaces                  */
+  --color-teal:         #1a9e8f;   /* accent — tags, links, active states, publish btn  */
+  --color-teal-dim:     rgba(26,158,143,0.15); /* teal border on tag pills               */
+  --color-amber:        #c4813a;   /* draft indicator dot                               */
 
   /* ── Colour: Dark chrome (rail, sidebar, post list) ── */
   --color-dark-base:    #141414;   /* rail background                      */
@@ -30,15 +30,15 @@
   --color-dark-text-muted:     #555555; /* meta, dates, icons               */
   --color-dark-text-ghost:     #333333; /* section labels, dividers         */
 
-  /* ── Colour: Text on cream (editor) ── */
-  --color-cream-text-primary:   #1c1c1c; /* post title, body text          */
-  --color-cream-text-secondary: #2a2a2a; /* body prose                     */
-  --color-cream-text-muted:     #888888; /* meta row dates                 */
-  --color-cream-text-ghost:     #aaaaaa; /* word count, saved indicator     */
+  /* ── Colour: Text on cream (editor — dark mode) ── */
+  --color-cream-text-primary:   #e8e4dc; /* post title, body text          */
+  --color-cream-text-secondary: #b8b4aa; /* body prose                     */
+  --color-cream-text-muted:     #7e7a74; /* meta row dates                 */
+  --color-cream-text-ghost:     #504c46; /* word count, saved indicator     */
 
   /* ── Colour: Cream surface borders ── */
-  --color-cream-border:     #ddd9d2;  /* hr, section dividers, field edges  */
-  --color-cream-border-mid: #cccccc;  /* image action pill borders          */
+  --color-cream-border:     #2e2b26;  /* hr, section dividers, field edges  */
+  --color-cream-border-mid: #3d3a34;  /* image action pill borders          */
 
   /* ── Colour: Status ── */
   --color-saved:   #1a9e8f;  /* autosave dot — same as teal               */
@@ -51,14 +51,14 @@
   --font-mono:   'SF Mono', 'Fira Mono', 'Consolas', monospace;
 
   /* Type scale */
-  --text-xs:   10px;
-  --text-sm:   11px;
-  --text-base: 13px;
-  --text-md:   15px;
-  --text-lg:   17px;   /* body prose in editor                           */
-  --text-xl:   22px;   /* H2 in editor                                   */
-  --text-2xl:  28px;   /* H1 / post title in editor (desktop)            */
-  --text-3xl:  34px;   /* post title large (desktop wide)                */
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   17px;
+  --text-lg:   20px;   /* body prose in editor                           */
+  --text-xl:   24px;   /* H2 in editor                                   */
+  --text-2xl:  30px;   /* H1 / post title in editor (desktop)            */
+  --text-3xl:  36px;   /* post title large (desktop wide)                */
 
   /* Line heights */
   --leading-tight:  1.2;
