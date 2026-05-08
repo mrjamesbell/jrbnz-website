@@ -6,6 +6,8 @@ import { initMedia } from './media.js';
 
 export { navigate, invalidatePostCache };
 
+const BUILD = '2026-05-08.2';
+
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
 (async function boot() {
@@ -15,6 +17,8 @@ export { navigate, invalidatePostCache };
   } catch { window.location.href = '/admin/login.html'; return; }
 
   document.getElementById('app').style.display = 'flex';
+  const buildEl = document.getElementById('build-label');
+  if (buildEl) buildEl.textContent = `build ${BUILD}`;
 
   initMobile();
 
@@ -113,7 +117,7 @@ let allPosts = [];
 function invalidatePostCache() { allPosts = []; }
 
 async function loadPosts() {
-  if (allPosts.length === 0) await _fetchPosts();
+  await _fetchPosts();
   renderList(allPosts);
 }
 
