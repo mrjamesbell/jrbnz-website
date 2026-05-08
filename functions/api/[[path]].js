@@ -527,7 +527,7 @@ async function handleListMedia(env) {
   });
 
   const items = [
-    ...uploaded.objects.map(o => toItem(o, `https://jrbnz-blog.r2.dev/${o.key}`)),
+    ...uploaded.objects.map(o => toItem(o, `/${o.key}`)),
     ...imported.objects.map(o => toItem(o, `/${o.key}`)),
   ];
 
@@ -819,7 +819,7 @@ async function handleUpload(request, env, slug) {
     httpMetadata: { contentType: file.type || 'application/octet-stream' }
   });
 
-  return json({ url: `https://jrbnz-blog.r2.dev/${key}`, filename });
+  return json({ url: `/${key}`, filename });
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
