@@ -76,6 +76,7 @@
         <button class="fmtbar-btn" data-action="bold" title="Bold (⌘B)">B</button>
         <button class="fmtbar-btn" data-action="italic" title="Italic (⌘I)">I</button>
         <button class="fmtbar-btn" data-action="quote" title="Blockquote">"</button>
+        <button class="fmtbar-btn" data-action="ul" title="Bullet list">• List</button>
         <button class="fmtbar-btn" data-action="link" title="Link (⌘K)">Link</button>
         <div class="fmtbar-sep"></div>
         <button class="fmtbar-btn" data-action="image" title="Insert image">Image</button>
@@ -379,11 +380,9 @@
       </div>
       <div>
         <label class="field-label">Size</label>
-        <div class="img-layout-group">
-          <button class="img-layout-btn" data-width="25">¼</button>
-          <button class="img-layout-btn" data-width="50">½</button>
-          <button class="img-layout-btn" data-width="75">¾</button>
-          <button class="img-layout-btn is-active" data-width="100">Full</button>
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <input class="field-input" type="number" id="img-options-width" min="10" max="100" step="5" value="100" style="width:90px">
+          <span style="font-size:var(--text-base);color:var(--color-cream-text-muted);font-family:var(--font-sans)">%</span>
         </div>
       </div>
     </div>

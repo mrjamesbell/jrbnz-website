@@ -105,6 +105,11 @@ export async function openEditor(slug) {
 }
 
 export function closeEditor() {
+  if (_isDirty && currentSlug && currentPost) {
+    const slug = currentSlug;
+    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, wordCount: currentPost.wordCount };
+    fetch(`/api/posts/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
+  }
   cancelScheduled();
   currentSlug = null;
   currentPost = null;
@@ -254,6 +259,7 @@ function _applyFormat(action, textarea) {
     case 'h2':      _prefixLine(textarea, '## '); break;
     case 'h3':      _prefixLine(textarea, '### '); break;
     case 'quote':   _prefixLine(textarea, '> '); break;
+    case 'ul':      _prefixLine(textarea, '- '); break;
     case 'divider': _insertAtCursor(textarea, '\n---\n'); break;
     case 'link': {
       const url = prompt('URL:');

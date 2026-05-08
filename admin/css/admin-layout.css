@@ -289,7 +289,7 @@ body {
 }
 
 .topbar-breadcrumb {
-  font-size: 13px;
+  font-size: var(--text-lg);
   color: var(--color-teal);
   font-family: var(--font-sans);
   text-decoration: none;
@@ -303,13 +303,13 @@ body {
 }
 
 .topbar-sep {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--color-cream-text-ghost);
   font-family: var(--font-sans);
 }
 
 .topbar-title {
-  font-size: 13px;
+  font-size: var(--text-lg);
   color: var(--color-cream-text-muted);
   font-family: var(--font-sans);
   overflow: hidden;
@@ -326,13 +326,13 @@ body {
 }
 
 .topbar-word-count {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--color-cream-text-ghost);
   font-family: var(--font-sans);
 }
 
 .topbar-save-status {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--color-saved);
   font-family: var(--font-sans);
   display: flex;
@@ -351,7 +351,7 @@ body {
   padding: 6px 14px;
   border: var(--border-cream);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--color-cream-text-secondary);
   background: none;
   cursor: pointer;
@@ -371,7 +371,7 @@ body {
   color: var(--color-dark-text-primary);
   border: none;
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-family: var(--font-sans);
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -386,7 +386,7 @@ body {
   padding: 6px 14px;
   border: var(--border-cream);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--color-cream-text-muted);
   background: none;
   cursor: pointer;

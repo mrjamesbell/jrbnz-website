@@ -96,7 +96,6 @@ export function openImageOptionsModal(textarea, publicUrl, altHint) {
   altInput.value = altHint || '';
 
   let selectedLayout = 'full';
-  let selectedWidth = 100;
 
   modal.querySelectorAll('[data-layout]').forEach(btn => {
     btn.classList.toggle('is-active', btn.dataset.layout === 'full');
@@ -106,20 +105,16 @@ export function openImageOptionsModal(textarea, publicUrl, altHint) {
     };
   });
 
-  modal.querySelectorAll('[data-width]').forEach(btn => {
-    btn.classList.toggle('is-active', btn.dataset.width === '100');
-    btn.onclick = () => {
-      selectedWidth = parseInt(btn.dataset.width, 10);
-      modal.querySelectorAll('[data-width]').forEach(b => b.classList.toggle('is-active', b === btn));
-    };
-  });
+  const widthInput = document.getElementById('img-options-width');
+  widthInput.value = 100;
 
   modal.style.display = 'flex';
   setTimeout(() => altInput.focus(), 60);
 
   const close = () => { modal.style.display = 'none'; };
   const doInsert = () => {
-    insertSignalImage(textarea, publicUrl, altInput.value.trim(), selectedLayout, selectedWidth);
+    const pct = Math.max(10, Math.min(100, parseInt(widthInput.value, 10) || 100));
+    insertSignalImage(textarea, publicUrl, altInput.value.trim(), selectedLayout, pct);
     close();
   };
 
