@@ -392,6 +392,9 @@ export async function onRequest(context) {
     if (method === 'PUT') return handleSaveAuthor(request, env);
   }
 
+  // Site rebuild
+  if (resource === 'site' && slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
+
   // Media
   if (resource === 'media') {
     if (!slug) {
@@ -487,6 +490,22 @@ async function handleSaveAuthor(request, env) {
   };
   await env.BLOG.put('settings/author.json', JSON.stringify(data), { httpMetadata: { contentType: 'application/json' } });
   return json(data);
+}
+
+async function handleRebuildSite(env) {
+  const posts = await getIndex(env);
+  const authorObj = await env.BLOG.get('settings/author.json');
+  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
+  const published = posts.filter(p => p.status === 'published');
+  await Promise.all(published.map(async post => {
+    const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
+    const body = obj ? await obj.text() : '';
+    const contentHtml = mdToHtml(body);
+    const html = buildPostHtml({ ...post, contentHtml, author });
+    await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
+  }));
+  await rebuildIndexHtml(env, posts);
+  return json({ rebuilt: published.length });
 }
 
 // ── Media handlers ────────────────────────────────────────────────────────────

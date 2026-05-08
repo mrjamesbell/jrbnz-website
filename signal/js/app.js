@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-08.6';
+const BUILD = '2026-05-08.7';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -63,6 +63,7 @@ const BUILD = '2026-05-08.6';
   document.getElementById('author-cancel').addEventListener('click', closeAuthorModal);
   document.getElementById('author-save').addEventListener('click', saveAuthor);
   document.getElementById('author-logout').addEventListener('click', logout);
+  document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
 
   // Headshot buttons
   document.getElementById('btn-headshot-upload').addEventListener('click', () => {
@@ -453,6 +454,23 @@ async function saveAuthor() {
     showToast('Saved', 'success');
   } catch (e) {
     showToast('Save failed: ' + e.message, 'error');
+  }
+}
+
+async function rebuildSite() {
+  const btn = document.getElementById('btn-rebuild-site');
+  btn.disabled = true;
+  btn.textContent = 'Rebuilding…';
+  try {
+    const res = await fetch('/api/site/rebuild', { method: 'POST' });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    showToast(`Rebuilt ${data.rebuilt} post${data.rebuilt === 1 ? '' : 's'}`, 'success');
+  } catch (e) {
+    showToast('Rebuild failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Rebuild site';
   }
 }
 
