@@ -19,7 +19,7 @@
     <!-- HERO SECTION - Edit greeting text below -->
     <!-- ============================================ -->
     <section class="hero">
-        <img id="hero-portrait" src="" alt="James Bell" class="hero-portrait">
+        <img id="hero-portrait" alt="James Bell" class="hero-portrait">
         <div class="hero-logo">JRBNZ</div>
         <div class="hero-overlay">
             <!-- EDIT THIS: Change the greeting text -->
@@ -29,7 +29,7 @@
 
     <script>
         // Randomly choose between two hero images
-        const images = ['james-bell1.jpg', 'james-bell2.jpg'];
+        const images = ['/james-bell1.jpg', '/james-bell2.jpg'];
         const randomImage = images[Math.floor(Math.random() * images.length)];
         document.getElementById('hero-portrait').src = randomImage;
     </script>

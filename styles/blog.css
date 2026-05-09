@@ -712,15 +712,15 @@ img.leftalign {
 
 .footer-nav a {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 17px;
+  font-size: 22px;
   letter-spacing: 0.06em;
-  color: oklch(42% 0.07 36);
+  color: rgba(252, 244, 218, 0.65);
   border-bottom: none;
   transition: color 0.2s;
 }
 
 .footer-nav a:hover {
-  color: oklch(72% 0.14 36);
+  color: oklch(78% 0.18 75);
   border-bottom: none;
 }
 
