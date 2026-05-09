@@ -1170,20 +1170,11 @@ async function handleMicropub(request, env) {
     content = form.get('content') || '';
   }
 
-  // If no title but content starts with an h1, extract it
-  if (!title && content.startsWith('# ')) {
+  // Always prefer h1 from content as the title (iA Writer sends filename as name)
+  if (content.match(/^#+ /)) {
     const firstLine = content.split('\n')[0];
-    title = firstLine.slice(2).trim();
+    title = firstLine.replace(/^#+ /, '').trim();
     content = content.slice(firstLine.length).replace(/^\n+/, '');
-  }
-
-  // If title was provided but content also starts with the same h1, strip it
-  if (title && content.match(/^#+ /)) {
-    const firstLine = content.split('\n')[0];
-    const headingText = firstLine.replace(/^#+ /, '').trim();
-    if (headingText === title) {
-      content = content.slice(firstLine.length).replace(/^\n+/, '');
-    }
   }
 
   if (!title) return json({ error: 'title (name) required' }, 400);
