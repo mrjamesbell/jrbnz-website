@@ -75,7 +75,7 @@
 }
 
 .tag-filter-bar strong {
-  color: oklch(72% 0.14 36);
+  color: oklch(76% 0.20 74);
   font-style: normal;
 }
 
@@ -173,7 +173,7 @@
   font-family: 'Bebas Neue', sans-serif;
   font-size: 3em;
   line-height: 0.55;
-  color: oklch(72% 0.14 36);
+  color: oklch(76% 0.20 74);
   display: block;
   margin-bottom: 12px;
   font-style: normal;
@@ -231,14 +231,18 @@
 .all-posts-btn:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: oklch(44% 0.14 36 / 0.07);
+  background: oklch(52% 0.17 72 / 0.07);
   color: var(--background-color);
 }
 
-/* Post body wrapper — constrains readable column */
-.post-body {
-  max-width: 72ch;
+/* Post layout — 72ch main column + sidebar */
+.post-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 72ch) 230px;
+  gap: 0 56px;
+  max-width: calc(72ch + 56px + 230px);
   margin: 0 auto;
+  align-items: start;
 }
 
 /* Post list — wider than reading column */
@@ -286,10 +290,8 @@ img.leftalign {
   max-width: 65%;
 }
 
-.post-content::after {
-  content: '';
-  display: table;
-  clear: both;
+.post-content {
+  display: flow-root;
 }
 
 /* Post navigation (prev / all / next) */
@@ -319,7 +321,7 @@ img.leftalign {
 .post-nav a.post-nav-item:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: oklch(44% 0.14 36 / 0.07);
+  background: oklch(52% 0.17 72 / 0.07);
   color: var(--background-color);
 }
 
@@ -368,86 +370,138 @@ img.leftalign {
   text-align: right;
 }
 
-/* Author card */
-.author-card {
+/* ── Sidebar ── */
+.post-sidebar {
+  align-self: start;
   display: flex;
-  align-items: flex-start;
-  gap: 24px;
-  margin: 48px 0 32px;
-  padding: 24px 28px 20px;
-  border: 2px solid oklch(44% 0.14 36 / 0.45);
-  border-radius: 6px;
-  background: oklch(44% 0.14 36 / 0.06);
+  flex-direction: column;
+  gap: 28px;
 }
 
-.author-avatar {
-  width: 80px;
-  height: 80px;
+.sidebar-block {
+  /* no border-top */
+}
+
+.sidebar-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: oklch(28% 0.01 50 / 0.38);
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+
+.sidebar-date {
+  font-family: 'Lora', serif;
+  font-size: 16px;
+  color: oklch(18% 0.01 50);
+}
+
+.sidebar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sidebar-tag {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--accent-color);
+  border: 1px solid oklch(52% 0.17 72 / 0.32);
+  border-bottom: 1px solid oklch(52% 0.17 72 / 0.32);
+  padding: 3px 10px;
+  border-radius: 3px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sidebar-tag:hover {
+  background: oklch(52% 0.17 72 / 0.10);
+  border-color: oklch(52% 0.17 72 / 0.55);
+  border-bottom-color: oklch(52% 0.17 72 / 0.55);
+}
+
+.sidebar-author {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-avatar {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
-  border: 3px solid var(--accent-color);
+  border: 2.5px solid var(--accent-color);
+  display: block;
 }
 
-.author-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.author-name {
+.sidebar-author-name {
   font-family: 'Lora', serif;
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 700;
   font-style: italic;
-  color: var(--background-color);
-  margin-bottom: 8px;
+  color: oklch(18% 0.01 50);
+  margin-bottom: 6px;
   line-height: 1.2;
 }
 
-.author-bio {
-  font-size: 15px;
-  line-height: 1.65;
-  color: oklch(18% 0.01 50 / 0.72);
-  margin-bottom: 0;
+.sidebar-author-bio {
+  font-size: 13px;
+  line-height: 1.6;
+  color: oklch(28% 0.01 50 / 0.68);
+  margin-bottom: 10px;
 }
 
-.author-social {
+.sidebar-social {
   display: flex;
-  gap: 20px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 0;
 }
 
 .social-link {
-  font-size: 13px;
   font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  letter-spacing: 0.07em;
   color: var(--accent-color);
   border-bottom: none;
   text-transform: uppercase;
+  transition: opacity 0.2s;
 }
 
 .social-link:hover {
-  opacity: 0.75;
+  opacity: 0.7;
   border-bottom: none;
 }
 
 /* Mobile */
-@media (max-width: 768px) {
-  .post-body,
-  .content-section > .post-title,
-  .content-section > .post-meta,
-  .content-section > .post-content,
-  .content-section > .author-card,
-  .content-section > .all-posts-btn,
-  .content-section > .back-link,
-  .content-section > .post-nav,
-  .content-section > .post-list,
-  .content-section > .tags-footer {
-    max-width: 100%;
+@media (max-width: 900px) {
+  .post-layout {
+    grid-template-columns: 1fr;
+    max-width: 72ch;
   }
 
+  .post-sidebar {
+    /* No border-top */
+    padding-top: 36px;
+    margin-top: 52px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  .sidebar-block {
+    flex: 1 1 180px;
+  }
+
+  /* Date is already in the masthead on mobile */
+  .sidebar-block:first-child {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
   .post-nav {
     grid-template-columns: 1fr;
   }
@@ -469,8 +523,8 @@ img.leftalign {
   }
 
   .post-list-item {
-    flex-direction: column;
-    gap: 4px;
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
 
   .post-list-item time {
@@ -484,24 +538,6 @@ img.leftalign {
 
   .post-meta {
     gap: 10px;
-  }
-
-  .post-content .rightalign,
-  .post-content .leftalign {
-    float: none;
-    max-width: 100%;
-    margin: 1em 0;
-  }
-
-  .author-card {
-    flex-direction: column;
-    gap: 14px;
-    padding: 20px;
-  }
-
-  .post-list-item {
-    grid-template-columns: 1fr;
-    gap: 3px;
   }
 
   .post-item-tags {
@@ -519,6 +555,25 @@ img.leftalign {
   }
 }
 
+@media (max-width: 560px) {
+  .post-content img.rightalign,
+  .post-content img.leftalign {
+    float: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 1em 0;
+  }
+
+  .post-sidebar {
+    flex-direction: column;
+  }
+
+  .sidebar-block {
+    flex: none;
+    width: 100%;
+  }
+}
+
 /* ── Post masthead ── */
 .post-masthead {
   background: var(--background-color);
@@ -526,7 +581,7 @@ img.leftalign {
 }
 
 .post-masthead-inner {
-  max-width: 72ch;
+  max-width: calc(72ch + 56px + 230px);
   margin: 0 auto;
 }
 
@@ -563,9 +618,9 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 15px;
   letter-spacing: 0.06em;
-  color: oklch(72% 0.14 36);
-  border: 1px solid oklch(72% 0.14 36 / 0.35);
-  border-bottom: 1px solid oklch(72% 0.14 36 / 0.35);
+  color: oklch(76% 0.20 74);
+  border: 1px solid oklch(76% 0.20 74 / 0.35);
+  border-bottom: 1px solid oklch(76% 0.20 74 / 0.35);
   padding: 3px 10px;
   border-radius: 3px;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
@@ -573,9 +628,9 @@ img.leftalign {
 
 .post-masthead-tags .post-tag:hover {
   color: var(--text-color);
-  border-color: oklch(72% 0.14 36 / 0.7);
-  border-bottom-color: oklch(72% 0.14 36 / 0.7);
-  background: oklch(72% 0.14 36 / 0.1);
+  border-color: oklch(76% 0.20 74 / 0.7);
+  border-bottom-color: oklch(76% 0.20 74 / 0.7);
+  background: oklch(76% 0.20 74 / 0.1);
 }
 
 /* ── Blog index masthead ── */
@@ -610,8 +665,8 @@ img.leftalign {
 
 .back-to-posts:hover {
   color: var(--accent-color);
-  border-color: oklch(44% 0.14 36 / 0.5);
-  border-bottom-color: oklch(44% 0.14 36 / 0.5);
+  border-color: oklch(52% 0.17 72 / 0.5);
+  border-bottom-color: oklch(52% 0.17 72 / 0.5);
 }
 
 /* ── Tags box (index page — filter notice + chip cloud) ── */
@@ -648,8 +703,8 @@ img.leftalign {
 
 .tag-chip:hover {
   color: var(--accent-color);
-  border-color: oklch(44% 0.14 36 / 0.4);
-  border-bottom-color: oklch(44% 0.14 36 / 0.4);
+  border-color: oklch(52% 0.17 72 / 0.4);
+  border-bottom-color: oklch(52% 0.17 72 / 0.4);
 }
 
 /* ── Enhanced footer ── */
@@ -705,7 +760,7 @@ img.leftalign {
 }
 
 .footer-nav a:hover {
-  color: oklch(72% 0.14 36);
+  color: oklch(76% 0.20 74);
   border-bottom: none;
 }
 
@@ -722,7 +777,7 @@ img.leftalign {
 }
 
 .footer-rss:hover {
-  color: oklch(72% 0.14 36);
+  color: oklch(76% 0.20 74);
   border-bottom: none;
 }
 

@@ -2,9 +2,9 @@
 :root {
     --text-color: #f0ede8;
     --background-color: oklch(18% 0.01 50);
-    --accent-color: oklch(44% 0.14 36);
-    --link-color: oklch(44% 0.14 36);
-    --hover-color: oklch(44% 0.14 36);
+    --accent-color: oklch(52% 0.17 72);
+    --link-color: oklch(52% 0.17 72);
+    --hover-color: oklch(52% 0.17 72);
     --gutter: clamp(24px, 5vw, 60px);
 }
 
@@ -71,7 +71,7 @@ a:hover {
 }
 
 .site-nav .nav-logo:hover {
-    color: oklch(72% 0.14 36);
+    color: oklch(76% 0.20 74);
     border-bottom: none;
 }
 
@@ -93,8 +93,8 @@ a:hover {
 
 .site-nav .nav-links a:hover,
 .site-nav .nav-links a.active {
-    color: oklch(72% 0.14 36);
-    border-bottom-color: oklch(72% 0.14 36);
+    color: oklch(76% 0.20 74);
+    border-bottom-color: oklch(76% 0.20 74);
 }
 
 /* Page header */

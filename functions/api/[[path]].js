@@ -234,16 +234,20 @@ function buildAuthorCard(author) {
   const flickrUrl = author.flickr
     ? (author.flickr.startsWith('http') ? author.flickr : `https://flickr.com/photos/${author.flickr}`)
     : '';
-  return `<div class="author-card">
-  ${author.headshotUrl ? `<img class="author-avatar" src="${esc(author.headshotUrl)}" alt="${esc(author.name)}">` : ''}
-  <div class="author-details">
-    <div class="author-name">${esc(author.name)}</div>
-    ${author.bio ? `<div class="author-bio">${esc(author.bio)}</div>` : ''}
-    <div class="author-social">
-      ${threadsUrl ? `<a href="${esc(threadsUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Threads</a>` : ''}
-      ${instagramUrl ? `<a href="${esc(instagramUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Instagram</a>` : ''}
-      ${linkedinUrl ? `<a href="${esc(linkedinUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">LinkedIn</a>` : ''}
-      ${flickrUrl ? `<a href="${esc(flickrUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Flickr</a>` : ''}
+  const socials = [
+    threadsUrl && `<a href="${esc(threadsUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Threads</a>`,
+    instagramUrl && `<a href="${esc(instagramUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Instagram</a>`,
+    linkedinUrl && `<a href="${esc(linkedinUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">LinkedIn</a>`,
+    flickrUrl && `<a href="${esc(flickrUrl)}" class="social-link" rel="noopener noreferrer" target="_blank">Flickr</a>`,
+  ].filter(Boolean).join('\n      ');
+  return `<div class="sidebar-block">
+  <div class="sidebar-label">Author</div>
+  <div class="sidebar-author">
+    ${author.headshotUrl ? `<img class="sidebar-avatar" src="${esc(author.headshotUrl)}" alt="${esc(author.name)}">` : ''}
+    <div>
+      <div class="sidebar-author-name">${esc(author.name)}</div>
+      ${author.bio ? `<div class="sidebar-author-bio">${esc(author.bio)}</div>` : ''}
+      ${socials ? `<div class="sidebar-social">${socials}</div>` : ''}
     </div>
   </div>
 </div>`;
@@ -251,8 +255,9 @@ function buildAuthorCard(author) {
 
 function buildPostHtml({ title, date, tags, contentHtml, author }) {
   const mastheadTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
+  const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
-  const authorCard = buildAuthorCard(author);
+  const authorBlock = buildAuthorCard(author);
   return `${SITE_HEAD(title)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
@@ -272,10 +277,24 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
   </div>
 </header>
 <section class="content-section">
-  <div class="post-body">
-    <div class="post-content">${contentHtml}</div>
-    ${authorCard}
-    <a href="/posts/" class="back-to-posts">← All posts</a>
+  <div class="post-layout">
+    <div>
+      <div class="post-content">${contentHtml}</div>
+      <a href="/posts/" class="back-to-posts">← All posts</a>
+    </div>
+    <aside class="post-sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-label">Published</div>
+        <time class="sidebar-date" datetime="${esc(date)}">${fmtDate(date)}</time>
+      </div>
+      ${sidebarTags ? `<div class="sidebar-block">
+        <div class="sidebar-label">Tags</div>
+        <div class="sidebar-tags">
+          ${sidebarTags}
+        </div>
+      </div>` : ''}
+      ${authorBlock}
+    </aside>
   </div>
 </section>
 <footer class="footer">
