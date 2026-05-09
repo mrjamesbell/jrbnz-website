@@ -530,21 +530,6 @@ img.leftalign {
   margin: 0 auto;
 }
 
-.post-masthead-back {
-  display: inline-block;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  letter-spacing: 0.07em;
-  color: oklch(78% 0.012 75);
-  border-bottom: none;
-  margin-bottom: 32px;
-  transition: color 0.2s;
-}
-
-.post-masthead-back:hover {
-  color: var(--text-color);
-  border-bottom: none;
-}
 
 .post-masthead-title {
   font-family: 'Bebas Neue', sans-serif;
@@ -720,7 +705,7 @@ img.leftalign {
 }
 
 .footer-nav a:hover {
-  color: oklch(78% 0.18 75);
+  color: oklch(72% 0.14 36);
   border-bottom: none;
 }
 

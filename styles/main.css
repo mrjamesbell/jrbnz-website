@@ -71,7 +71,7 @@ a:hover {
 }
 
 .site-nav .nav-logo:hover {
-    color: oklch(78% 0.18 75);
+    color: oklch(72% 0.14 36);
     border-bottom: none;
 }
 
@@ -93,8 +93,8 @@ a:hover {
 
 .site-nav .nav-links a:hover,
 .site-nav .nav-links a.active {
-    color: oklch(78% 0.18 75);
-    border-bottom-color: oklch(78% 0.18 75);
+    color: oklch(72% 0.14 36);
+    border-bottom-color: oklch(72% 0.14 36);
 }
 
 /* Page header */

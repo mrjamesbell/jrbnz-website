@@ -264,7 +264,6 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
 </nav>
 <header class="post-masthead">
   <div class="post-masthead-inner">
-    <a href="/posts/" class="post-masthead-back">← All posts</a>
     <h1 class="post-masthead-title">${esc(title)}</h1>
     <div class="post-masthead-meta">
       <time class="post-masthead-date" datetime="${esc(date)}">${fmtDate(date)}</time>
