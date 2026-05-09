@@ -1130,35 +1130,24 @@ function slugify(title) {
 }
 
 async function handleMicropub(request, env) {
-  // Log every micropub request before auth check so we can debug token mismatches
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  const expectedToken = await getMicropubToken(env.BLOG_PASSWORD);
-  const tokenMatch = !!token && token === expectedToken;
-
   if (request.method === 'GET') {
     const url = new URL(request.url);
     const q = url.searchParams.get('q');
     await env.BLOG.put('auth/debug-micropub.json', JSON.stringify({
       ts: new Date().toISOString(), q,
-      hasAuth: !!token, tokenMatch,
-      tokenPrefix: token ? token.slice(0, 8) : null,
-      expectedPrefix: expectedToken.slice(0, 8),
+      ua: request.headers.get('User-Agent') || '',
     }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
-    if (!tokenMatch) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'content-type': 'application/json', 'WWW-Authenticate': 'Bearer realm="micropub"', 'Cache-Control': 'no-store' },
-      });
-    }
     if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
-    return new Response(JSON.stringify({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] }), {
-      headers: { 'content-type': 'application/json', 'Cache-Control': 'no-store' },
-    });
+    return json({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] });
   }
 
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-  if (!tokenMatch) return json({ error: 'Unauthorized' }, 401);
+
+  // Bearer token auth — POST only
+  const auth = request.headers.get('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  const expectedToken = await getMicropubToken(env.BLOG_PASSWORD);
+  if (!token || token !== expectedToken) return json({ error: 'Unauthorized' }, 401);
 
   // Parse body — iA Writer sends JSON or form-encoded
   let title = '';
