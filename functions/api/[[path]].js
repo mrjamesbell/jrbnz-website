@@ -433,6 +433,22 @@ export async function onRequest(context) {
   const path = params.path || [];
   const [resource, slug, action] = path;
 
+  // Catch-all request log for debugging — append to a rolling list in R2
+  try {
+    const logKey = 'auth/debug-requests.json';
+    const existing = await env.BLOG.get(logKey);
+    const log = existing ? JSON.parse(await existing.text()) : [];
+    log.push({
+      ts: new Date().toISOString(),
+      method,
+      path: '/' + path.join('/'),
+      auth: (request.headers.get('Authorization') || '').slice(0, 30),
+      ua: (request.headers.get('User-Agent') || '').slice(0, 60),
+    });
+    if (log.length > 20) log.splice(0, log.length - 20);
+    await env.BLOG.put(logKey, JSON.stringify(log), { httpMetadata: { contentType: 'application/json' } });
+  } catch {}
+
   // CORS preflight
   if (method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,PUT,DELETE', 'access-control-allow-headers': 'Content-Type' } });
@@ -459,17 +475,19 @@ export async function onRequest(context) {
 
   // Debug — public, temporary
   if (resource === 'debug-indieauth' && method === 'GET') {
-    const [tokenPost, tokenGet, micropub, authGet] = await Promise.all([
+    const [tokenPost, tokenGet, micropub, authGet, requests] = await Promise.all([
       env.BLOG.get('auth/debug-token.json'),
       env.BLOG.get('auth/debug-token-get.json'),
       env.BLOG.get('auth/debug-micropub.json'),
       env.BLOG.get('auth/debug-indieauth-get.json'),
+      env.BLOG.get('auth/debug-requests.json'),
     ]);
     return json({
       tokenPost: tokenPost ? JSON.parse(await tokenPost.text()) : null,
       tokenGet: tokenGet ? JSON.parse(await tokenGet.text()) : null,
       micropub: micropub ? JSON.parse(await micropub.text()) : null,
       authGet: authGet ? JSON.parse(await authGet.text()) : null,
+      requests: requests ? JSON.parse(await requests.text()) : null,
     });
   }
 
