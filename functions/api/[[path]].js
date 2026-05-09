@@ -1110,9 +1110,8 @@ async function handleMicropub(request, env) {
     await env.BLOG.put('auth/debug-micropub.json', JSON.stringify({
       ts: new Date().toISOString(), q, auth: auth.slice(0, 20),
     }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
-    if (q === 'config') return json({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] });
     if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
-    return json({});
+    return json({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] });
   }
 
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
