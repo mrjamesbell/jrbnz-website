@@ -433,22 +433,6 @@ export async function onRequest(context) {
   const path = params.path || [];
   const [resource, slug, action] = path;
 
-  // Catch-all request log for debugging — append to a rolling list in R2
-  try {
-    const logKey = 'auth/debug-requests.json';
-    const existing = await env.BLOG.get(logKey);
-    const log = existing ? JSON.parse(await existing.text()) : [];
-    log.push({
-      ts: new Date().toISOString(),
-      method,
-      path: '/' + path.join('/'),
-      auth: (request.headers.get('Authorization') || '').slice(0, 30),
-      ua: (request.headers.get('User-Agent') || '').slice(0, 60),
-    });
-    if (log.length > 20) log.splice(0, log.length - 20);
-    await env.BLOG.put(logKey, JSON.stringify(log), { httpMetadata: { contentType: 'application/json' } });
-  } catch {}
-
   // CORS preflight
   if (method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,PUT,DELETE', 'access-control-allow-headers': 'Content-Type' } });
@@ -472,24 +456,6 @@ export async function onRequest(context) {
   if (resource === 'indieauth') return handleIndieAuth(request, env, slug);
   if (resource === 'micropub' && slug === 'media') return handleMicropubMedia(request, env);
   if (resource === 'micropub') return handleMicropub(request, env);
-
-  // Debug — public, temporary
-  if (resource === 'debug-indieauth' && method === 'GET') {
-    const [tokenPost, tokenGet, micropub, authGet, requests] = await Promise.all([
-      env.BLOG.get('auth/debug-token.json'),
-      env.BLOG.get('auth/debug-token-get.json'),
-      env.BLOG.get('auth/debug-micropub.json'),
-      env.BLOG.get('auth/debug-indieauth-get.json'),
-      env.BLOG.get('auth/debug-requests.json'),
-    ]);
-    return json({
-      tokenPost: tokenPost ? JSON.parse(await tokenPost.text()) : null,
-      tokenGet: tokenGet ? JSON.parse(await tokenGet.text()) : null,
-      micropub: micropub ? JSON.parse(await micropub.text()) : null,
-      authGet: authGet ? JSON.parse(await authGet.text()) : null,
-      requests: requests ? JSON.parse(await requests.text()) : null,
-    });
-  }
 
   // All other routes require auth
   const token = getSessionCookie(request);
@@ -1007,9 +973,6 @@ async function handleIndieAuth(request, env, slug) {
   if (slug === 'auth') {
     if (request.method === 'GET') {
       const params = Object.fromEntries(url.searchParams);
-      await env.BLOG.put('auth/debug-indieauth-get.json', JSON.stringify({
-        ts: new Date().toISOString(), params,
-      }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
       return new Response(INDIEAUTH_PAGE(params), { headers: { 'content-type': 'text/html' } });
     }
     if (request.method === 'POST') {
@@ -1042,11 +1005,7 @@ async function handleIndieAuth(request, env, slug) {
     const auth = request.headers.get('Authorization') || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
     const expected = await getMicropubToken(env.BLOG_PASSWORD);
-    const tokenMatch = !!token && token === expected;
-    await env.BLOG.put('auth/debug-token-get.json', JSON.stringify({
-      ts: new Date().toISOString(), hasAuth: !!auth, tokenMatch,
-    }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
-    if (!tokenMatch) return json({ error: 'unauthorized' }, 401);
+    if (!token || token !== expected) return json({ error: 'unauthorized' }, 401);
     return json({ me: 'https://jrbnz.com/', scope: 'create media', client_id: 'https://ia.net/writer' });
   }
 
@@ -1067,31 +1026,18 @@ async function handleIndieAuth(request, env, slug) {
     if (!code) return json({ error: 'invalid_grant' }, 400);
 
     const codeData = await parseAuthCode(env.BLOG_PASSWORD, code);
-    const debug = {
-      ts: new Date().toISOString(), ct, grant_type, redirect_uri,
-      code_prefix: code.slice(0, 12),
-      parsed: !!codeData,
-      redirect_match: codeData ? codeData.redirect_uri === redirect_uri : null,
-      expired: codeData ? Date.now() > codeData.expires : null,
-    };
-    await env.BLOG.put('auth/debug-token.json', JSON.stringify(debug), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
-
     if (!codeData) return json({ error: 'invalid_grant' }, 400);
     if (Date.now() > codeData.expires) return json({ error: 'invalid_grant' }, 400);
     if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
 
     const accessToken = await getMicropubToken(env.BLOG_PASSWORD);
-    const me = 'https://jrbnz.com/';
-    const tokenResponse = {
+    return json({
       access_token: accessToken,
       token_type: 'Bearer',
       scope: codeData.scope || 'create',
-      me,
+      me: 'https://jrbnz.com/',
       micropub: 'https://jrbnz.com/api/micropub',
-    };
-    debug.response = { me, scope: tokenResponse.scope, hasToken: !!accessToken };
-    await env.BLOG.put('auth/debug-token.json', JSON.stringify(debug), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
-    return json(tokenResponse);
+    });
   }
 
   return json({ error: 'Not found' }, 404);
@@ -1133,10 +1079,6 @@ async function handleMicropub(request, env) {
   if (request.method === 'GET') {
     const url = new URL(request.url);
     const q = url.searchParams.get('q');
-    await env.BLOG.put('auth/debug-micropub.json', JSON.stringify({
-      ts: new Date().toISOString(), q,
-      ua: request.headers.get('User-Agent') || '',
-    }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
     if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
     const linkHeaders = [
       '<https://jrbnz.com/api/indieauth/auth>; rel="authorization_endpoint"',
