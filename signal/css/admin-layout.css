@@ -302,6 +302,22 @@ body {
   border: 1px solid rgba(196,129,58,0.25);
 }
 
+.post-list-delete {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  opacity: 0.5;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.post-list-delete:hover { opacity: 1; background: var(--color-danger-dim, rgba(200,50,50,0.08)); }
+.post-list-item:hover .post-list-delete { display: block; }
+
 .draft-pip {
   display: inline-block;
   width: 6px;

@@ -1155,7 +1155,7 @@ async function handleMicropub(request, env) {
   const expectedToken = await getMicropubToken(env.BLOG_PASSWORD);
   if (!token || token !== expectedToken) return json({ error: 'Unauthorized' }, 401);
 
-  // Parse body — iA Writer sends JSON or form-encoded
+  // Parse body — iA Writer sends JSON
   let title = '';
   let content = '';
   const ct = request.headers.get('Content-Type') || '';
@@ -1168,6 +1168,22 @@ async function handleMicropub(request, env) {
     const form = await request.formData().catch(() => new FormData());
     title = form.get('name') || form.get('title') || '';
     content = form.get('content') || '';
+  }
+
+  // If no title but content starts with an h1, extract it
+  if (!title && content.startsWith('# ')) {
+    const firstLine = content.split('\n')[0];
+    title = firstLine.slice(2).trim();
+    content = content.slice(firstLine.length).replace(/^\n+/, '');
+  }
+
+  // If title was provided but content also starts with the same h1, strip it
+  if (title && content.match(/^#+ /)) {
+    const firstLine = content.split('\n')[0];
+    const headingText = firstLine.replace(/^#+ /, '').trim();
+    if (headingText === title) {
+      content = content.slice(firstLine.length).replace(/^\n+/, '');
+    }
   }
 
   if (!title) return json({ error: 'title (name) required' }, 400);

@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-09.34';
+const BUILD = '2026-05-09.35';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -345,8 +345,24 @@ function renderList(posts) {
 
   document.querySelectorAll('.post-list-item').forEach(el => {
     el.addEventListener('click', e => {
-      e.preventDefault();
+      if (e.target.closest('.post-list-delete')) return;
       navigate(`/signal/edit/${el.dataset.slug}`);
+    });
+  });
+
+  document.querySelectorAll('.post-list-delete').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const slug = btn.dataset.slug;
+      if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`/api/posts/${slug}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error(await res.text());
+        showToast('Post deleted');
+        await loadPostList();
+      } catch (err) {
+        showToast('Delete failed: ' + err.message, 'error');
+      }
     });
   });
 }
@@ -362,7 +378,7 @@ function listItem(p) {
   const statusClass = isDraft ? 'is-draft' : hasEdits ? 'is-draft' : 'is-published';
   const statusLabel = isDraft ? 'draft' : hasEdits ? 'published · edits' : 'published';
 
-  return `<a class="post-list-item" href="/signal/edit/${esc(p.slug)}" data-slug="${esc(p.slug)}">
+  return `<div class="post-list-item" data-slug="${esc(p.slug)}">
     <div class="post-list-item-body">
       <div class="post-list-title">${(isDraft || hasEdits) ? '<span class="draft-pip"></span>' : ''}${esc(p.title || 'Untitled')}</div>
       <div class="post-list-meta">
@@ -372,7 +388,8 @@ function listItem(p) {
       </div>
     </div>
     <span class="post-list-status ${statusClass}">${statusLabel}</span>
-  </a>`;
+    <button class="post-list-delete" data-slug="${esc(p.slug)}" title="Delete post" tabindex="-1">×</button>
+  </div>`;
 }
 
 // ── New post modal ────────────────────────────────────────────────────────────
