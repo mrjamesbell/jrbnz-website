@@ -1081,7 +1081,7 @@ async function handleIndieAuth(request, env, slug) {
     if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
 
     const accessToken = await getMicropubToken(env.BLOG_PASSWORD);
-    const me = codeData.me || 'https://jrbnz.com';
+    const me = 'https://jrbnz.com/';
     const tokenResponse = {
       access_token: accessToken,
       token_type: 'Bearer',
