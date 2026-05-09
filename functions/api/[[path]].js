@@ -216,6 +216,7 @@ const SITE_HEAD = (title) => `<!DOCTYPE html>
 <link rel="stylesheet" href="/styles/main.css">
 <link rel="stylesheet" href="/styles/blog.css">
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
+<link rel="micropub" href="/api/micropub">
 </head>
 <body>`;
 
@@ -443,6 +444,9 @@ export async function onRequest(context) {
 
   // Legacy login route
   if (resource === 'login' && method === 'POST') return handleLogin(request, env);
+
+  // Micropub — uses its own bearer token, not session auth
+  if (resource === 'micropub') return handleMicropub(request, env);
 
   // All other routes require auth
   const token = getSessionCookie(request);
@@ -884,6 +888,78 @@ async function handleUpload(request, env, slug) {
   });
 
   return json({ url: `/${key}`, filename });
+}
+
+// ── Micropub ──────────────────────────────────────────────────────────────────
+
+function slugify(title) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
+async function handleMicropub(request, env) {
+  // Discovery
+  if (request.method === 'GET') return json({});
+
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+
+  // Bearer token auth
+  const auth = request.headers.get('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token || token !== env.MICROPUB_TOKEN) return json({ error: 'Unauthorized' }, 401);
+
+  // Parse body — iA Writer sends JSON or form-encoded
+  let title = '';
+  let content = '';
+  const ct = request.headers.get('Content-Type') || '';
+  if (ct.includes('application/json')) {
+    const body = await request.json().catch(() => ({}));
+    const props = body.properties || {};
+    title = Array.isArray(props.name) ? props.name[0] : (props.name || '');
+    content = Array.isArray(props.content) ? props.content[0] : (props.content || '');
+  } else {
+    const form = await request.formData().catch(() => new FormData());
+    title = form.get('name') || form.get('title') || '';
+    content = form.get('content') || '';
+  }
+
+  if (!title) return json({ error: 'title (name) required' }, 400);
+
+  // Generate unique slug
+  const posts = await getIndex(env);
+  let base = slugify(title);
+  if (!base) base = `post-${Date.now()}`;
+  let slug = base;
+  let suffix = 2;
+  while (posts.find(p => p.slug === slug)) {
+    slug = `${base}-${suffix++}`;
+  }
+
+  // Create draft
+  const now = new Date().toISOString();
+  const entry = {
+    slug,
+    title,
+    date: now.slice(0, 10),
+    tags: [],
+    status: 'draft',
+    excerpt: '',
+    coverImage: null,
+    wordCount: content.split(/\s+/).filter(Boolean).length,
+    createdAt: now,
+    updatedAt: now,
+  };
+  posts.push(entry);
+  await saveIndex(env, posts);
+  await env.BLOG.put(`posts/${slug}/draft.md`, content, { httpMetadata: { contentType: 'text/markdown' } });
+
+  return new Response(null, {
+    status: 201,
+    headers: { Location: `/signal/#post/${slug}` },
+  });
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
