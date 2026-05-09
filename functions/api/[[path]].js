@@ -488,6 +488,12 @@ export async function onRequest(context) {
     }
   }
 
+  // Debug — temporary, session-protected
+  if (resource === 'debug-indieauth' && method === 'GET') {
+    const obj = await env.BLOG.get('auth/debug-token.json');
+    return obj ? new Response(await obj.text(), { headers: { 'content-type': 'application/json' } }) : json({ none: true });
+  }
+
   // YouTube title
   if (resource === 'youtube' && slug === 'title' && method === 'GET') {
     return handleYouTubeTitle(request);
@@ -930,6 +936,28 @@ const INDIEAUTH_PAGE = (params) => `<!DOCTYPE html>
 </body>
 </html>`;
 
+async function makeAuthCode(password, data) {
+  const payload = btoa(JSON.stringify(data));
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+  const sigHex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${payload}.${sigHex}`;
+}
+
+async function parseAuthCode(password, code) {
+  const dot = code.lastIndexOf('.');
+  if (dot === -1) return null;
+  const payload = code.slice(0, dot);
+  const sigHex = code.slice(dot + 1);
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+  const sig = new Uint8Array(sigHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(payload));
+  if (!valid) return null;
+  try { return JSON.parse(atob(payload)); } catch { return null; }
+}
+
 async function handleIndieAuth(request, env, slug) {
   const url = new URL(request.url);
 
@@ -943,7 +971,6 @@ async function handleIndieAuth(request, env, slug) {
       const password = form.get('password');
       const redirect_uri = form.get('redirect_uri');
       const state = form.get('state') || '';
-      const client_id = form.get('client_id') || '';
       const scope = form.get('scope') || 'create';
       const me = form.get('me') || 'https://jrbnz.com';
 
@@ -952,10 +979,10 @@ async function handleIndieAuth(request, env, slug) {
       }
       if (!redirect_uri) return new Response('redirect_uri required', { status: 400, headers: { 'content-type': 'text/plain' } });
 
-      const code = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
-      await env.BLOG.put(`auth/codes/${code}.json`, JSON.stringify({
-        redirect_uri, client_id, scope, me, expires: Date.now() + 5 * 60 * 1000,
-      }), { httpMetadata: { contentType: 'application/json' } });
+      // Self-contained signed code — no R2 storage needed
+      const code = await makeAuthCode(env.BLOG_PASSWORD, {
+        redirect_uri, scope, me, expires: Date.now() + 5 * 60 * 1000,
+      });
 
       const dest = new URL(redirect_uri);
       dest.searchParams.set('code', code);
@@ -964,7 +991,7 @@ async function handleIndieAuth(request, env, slug) {
     }
   }
 
-  // Token verification — iA Writer GETs the token endpoint with the bearer token to verify it
+  // Token verification — iA Writer GETs the token endpoint to verify an issued token
   if (slug === 'token' && request.method === 'GET') {
     const auth = request.headers.get('Authorization') || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
@@ -986,16 +1013,20 @@ async function handleIndieAuth(request, env, slug) {
       redirect_uri = params.get('redirect_uri');
     }
 
+    // Write debug log so we can inspect what iA Writer sends
+    await env.BLOG.put('auth/debug-token.json', JSON.stringify({
+      ts: new Date().toISOString(), ct,
+      grant_type, redirect_uri,
+      code_prefix: code ? code.slice(0, 12) : null,
+    }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
+
     if (grant_type !== 'authorization_code') return json({ error: 'unsupported_grant_type' }, 400);
     if (!code) return json({ error: 'invalid_grant' }, 400);
 
-    const codeObj = await env.BLOG.get(`auth/codes/${code}.json`);
-    if (!codeObj) return json({ error: 'invalid_grant' }, 400);
-    const codeData = await codeObj.json();
-    await env.BLOG.delete(`auth/codes/${code}.json`);
-
+    const codeData = await parseAuthCode(env.BLOG_PASSWORD, code);
+    if (!codeData) return json({ error: 'invalid_grant' }, 400);
     if (Date.now() > codeData.expires) return json({ error: 'invalid_grant' }, 400);
-    if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
+    if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant', debug: 'redirect_uri_mismatch' }, 400);
 
     const accessToken = await getMicropubToken(env.BLOG_PASSWORD);
     return json({ access_token: accessToken, token_type: 'Bearer', scope: codeData.scope || 'create', me: codeData.me || 'https://jrbnz.com' });
