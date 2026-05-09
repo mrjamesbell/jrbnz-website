@@ -104,7 +104,7 @@ body {
   margin: 6px 0;
   transition: background var(--transition-slow);
 }
-.rail-status-pip.is-saving  { background: var(--color-amber); animation: pip-breathe 1.4s ease-in-out infinite; }
+.rail-status-pip.is-saving  { background: var(--color-accent); animation: pip-breathe 1.4s ease-in-out infinite; }
 .rail-status-pip.is-error   { background: var(--color-danger); }
 
 @keyframes pip-breathe {
@@ -298,7 +298,7 @@ body {
 }
 
 .post-list-status.is-draft {
-  color: var(--color-amber);
+  color: var(--color-accent);
   border: 1px solid rgba(196,129,58,0.25);
 }
 
@@ -307,7 +307,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-draft);
+  background: var(--color-accent);
   margin-right: 6px;
   vertical-align: middle;
   flex-shrink: 0;
@@ -431,8 +431,8 @@ body {
 }
 
 .btn-publish:hover        { opacity: 0.85; }
-.btn-publish.is-published { background: oklch(44% 0.14 36 / 0.2); color: var(--color-accent); }
-.btn-publish.is-republish { background: var(--color-amber); color: var(--color-dark-text-primary); }
+.btn-publish.is-published { background: var(--color-accent-dim); color: var(--color-accent); }
+.btn-publish.is-republish { background: var(--color-accent); color: var(--color-dark-text-primary); }
 
 .btn-revert {
   padding: 6px 14px;
@@ -532,7 +532,7 @@ body {
 .fmtbar-view-btn.is-active {
   background: var(--color-accent-dim);
   color: var(--color-accent);
-  border: 1px solid oklch(44% 0.14 36 / 0.3);
+  border: 1px solid oklch(60% 0.15 72 / 0.3);
 }
 
 .fmtbar-view-btn:hover:not(.is-active) {

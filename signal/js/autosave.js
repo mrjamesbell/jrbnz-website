@@ -56,7 +56,7 @@ function _setSaving(active) {
   if (!saveStatus) return;
   if (active) {
     saveStatus.style.display = 'flex';
-    if (saveDot) saveDot.style.background = 'var(--color-amber)';
+    if (saveDot) saveDot.style.background = 'var(--color-accent)';
     if (savePip) savePip.classList.add('is-saving');
     if (savePip) savePip.classList.remove('is-error');
     if (saveText) saveText.textContent = 'Saving…';
