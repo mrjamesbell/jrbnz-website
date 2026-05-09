@@ -459,8 +459,16 @@ export async function onRequest(context) {
 
   // Debug — public, temporary
   if (resource === 'debug-indieauth' && method === 'GET') {
-    const obj = await env.BLOG.get('auth/debug-token.json');
-    return obj ? new Response(await obj.text(), { headers: { 'content-type': 'application/json' } }) : json({ none: true });
+    const [tokenPost, tokenGet, micropub] = await Promise.all([
+      env.BLOG.get('auth/debug-token.json'),
+      env.BLOG.get('auth/debug-token-get.json'),
+      env.BLOG.get('auth/debug-micropub.json'),
+    ]);
+    return json({
+      tokenPost: tokenPost ? JSON.parse(await tokenPost.text()) : null,
+      tokenGet: tokenGet ? JSON.parse(await tokenGet.text()) : null,
+      micropub: micropub ? JSON.parse(await micropub.text()) : null,
+    });
   }
 
   // All other routes require auth
@@ -1005,7 +1013,11 @@ async function handleIndieAuth(request, env, slug) {
     const auth = request.headers.get('Authorization') || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
     const expected = await getMicropubToken(env.BLOG_PASSWORD);
-    if (!token || token !== expected) return json({ error: 'unauthorized' }, 401);
+    const tokenMatch = !!token && token === expected;
+    await env.BLOG.put('auth/debug-token-get.json', JSON.stringify({
+      ts: new Date().toISOString(), hasAuth: !!auth, tokenMatch,
+    }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
+    if (!tokenMatch) return json({ error: 'unauthorized' }, 401);
     return json({ me: 'https://jrbnz.com', scope: 'create media', client_id: 'https://ia.net/writer' });
   }
 
@@ -1080,7 +1092,12 @@ function slugify(title) {
 
 async function handleMicropub(request, env) {
   if (request.method === 'GET') {
-    const q = new URL(request.url).searchParams.get('q');
+    const url = new URL(request.url);
+    const q = url.searchParams.get('q');
+    const auth = request.headers.get('Authorization') || '';
+    await env.BLOG.put('auth/debug-micropub.json', JSON.stringify({
+      ts: new Date().toISOString(), q, auth: auth.slice(0, 20),
+    }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
     if (q === 'config') return json({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] });
     if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
     return json({});
