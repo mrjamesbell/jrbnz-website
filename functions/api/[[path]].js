@@ -1018,7 +1018,7 @@ async function handleIndieAuth(request, env, slug) {
       ts: new Date().toISOString(), hasAuth: !!auth, tokenMatch,
     }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
     if (!tokenMatch) return json({ error: 'unauthorized' }, 401);
-    return json({ me: 'https://jrbnz.com', scope: 'create media', client_id: 'https://ia.net/writer' });
+    return json({ me: 'https://jrbnz.com/', scope: 'create media', client_id: 'https://ia.net/writer' });
   }
 
   if (slug === 'token' && request.method === 'POST') {
@@ -1052,7 +1052,13 @@ async function handleIndieAuth(request, env, slug) {
     if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
 
     const accessToken = await getMicropubToken(env.BLOG_PASSWORD);
-    return json({ access_token: accessToken, token_type: 'Bearer', scope: codeData.scope || 'create', me: codeData.me || 'https://jrbnz.com' });
+    // Normalise me to canonical form with trailing slash
+    const rawMe = codeData.me || 'https://jrbnz.com';
+    const me = rawMe.endsWith('/') ? rawMe : rawMe + '/';
+    const tokenResponse = { access_token: accessToken, token_type: 'Bearer', scope: codeData.scope || 'create', me };
+    debug.response = { me, scope: tokenResponse.scope, hasToken: !!accessToken };
+    await env.BLOG.put('auth/debug-token.json', JSON.stringify(debug), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
+    return json(tokenResponse);
   }
 
   return json({ error: 'Not found' }, 404);
