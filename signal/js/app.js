@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-09.24';
+const BUILD = '2026-05-09.25';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -66,6 +66,15 @@ const BUILD = '2026-05-09.24';
   document.getElementById('author-save').addEventListener('click', saveAuthor);
   document.getElementById('author-logout').addEventListener('click', logout);
   document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
+  document.getElementById('btn-copy-token').addEventListener('click', () => {
+    const val = document.getElementById('micropub-token-display').value;
+    if (!val) return;
+    navigator.clipboard.writeText(val).then(() => {
+      const btn = document.getElementById('btn-copy-token');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    });
+  });
 
   // Headshot buttons
   document.getElementById('btn-headshot-upload').addEventListener('click', () => {
@@ -437,7 +446,11 @@ async function createPost() {
 
 function openAuthorModal(e) {
   e.preventDefault();
-  fetch('/api/author').then(r => r.ok ? r.json() : {}).then(data => {
+  document.getElementById('micropub-token-display').value = '';
+  Promise.all([
+    fetch('/api/author').then(r => r.ok ? r.json() : {}),
+    fetch('/api/micropub-token').then(r => r.ok ? r.json() : {}),
+  ]).then(([data, tokenData]) => {
     document.getElementById('author-name').value = data.name || '';
     document.getElementById('author-bio').value = data.bio || '';
     document.getElementById('author-headshot').value = data.headshotUrl || '';
@@ -446,6 +459,7 @@ function openAuthorModal(e) {
     document.getElementById('author-linkedin').value = data.linkedin || '';
     document.getElementById('author-flickr').value = data.flickr || '';
     _updateHeadshotPreview(data.headshotUrl || '');
+    document.getElementById('micropub-token-display').value = tokenData.token || '';
     document.getElementById('author-modal').style.display = 'flex';
   }).catch(() => { document.getElementById('author-modal').style.display = 'flex'; });
 }

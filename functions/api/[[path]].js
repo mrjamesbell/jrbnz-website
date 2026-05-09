@@ -483,6 +483,12 @@ export async function onRequest(context) {
     if (method === 'PUT') return handleSaveAuthor(request, env);
   }
 
+  // Micropub bearer token (for iA Writer "Enter Token Manually")
+  if (resource === 'micropub-token' && method === 'GET') {
+    const mpToken = await getMicropubToken(env.BLOG_PASSWORD);
+    return json({ token: mpToken });
+  }
+
   // Site rebuild
   if (resource === 'site' && slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
 

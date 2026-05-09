@@ -289,6 +289,15 @@
         <input class="field-input" type="text" id="author-flickr" placeholder="username or https://flickr.com/photos/…">
       </div>
     </div>
+      <div>
+        <label class="field-label">iA Writer token</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="field-input" type="text" id="micropub-token-display" readonly style="font-family:monospace;font-size:11px;flex:1;cursor:text" placeholder="Loading…">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-token">Copy</button>
+        </div>
+        <p class="field-hint">In iA Writer: Settings → Locations → + → Micropub → Enter Token Manually → domain: <code>jrbnz.com</code></p>
+      </div>
+    </div>
     <div class="modal-footer">
       <div class="modal-footer-start">
         <button class="btn btn-secondary" id="author-logout">Sign out</button>
