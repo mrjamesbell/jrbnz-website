@@ -457,6 +457,12 @@ export async function onRequest(context) {
   if (resource === 'micropub' && slug === 'media') return handleMicropubMedia(request, env);
   if (resource === 'micropub') return handleMicropub(request, env);
 
+  // Debug — public, temporary
+  if (resource === 'debug-indieauth' && method === 'GET') {
+    const obj = await env.BLOG.get('auth/debug-token.json');
+    return obj ? new Response(await obj.text(), { headers: { 'content-type': 'application/json' } }) : json({ none: true });
+  }
+
   // All other routes require auth
   const token = getSessionCookie(request);
   if (!token || !await verifySession(token, env.BLOG_PASSWORD)) {
@@ -486,12 +492,6 @@ export async function onRequest(context) {
     } else {
       if (method === 'DELETE') return handleDeleteMedia(env, slug);
     }
-  }
-
-  // Debug — temporary, session-protected
-  if (resource === 'debug-indieauth' && method === 'GET') {
-    const obj = await env.BLOG.get('auth/debug-token.json');
-    return obj ? new Response(await obj.text(), { headers: { 'content-type': 'application/json' } }) : json({ none: true });
   }
 
   // YouTube title
