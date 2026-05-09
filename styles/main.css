@@ -45,6 +45,34 @@ a:hover {
     border-bottom-color: var(--accent-color);
 }
 
+/* Skip navigation */
+.skip-nav {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    padding: 12px 24px;
+    background: var(--accent-color);
+    color: oklch(97% 0.008 75);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: none;
+    z-index: 9999;
+    transition: top 0.1s ease;
+}
+
+.skip-nav:focus {
+    top: 0;
+}
+
+/* Focus styles */
+a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+    border-radius: 1px;
+}
+
 /* Container utilities */
 .container {
     max-width: 900px;

@@ -40,13 +40,13 @@
     align-items: flex-end;
     justify-content: flex-start;
     padding: 80px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.45), transparent);
 }
 
 .hero-overlay h1 {
     font-size: clamp(64px, 12vw, 140px);
     color: white;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 4px 28px rgba(0, 0, 0, 0.75), 0 2px 8px rgba(0, 0, 0, 0.5);
     text-align: left;
 }
 
@@ -69,16 +69,9 @@
     align-items: start;
 }
 
-.about-callout h2 {
-    font-size: clamp(56px, 8vw, 100px);
-    margin-bottom: 30px;
-    color: var(--text-color);
-    line-height: 1.1;
-}
-
 .callout-text {
-    font-size: clamp(24px, 3vw, 42px);
-    line-height: 1.4;
+    font-size: clamp(28px, 3.5vw, 48px);
+    line-height: 1.35;
     color: var(--text-color);
 }
 
@@ -110,6 +103,14 @@
     text-align: center;
 }
 
+.links-paragraph--secondary {
+    margin-top: clamp(12px, 1.5vw, 24px);
+}
+
+.links-paragraph--secondary .link-box {
+    font-size: clamp(48px, 6.4vw, 100px);
+}
+
 .link-box {
     display: inline;
     font-family: 'Bebas Neue', sans-serif;
@@ -119,10 +120,14 @@
     color: var(--background-color);
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    transition: all 0.2s ease;
     border-bottom: none;
     margin-right: 0.5em;
     white-space: nowrap;
+    background-image: linear-gradient(var(--accent-color), var(--accent-color));
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 4px;
+    transition: color 0.2s ease, background-size 0.15s ease-out;
 }
 
 .link-box:last-child {
@@ -133,17 +138,13 @@
     color: var(--accent-color);
     border-bottom: none;
     text-decoration: none;
+    background-size: 100% 4px;
 }
 
-.link-separator {
-    font-family: 'Bebas Neue', sans-serif;
-    font-weight: 500;
-    font-size: clamp(60px, 8vw, 125px);
-    color: var(--background-color);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    display: inline;
-    padding: 0 0.3em;
+.link-box--soon {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
 }
 
 /* Responsive */
@@ -192,5 +193,13 @@
 
     .link-box:last-child {
         margin-bottom: 0;
+    }
+
+    .links-paragraph--secondary .link-box {
+        font-size: clamp(36px, 9vw, 70px);
+    }
+
+    .links-paragraph--secondary {
+        margin-top: 0.4em;
     }
 }
