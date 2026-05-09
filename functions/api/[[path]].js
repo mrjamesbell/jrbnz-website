@@ -915,6 +915,7 @@ const INDIEAUTH_PAGE = (params) => `<!DOCTYPE html>
   <input type="hidden" name="redirect_uri" value="${esc(params.redirect_uri || '')}">
   <input type="hidden" name="state" value="${esc(params.state || '')}">
   <input type="hidden" name="scope" value="${esc(params.scope || 'create')}">
+  <input type="hidden" name="me" value="${esc(params.me || '')}">
   <input type="password" name="password" placeholder="Password" required autofocus>
   <button type="submit">Approve</button>
 </form>
@@ -936,6 +937,7 @@ async function handleIndieAuth(request, env, slug) {
       const state = form.get('state') || '';
       const client_id = form.get('client_id') || '';
       const scope = form.get('scope') || 'create';
+      const me = form.get('me') || 'https://jrbnz.com';
 
       if (!password || password !== env.BLOG_PASSWORD) {
         return new Response('Invalid password', { status: 401, headers: { 'content-type': 'text/plain' } });
@@ -944,7 +946,7 @@ async function handleIndieAuth(request, env, slug) {
 
       const code = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
       await env.BLOG.put(`auth/codes/${code}.json`, JSON.stringify({
-        redirect_uri, client_id, scope, expires: Date.now() + 5 * 60 * 1000,
+        redirect_uri, client_id, scope, me, expires: Date.now() + 5 * 60 * 1000,
       }), { httpMetadata: { contentType: 'application/json' } });
 
       const dest = new URL(redirect_uri);
@@ -977,7 +979,7 @@ async function handleIndieAuth(request, env, slug) {
     if (Date.now() > codeData.expires) return json({ error: 'invalid_grant' }, 400);
     if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
 
-    return json({ access_token: env.MICROPUB_TOKEN, token_type: 'Bearer', scope: codeData.scope || 'create', me: 'https://jrbnz.com/' });
+    return json({ access_token: env.MICROPUB_TOKEN, token_type: 'Bearer', scope: codeData.scope || 'create', me: codeData.me || 'https://jrbnz.com' });
   }
 
   return json({ error: 'Not found' }, 404);
@@ -994,8 +996,12 @@ function slugify(title) {
 }
 
 async function handleMicropub(request, env) {
-  // Discovery
-  if (request.method === 'GET') return json({});
+  if (request.method === 'GET') {
+    const q = new URL(request.url).searchParams.get('q');
+    if (q === 'config') return json({ 'post-types': [{ type: 'entry', name: 'Post' }], 'syndicate-to': [] });
+    if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
+    return json({});
+  }
 
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
