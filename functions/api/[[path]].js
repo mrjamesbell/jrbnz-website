@@ -1116,7 +1116,7 @@ async function handleMicropubMedia(request, env) {
   await env.BLOG.put(key, file.stream(), { httpMetadata: { contentType: file.type || 'application/octet-stream' } });
 
   const location = `https://jrbnz.com/${key}`;
-  return new Response(null, { status: 201, headers: { Location: location } });
+  return new Response(null, { status: 202, headers: { Location: location } });
 }
 
 // ── Micropub ──────────────────────────────────────────────────────────────────
@@ -1138,7 +1138,13 @@ async function handleMicropub(request, env) {
       ua: request.headers.get('User-Agent') || '',
     }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
     if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
-    return json({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] });
+    const linkHeaders = [
+      '<https://jrbnz.com/api/indieauth/auth>; rel="authorization_endpoint"',
+      '<https://jrbnz.com/api/indieauth/token>; rel="token_endpoint"',
+    ].join(', ');
+    return new Response(JSON.stringify({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] }), {
+      headers: { 'content-type': 'application/json', 'Link': linkHeaders },
+    });
   }
 
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -1195,8 +1201,8 @@ async function handleMicropub(request, env) {
   await env.BLOG.put(`posts/${slug}/draft.md`, content, { httpMetadata: { contentType: 'text/markdown' } });
 
   return new Response(null, {
-    status: 201,
-    headers: { Location: `/signal/#post/${slug}` },
+    status: 202,
+    headers: { Location: `https://jrbnz.com/signal/#post/${slug}` },
   });
 }
 
