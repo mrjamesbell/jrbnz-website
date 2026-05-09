@@ -548,7 +548,7 @@ body {
 .fmtbar-view-btn.is-active {
   background: var(--color-accent-dim);
   color: var(--color-accent);
-  border: 1px solid oklch(60% 0.15 72 / 0.3);
+  border: 1px solid oklch(64% 0.14 36 / 0.3);
 }
 
 .fmtbar-view-btn:hover:not(.is-active) {

@@ -75,7 +75,7 @@
 }
 
 .tag-filter-bar strong {
-  color: oklch(76% 0.20 74);
+  color: oklch(70% 0.16 36);
   font-style: normal;
 }
 
@@ -173,7 +173,7 @@
   font-family: 'Bebas Neue', sans-serif;
   font-size: 3em;
   line-height: 0.55;
-  color: oklch(76% 0.20 74);
+  color: oklch(70% 0.16 36);
   display: block;
   margin-bottom: 12px;
   font-style: normal;
@@ -231,7 +231,7 @@
 .all-posts-btn:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: oklch(76% 0.20 74 / 0.07);
+  background: oklch(70% 0.16 36 / 0.07);
   color: var(--background-color);
 }
 
@@ -321,7 +321,7 @@ img.leftalign {
 .post-nav a.post-nav-item:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: oklch(76% 0.20 74 / 0.07);
+  background: oklch(70% 0.16 36 / 0.07);
   color: var(--background-color);
 }
 
@@ -408,17 +408,17 @@ img.leftalign {
   font-size: 14px;
   letter-spacing: 0.05em;
   color: var(--accent-color);
-  border: 1px solid oklch(76% 0.20 74 / 0.32);
-  border-bottom: 1px solid oklch(76% 0.20 74 / 0.32);
+  border: 1px solid oklch(70% 0.16 36 / 0.32);
+  border-bottom: 1px solid oklch(70% 0.16 36 / 0.32);
   padding: 3px 10px;
   border-radius: 3px;
   transition: background 0.2s, border-color 0.2s;
 }
 
 .sidebar-tag:hover {
-  background: oklch(76% 0.20 74 / 0.10);
-  border-color: oklch(76% 0.20 74 / 0.55);
-  border-bottom-color: oklch(76% 0.20 74 / 0.55);
+  background: oklch(70% 0.16 36 / 0.10);
+  border-color: oklch(70% 0.16 36 / 0.55);
+  border-bottom-color: oklch(70% 0.16 36 / 0.55);
 }
 
 .sidebar-author {
@@ -618,9 +618,9 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 15px;
   letter-spacing: 0.06em;
-  color: oklch(76% 0.20 74);
-  border: 1px solid oklch(76% 0.20 74 / 0.35);
-  border-bottom: 1px solid oklch(76% 0.20 74 / 0.35);
+  color: oklch(70% 0.16 36);
+  border: 1px solid oklch(70% 0.16 36 / 0.35);
+  border-bottom: 1px solid oklch(70% 0.16 36 / 0.35);
   padding: 3px 10px;
   border-radius: 3px;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
@@ -628,9 +628,9 @@ img.leftalign {
 
 .post-masthead-tags .post-tag:hover {
   color: var(--text-color);
-  border-color: oklch(76% 0.20 74 / 0.7);
-  border-bottom-color: oklch(76% 0.20 74 / 0.7);
-  background: oklch(76% 0.20 74 / 0.1);
+  border-color: oklch(70% 0.16 36 / 0.7);
+  border-bottom-color: oklch(70% 0.16 36 / 0.7);
+  background: oklch(70% 0.16 36 / 0.1);
 }
 
 /* ── Blog index masthead ── */
@@ -665,8 +665,8 @@ img.leftalign {
 
 .back-to-posts:hover {
   color: var(--accent-color);
-  border-color: oklch(76% 0.20 74 / 0.5);
-  border-bottom-color: oklch(76% 0.20 74 / 0.5);
+  border-color: oklch(70% 0.16 36 / 0.5);
+  border-bottom-color: oklch(70% 0.16 36 / 0.5);
 }
 
 /* ── Tags box (index page — filter notice + chip cloud) ── */
@@ -703,8 +703,8 @@ img.leftalign {
 
 .tag-chip:hover {
   color: var(--accent-color);
-  border-color: oklch(76% 0.20 74 / 0.4);
-  border-bottom-color: oklch(76% 0.20 74 / 0.4);
+  border-color: oklch(70% 0.16 36 / 0.4);
+  border-bottom-color: oklch(70% 0.16 36 / 0.4);
 }
 
 /* ── Enhanced footer ── */
@@ -760,7 +760,7 @@ img.leftalign {
 }
 
 .footer-nav a:hover {
-  color: oklch(76% 0.20 74);
+  color: oklch(70% 0.16 36);
   border-bottom: none;
 }
 
@@ -777,7 +777,7 @@ img.leftalign {
 }
 
 .footer-rss:hover {
-  color: oklch(76% 0.20 74);
+  color: oklch(70% 0.16 36);
   border-bottom: none;
 }
 

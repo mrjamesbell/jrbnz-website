@@ -2,9 +2,9 @@
 :root {
     --text-color: #f0ede8;
     --background-color: oklch(18% 0.01 50);
-    --accent-color: oklch(76% 0.20 74);
-    --link-color: oklch(76% 0.20 74);
-    --hover-color: oklch(76% 0.20 74);
+    --accent-color: oklch(70% 0.16 36);
+    --link-color: oklch(70% 0.16 36);
+    --hover-color: oklch(70% 0.16 36);
     --gutter: clamp(24px, 5vw, 60px);
 }
 
@@ -99,7 +99,7 @@ a:focus-visible {
 }
 
 .site-nav .nav-logo:hover {
-    color: oklch(76% 0.20 74);
+    color: oklch(70% 0.16 36);
     border-bottom: none;
 }
 
@@ -121,8 +121,8 @@ a:focus-visible {
 
 .site-nav .nav-links a:hover,
 .site-nav .nav-links a.active {
-    color: oklch(76% 0.20 74);
-    border-bottom-color: oklch(76% 0.20 74);
+    color: oklch(70% 0.16 36);
+    border-bottom-color: oklch(70% 0.16 36);
 }
 
 /* Page header */
