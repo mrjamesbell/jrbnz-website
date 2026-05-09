@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-09.37';
+const BUILD = '2026-05-09.38';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -359,7 +359,8 @@ function renderList(posts) {
         const res = await fetch(`/api/posts/${slug}`, { method: 'DELETE' });
         if (!res.ok) throw new Error(await res.text());
         showToast('Post deleted');
-        await loadPostList();
+        invalidatePostCache();
+        await loadPosts();
       } catch (err) {
         showToast('Delete failed: ' + err.message, 'error');
       }
