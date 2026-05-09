@@ -1103,10 +1103,20 @@ function slugify(title) {
 }
 
 async function handleMicropub(request, env) {
+  // Bearer token auth (required for both GET and POST)
+  const auth = request.headers.get('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  const expectedToken = await getMicropubToken(env.BLOG_PASSWORD);
+  if (!token || token !== expectedToken) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'content-type': 'application/json', 'WWW-Authenticate': 'Bearer realm="micropub"' },
+    });
+  }
+
   if (request.method === 'GET') {
     const url = new URL(request.url);
     const q = url.searchParams.get('q');
-    const auth = request.headers.get('Authorization') || '';
     await env.BLOG.put('auth/debug-micropub.json', JSON.stringify({
       ts: new Date().toISOString(), q, auth: auth.slice(0, 20),
     }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
@@ -1115,12 +1125,6 @@ async function handleMicropub(request, env) {
   }
 
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-
-  // Bearer token auth
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  const expectedToken = await getMicropubToken(env.BLOG_PASSWORD);
-  if (!token || token !== expectedToken) return json({ error: 'Unauthorized' }, 401);
 
   // Parse body — iA Writer sends JSON or form-encoded
   let title = '';
