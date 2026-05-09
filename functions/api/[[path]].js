@@ -445,7 +445,8 @@ export async function onRequest(context) {
   // Legacy login route
   if (resource === 'login' && method === 'POST') return handleLogin(request, env);
 
-  // Micropub — uses its own bearer token, not session auth
+  // IndieAuth + Micropub — use their own auth, not session
+  if (resource === 'indieauth') return handleIndieAuth(request, env, slug);
   if (resource === 'micropub') return handleMicropub(request, env);
 
   // All other routes require auth
@@ -888,6 +889,98 @@ async function handleUpload(request, env, slug) {
   });
 
   return json({ url: `/${key}`, filename });
+}
+
+// ── IndieAuth ─────────────────────────────────────────────────────────────────
+
+const INDIEAUTH_PAGE = (params) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Authorize - James Bell</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:380px;margin:5rem auto;padding:1.5rem;color:#222}
+  h1{font-size:1.1rem;margin-bottom:.5rem}
+  p{margin:.5rem 0 1.5rem;color:#555;font-size:.9rem}
+  input[type=password]{display:block;width:100%;padding:.6rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:4px;font-size:1rem;box-sizing:border-box}
+  button{padding:.6rem 1.4rem;background:#1a1a1a;color:#fff;border:none;border-radius:4px;font-size:.95rem;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>Authorize Access</h1>
+<p><strong>${esc(params.client_id || 'An app')}</strong> wants to post to your site.</p>
+<form method="POST">
+  <input type="hidden" name="client_id" value="${esc(params.client_id || '')}">
+  <input type="hidden" name="redirect_uri" value="${esc(params.redirect_uri || '')}">
+  <input type="hidden" name="state" value="${esc(params.state || '')}">
+  <input type="hidden" name="scope" value="${esc(params.scope || 'create')}">
+  <input type="password" name="password" placeholder="Password" required autofocus>
+  <button type="submit">Approve</button>
+</form>
+</body>
+</html>`;
+
+async function handleIndieAuth(request, env, slug) {
+  const url = new URL(request.url);
+
+  if (slug === 'auth') {
+    if (request.method === 'GET') {
+      const params = Object.fromEntries(url.searchParams);
+      return new Response(INDIEAUTH_PAGE(params), { headers: { 'content-type': 'text/html' } });
+    }
+    if (request.method === 'POST') {
+      const form = await request.formData().catch(() => new FormData());
+      const password = form.get('password');
+      const redirect_uri = form.get('redirect_uri');
+      const state = form.get('state') || '';
+      const client_id = form.get('client_id') || '';
+      const scope = form.get('scope') || 'create';
+
+      if (!password || password !== env.BLOG_PASSWORD) {
+        return new Response('Invalid password', { status: 401, headers: { 'content-type': 'text/plain' } });
+      }
+      if (!redirect_uri) return new Response('redirect_uri required', { status: 400, headers: { 'content-type': 'text/plain' } });
+
+      const code = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
+      await env.BLOG.put(`auth/codes/${code}.json`, JSON.stringify({
+        redirect_uri, client_id, scope, expires: Date.now() + 5 * 60 * 1000,
+      }), { httpMetadata: { contentType: 'application/json' } });
+
+      const dest = new URL(redirect_uri);
+      dest.searchParams.set('code', code);
+      if (state) dest.searchParams.set('state', state);
+      return Response.redirect(dest.toString(), 302);
+    }
+  }
+
+  if (slug === 'token' && request.method === 'POST') {
+    const ct = request.headers.get('Content-Type') || '';
+    let grant_type, code, redirect_uri;
+    if (ct.includes('application/json')) {
+      ({ grant_type, code, redirect_uri } = await request.json().catch(() => ({})));
+    } else {
+      const form = await request.formData().catch(() => new FormData());
+      grant_type = form.get('grant_type');
+      code = form.get('code');
+      redirect_uri = form.get('redirect_uri');
+    }
+
+    if (grant_type !== 'authorization_code') return json({ error: 'unsupported_grant_type' }, 400);
+    if (!code) return json({ error: 'invalid_grant' }, 400);
+
+    const codeObj = await env.BLOG.get(`auth/codes/${code}.json`);
+    if (!codeObj) return json({ error: 'invalid_grant' }, 400);
+    const codeData = await codeObj.json();
+    await env.BLOG.delete(`auth/codes/${code}.json`);
+
+    if (Date.now() > codeData.expires) return json({ error: 'invalid_grant' }, 400);
+    if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
+
+    return json({ access_token: env.MICROPUB_TOKEN, token_type: 'Bearer', scope: codeData.scope || 'create', me: 'https://jrbnz.com/' });
+  }
+
+  return json({ error: 'Not found' }, 404);
 }
 
 // ── Micropub ──────────────────────────────────────────────────────────────────
