@@ -124,9 +124,9 @@ body {
 }
 
 @keyframes publish-pulse {
-  0%   { box-shadow: 0 0 0 0 oklch(72% 0.14 36 / 0.5); }
-  60%  { box-shadow: 0 0 0 7px oklch(72% 0.14 36 / 0); }
-  100% { box-shadow: 0 0 0 0 oklch(72% 0.14 36 / 0); }
+  0%   { box-shadow: 0 0 0 0 oklch(66% 0.09 140 / 0.5); }
+  60%  { box-shadow: 0 0 0 7px oklch(66% 0.09 140 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(66% 0.09 140 / 0); }
 }
 
 .signal-app.is-entering       { animation: signal-enter 250ms ease-out both; }
@@ -548,7 +548,7 @@ body {
 .fmtbar-view-btn.is-active {
   background: var(--color-accent-dim);
   color: var(--color-accent);
-  border: 1px solid oklch(64% 0.14 36 / 0.3);
+  border: 1px solid oklch(66% 0.09 140 / 0.3);
 }
 
 .fmtbar-view-btn:hover:not(.is-active) {

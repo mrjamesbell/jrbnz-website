@@ -13,8 +13,8 @@
   --color-cream:        #1e1b18;   /* warm dark — writing surface bg (dark mode)        */
   --color-cream-mid:    #161412;   /* slightly darker — toolbar / topbar bg             */
   --color-cream-dark:   #28251f;   /* input bg, hover, raised surfaces                  */
-  --color-accent:       oklch(64% 0.14 36);          /* terracotta — tags, links, active states, publish btn */
-  --color-accent-dim:   oklch(64% 0.14 36 / 0.15);  /* terracotta border on tag pills                       */
+  --color-accent:       oklch(66% 0.09 140);          /* warm sage — tags, links, active states, publish btn */
+  --color-accent-dim:   oklch(66% 0.09 140 / 0.15);  /* sage border on tag pills                            */
 
   /* ── Colour: Dark chrome (rail, sidebar, post list) ── */
   --color-dark-base:    #141414;   /* rail background                      */
@@ -40,7 +40,7 @@
   --color-cream-border-mid: #3d3a34;  /* image action pill borders          */
 
   /* ── Colour: Status ── */
-  --color-saved:   oklch(64% 0.14 36);  /* autosave dot — terracotta       */
+  --color-saved:   oklch(66% 0.09 140);  /* autosave dot — sage             */
   --color-danger:  #c0392b;             /* delete, destructive actions     */
 
   /* ── Typography ── */
