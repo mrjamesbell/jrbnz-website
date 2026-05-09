@@ -447,6 +447,7 @@ export async function onRequest(context) {
 
   // IndieAuth + Micropub — use their own auth, not session
   if (resource === 'indieauth') return handleIndieAuth(request, env, slug);
+  if (resource === 'micropub' && slug === 'media') return handleMicropubMedia(request, env);
   if (resource === 'micropub') return handleMicropub(request, env);
 
   // All other routes require auth
@@ -956,20 +957,33 @@ async function handleIndieAuth(request, env, slug) {
     }
   }
 
+  // Token verification — iA Writer GETs the token endpoint with the bearer token to verify it
+  if (slug === 'token' && request.method === 'GET') {
+    const auth = request.headers.get('Authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token || !env.MICROPUB_TOKEN || token !== env.MICROPUB_TOKEN) {
+      return json({ error: 'unauthorized' }, 401);
+    }
+    return json({ me: 'https://jrbnz.com', scope: 'create media', client_id: 'https://ia.net/writer' });
+  }
+
   if (slug === 'token' && request.method === 'POST') {
     const ct = request.headers.get('Content-Type') || '';
     let grant_type, code, redirect_uri;
     if (ct.includes('application/json')) {
       ({ grant_type, code, redirect_uri } = await request.json().catch(() => ({})));
     } else {
-      const form = await request.formData().catch(() => new FormData());
-      grant_type = form.get('grant_type');
-      code = form.get('code');
-      redirect_uri = form.get('redirect_uri');
+      // Use URLSearchParams for reliable x-www-form-urlencoded parsing
+      const body = await request.text().catch(() => '');
+      const params = new URLSearchParams(body);
+      grant_type = params.get('grant_type');
+      code = params.get('code');
+      redirect_uri = params.get('redirect_uri');
     }
 
     if (grant_type !== 'authorization_code') return json({ error: 'unsupported_grant_type' }, 400);
     if (!code) return json({ error: 'invalid_grant' }, 400);
+    if (!env.MICROPUB_TOKEN) return json({ error: 'server_error' }, 500);
 
     const codeObj = await env.BLOG.get(`auth/codes/${code}.json`);
     if (!codeObj) return json({ error: 'invalid_grant' }, 400);
@@ -985,6 +999,29 @@ async function handleIndieAuth(request, env, slug) {
   return json({ error: 'Not found' }, 404);
 }
 
+// ── Micropub media endpoint ───────────────────────────────────────────────────
+
+async function handleMicropubMedia(request, env) {
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+
+  const auth = request.headers.get('Authorization') || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token || !env.MICROPUB_TOKEN || token !== env.MICROPUB_TOKEN) {
+    return json({ error: 'Unauthorized' }, 401);
+  }
+
+  const formData = await request.formData().catch(() => null);
+  const file = formData?.get('file');
+  if (!file || typeof file === 'string') return json({ error: 'file required' }, 400);
+
+  const safeName = file.name.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
+  const key = `media/${Date.now()}-${safeName}`;
+  await env.BLOG.put(key, file.stream(), { httpMetadata: { contentType: file.type || 'application/octet-stream' } });
+
+  const location = `https://jrbnz.com/${key}`;
+  return new Response(null, { status: 201, headers: { Location: location } });
+}
+
 // ── Micropub ──────────────────────────────────────────────────────────────────
 
 function slugify(title) {
@@ -998,7 +1035,7 @@ function slugify(title) {
 async function handleMicropub(request, env) {
   if (request.method === 'GET') {
     const q = new URL(request.url).searchParams.get('q');
-    if (q === 'config') return json({ 'post-types': [{ type: 'entry', name: 'Post' }], 'syndicate-to': [] });
+    if (q === 'config') return json({ 'media-endpoint': 'https://jrbnz.com/api/micropub/media', 'post-types': [{ type: 'h-entry', name: 'Post' }], 'syndicate-to': [] });
     if (q === 'syndicate-to') return json({ 'syndicate-to': [] });
     return json({});
   }
