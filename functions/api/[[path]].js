@@ -936,8 +936,17 @@ const INDIEAUTH_PAGE = (params) => `<!DOCTYPE html>
 </body>
 </html>`;
 
+function toUrlSafeB64(str) {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function fromUrlSafeB64(str) {
+  const s = str.replace(/-/g, '+').replace(/_/g, '/');
+  return atob(s + '==='.slice((s.length + 3) % 4));
+}
+
 async function makeAuthCode(password, data) {
-  const payload = btoa(JSON.stringify(data));
+  const payload = toUrlSafeB64(JSON.stringify(data));
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
@@ -955,7 +964,7 @@ async function parseAuthCode(password, code) {
   const sig = new Uint8Array(sigHex.match(/.{2}/g).map(b => parseInt(b, 16)));
   const valid = await crypto.subtle.verify('HMAC', key, sig, enc.encode(payload));
   if (!valid) return null;
-  try { return JSON.parse(atob(payload)); } catch { return null; }
+  try { return JSON.parse(fromUrlSafeB64(payload)); } catch { return null; }
 }
 
 async function handleIndieAuth(request, env, slug) {
@@ -1013,20 +1022,22 @@ async function handleIndieAuth(request, env, slug) {
       redirect_uri = params.get('redirect_uri');
     }
 
-    // Write debug log so we can inspect what iA Writer sends
-    await env.BLOG.put('auth/debug-token.json', JSON.stringify({
-      ts: new Date().toISOString(), ct,
-      grant_type, redirect_uri,
-      code_prefix: code ? code.slice(0, 12) : null,
-    }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
-
     if (grant_type !== 'authorization_code') return json({ error: 'unsupported_grant_type' }, 400);
     if (!code) return json({ error: 'invalid_grant' }, 400);
 
     const codeData = await parseAuthCode(env.BLOG_PASSWORD, code);
+    const debug = {
+      ts: new Date().toISOString(), ct, grant_type, redirect_uri,
+      code_prefix: code.slice(0, 12),
+      parsed: !!codeData,
+      redirect_match: codeData ? codeData.redirect_uri === redirect_uri : null,
+      expired: codeData ? Date.now() > codeData.expires : null,
+    };
+    await env.BLOG.put('auth/debug-token.json', JSON.stringify(debug), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
+
     if (!codeData) return json({ error: 'invalid_grant' }, 400);
     if (Date.now() > codeData.expires) return json({ error: 'invalid_grant' }, 400);
-    if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant', debug: 'redirect_uri_mismatch' }, 400);
+    if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
 
     const accessToken = await getMicropubToken(env.BLOG_PASSWORD);
     return json({ access_token: accessToken, token_type: 'Bearer', scope: codeData.scope || 'create', me: codeData.me || 'https://jrbnz.com' });
