@@ -459,15 +459,17 @@ export async function onRequest(context) {
 
   // Debug — public, temporary
   if (resource === 'debug-indieauth' && method === 'GET') {
-    const [tokenPost, tokenGet, micropub] = await Promise.all([
+    const [tokenPost, tokenGet, micropub, authGet] = await Promise.all([
       env.BLOG.get('auth/debug-token.json'),
       env.BLOG.get('auth/debug-token-get.json'),
       env.BLOG.get('auth/debug-micropub.json'),
+      env.BLOG.get('auth/debug-indieauth-get.json'),
     ]);
     return json({
       tokenPost: tokenPost ? JSON.parse(await tokenPost.text()) : null,
       tokenGet: tokenGet ? JSON.parse(await tokenGet.text()) : null,
       micropub: micropub ? JSON.parse(await micropub.text()) : null,
+      authGet: authGet ? JSON.parse(await authGet.text()) : null,
     });
   }
 
@@ -987,6 +989,9 @@ async function handleIndieAuth(request, env, slug) {
   if (slug === 'auth') {
     if (request.method === 'GET') {
       const params = Object.fromEntries(url.searchParams);
+      await env.BLOG.put('auth/debug-indieauth-get.json', JSON.stringify({
+        ts: new Date().toISOString(), params,
+      }), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
       return new Response(INDIEAUTH_PAGE(params), { headers: { 'content-type': 'text/html' } });
     }
     if (request.method === 'POST') {
@@ -1058,10 +1063,14 @@ async function handleIndieAuth(request, env, slug) {
     if (codeData.redirect_uri !== redirect_uri) return json({ error: 'invalid_grant' }, 400);
 
     const accessToken = await getMicropubToken(env.BLOG_PASSWORD);
-    // Normalise me to canonical form with trailing slash
-    const rawMe = codeData.me || 'https://jrbnz.com';
-    const me = rawMe.endsWith('/') ? rawMe : rawMe + '/';
-    const tokenResponse = { access_token: accessToken, token_type: 'Bearer', scope: codeData.scope || 'create', me };
+    const me = codeData.me || 'https://jrbnz.com';
+    const tokenResponse = {
+      access_token: accessToken,
+      token_type: 'Bearer',
+      scope: codeData.scope || 'create',
+      me,
+      micropub: 'https://jrbnz.com/api/micropub',
+    };
     debug.response = { me, scope: tokenResponse.scope, hasToken: !!accessToken };
     await env.BLOG.put('auth/debug-token.json', JSON.stringify(debug), { httpMetadata: { contentType: 'application/json' } }).catch(() => {});
     return json(tokenResponse);
