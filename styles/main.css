@@ -2,9 +2,9 @@
 :root {
     --text-color: #f0ede8;
     --background-color: oklch(18% 0.01 50);
-    --accent-color: oklch(52% 0.17 72);
-    --link-color: oklch(52% 0.17 72);
-    --hover-color: oklch(52% 0.17 72);
+    --accent-color: oklch(76% 0.20 74);
+    --link-color: oklch(76% 0.20 74);
+    --hover-color: oklch(76% 0.20 74);
     --gutter: clamp(24px, 5vw, 60px);
 }
 

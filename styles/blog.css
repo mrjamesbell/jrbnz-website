@@ -231,7 +231,7 @@
 .all-posts-btn:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: oklch(52% 0.17 72 / 0.07);
+  background: oklch(76% 0.20 74 / 0.07);
   color: var(--background-color);
 }
 
@@ -321,7 +321,7 @@ img.leftalign {
 .post-nav a.post-nav-item:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: oklch(52% 0.17 72 / 0.07);
+  background: oklch(76% 0.20 74 / 0.07);
   color: var(--background-color);
 }
 
@@ -408,17 +408,17 @@ img.leftalign {
   font-size: 14px;
   letter-spacing: 0.05em;
   color: var(--accent-color);
-  border: 1px solid oklch(52% 0.17 72 / 0.32);
-  border-bottom: 1px solid oklch(52% 0.17 72 / 0.32);
+  border: 1px solid oklch(76% 0.20 74 / 0.32);
+  border-bottom: 1px solid oklch(76% 0.20 74 / 0.32);
   padding: 3px 10px;
   border-radius: 3px;
   transition: background 0.2s, border-color 0.2s;
 }
 
 .sidebar-tag:hover {
-  background: oklch(52% 0.17 72 / 0.10);
-  border-color: oklch(52% 0.17 72 / 0.55);
-  border-bottom-color: oklch(52% 0.17 72 / 0.55);
+  background: oklch(76% 0.20 74 / 0.10);
+  border-color: oklch(76% 0.20 74 / 0.55);
+  border-bottom-color: oklch(76% 0.20 74 / 0.55);
 }
 
 .sidebar-author {
@@ -665,8 +665,8 @@ img.leftalign {
 
 .back-to-posts:hover {
   color: var(--accent-color);
-  border-color: oklch(52% 0.17 72 / 0.5);
-  border-bottom-color: oklch(52% 0.17 72 / 0.5);
+  border-color: oklch(76% 0.20 74 / 0.5);
+  border-bottom-color: oklch(76% 0.20 74 / 0.5);
 }
 
 /* ── Tags box (index page — filter notice + chip cloud) ── */
@@ -703,8 +703,8 @@ img.leftalign {
 
 .tag-chip:hover {
   color: var(--accent-color);
-  border-color: oklch(52% 0.17 72 / 0.4);
-  border-bottom-color: oklch(52% 0.17 72 / 0.4);
+  border-color: oklch(76% 0.20 74 / 0.4);
+  border-bottom-color: oklch(76% 0.20 74 / 0.4);
 }
 
 /* ── Enhanced footer ── */
