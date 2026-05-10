@@ -787,3 +787,69 @@ img.leftalign {
   fill: currentColor;
   flex-shrink: 0;
 }
+
+/* ── Post components (stats bar, threads grid) ── */
+
+.post-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 36px;
+  margin: 32px 0;
+  padding: 18px 0 16px;
+  border-top: 1px solid oklch(18% 0.01 50 / 0.18);
+  border-bottom: 1px solid oklch(18% 0.01 50 / 0.18);
+}
+
+.post-stat strong {
+  display: block;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--background-color);
+}
+
+.post-stat span {
+  display: block;
+  margin-top: 5px;
+  color: oklch(28% 0.01 50 / 0.55);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.post-threads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 32px 0;
+}
+
+.post-thread {
+  padding-top: 14px;
+  border-top: 2px solid var(--accent-color);
+}
+
+.post-thread h4 {
+  margin: 0 0 8px;
+  font-family: 'Lora', serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--background-color);
+}
+
+.post-thread p {
+  margin: 0;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  color: oklch(28% 0.01 50 / 0.75);
+}
+
+@media (max-width: 600px) {
+  .post-threads {
+    grid-template-columns: 1fr;
+  }
+}

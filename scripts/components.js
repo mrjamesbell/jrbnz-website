@@ -29,4 +29,13 @@ async function loadPartial(id, url) {
     document.querySelectorAll('.footer-year').forEach(function (el) {
         el.textContent = new Date().getFullYear();
     });
+
+    // Apply live accent colour from settings to static pages
+    try {
+        const res = await fetch('/api/site/accent');
+        if (res.ok) {
+            const { accent } = await res.json();
+            if (accent) document.documentElement.style.setProperty('--accent-color', accent);
+        }
+    } catch (e) {}
 })();
