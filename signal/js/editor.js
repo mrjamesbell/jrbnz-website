@@ -951,7 +951,7 @@ async function _saveSettings() {
       }
       originalSlug = newSlug;
       currentSlug = newSlug;
-      navigate(`/signal/edit/${newSlug}`, true);
+      navigate(`#edit/${newSlug}`);
     } catch (e) {
       showToast('Rename failed: ' + e.message, 'error');
       return;
@@ -978,8 +978,8 @@ async function _deletePost() {
   try {
     const res = await fetch(`${_getApiBase()}/${currentSlug}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(await res.text());
-    if (currentType === 'page') { invalidatePageCache(); showToast('Page deleted', 'default'); navigate('/signal/pages'); }
-    else { invalidatePostCache(); showToast('Post deleted', 'default'); navigate('/signal/'); }
+    if (currentType === 'page') { invalidatePageCache(); showToast('Page deleted', 'default'); navigate('#pages'); }
+    else { invalidatePostCache(); showToast('Post deleted', 'default'); navigate('#'); }
   } catch (e) {
     showToast('Delete failed: ' + e.message, 'error');
   }

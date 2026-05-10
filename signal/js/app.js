@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.64';
+const BUILD = '2026-05-10.65';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ const BUILD = '2026-05-10.64';
   document.getElementById('topbar-breadcrumb')?.addEventListener('click', e => {
     e.preventDefault();
     const href = document.getElementById('topbar-breadcrumb').getAttribute('href');
-    navigate(href || '/signal/');
+    navigate(href || '#');
   });
 
   // New post button
@@ -150,8 +150,8 @@ const BUILD = '2026-05-10.64';
   });
 
   // Route on load
-  _route(window.location.pathname);
-  window.addEventListener('popstate', () => _route(window.location.pathname));
+  _route(location.hash.slice(1));
+  window.addEventListener('hashchange', () => _route(location.hash.slice(1)));
 })();
 
 // ── Headshot upload ───────────────────────────────────────────────────────────
@@ -298,18 +298,18 @@ function _escAttr(str) {
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 
-function navigate(path, replace = false) {
-  if (replace) history.replaceState(null, '', path);
-  else history.pushState(null, '', path);
-  _route(path);
+function navigate(hash) {
+  const h = String(hash).replace(/^#/, '');
+  location.hash = h;
+  _route(h);
 }
 
-function _route(path) {
-  const editMatch = path.match(/^\/signal\/edit\/(.+)$/);
-  const editPageMatch = path.match(/^\/signal\/edit-page\/(.+)$/);
-  const mediaMatch = path === '/signal/media';
-  const pagesMatch = path === '/signal/pages';
-  const snippetsMatch = path === '/signal/snippets';
+function _route(hash) {
+  const editMatch = hash.match(/^edit\/(.+)$/);
+  const editPageMatch = hash.match(/^edit-page\/(.+)$/);
+  const mediaMatch = hash === 'media';
+  const pagesMatch = hash === 'pages';
+  const snippetsMatch = hash === 'snippets';
 
   if (editPageMatch) {
     _setRailActive('pages');
@@ -417,7 +417,7 @@ function renderList(posts) {
   document.querySelectorAll('.post-list-item').forEach(el => {
     el.addEventListener('click', e => {
       if (e.target.closest('.post-list-delete')) return;
-      navigate(`/signal/edit/${el.dataset.slug}`);
+      navigate(`#edit/${el.dataset.slug}`);
     });
   });
 
@@ -497,7 +497,7 @@ function renderPageList(pages) {
   document.querySelectorAll('.page-list-item').forEach(el => {
     el.addEventListener('click', e => {
       if (e.target.closest('.post-list-delete')) return;
-      navigate(`/signal/edit-page/${el.dataset.slug}`);
+      navigate(`#edit-page/${el.dataset.slug}`);
     });
   });
 
@@ -600,7 +600,7 @@ async function createPost() {
     const post = await res.json();
     allPosts.unshift(post);
     closeNewPostModal();
-    navigate(`/signal/edit/${post.slug}`);
+    navigate(`#edit/${post.slug}`);
   } catch (e) {
     showToast('Failed: ' + e.message, 'error');
   } finally {
@@ -669,7 +669,7 @@ async function createPage() {
     const page = await res.json();
     allPages.unshift(page);
     closeNewPageModal();
-    navigate(`/signal/edit-page/${page.slug}`);
+    navigate(`#edit-page/${page.slug}`);
   } catch (e) {
     showToast('Failed: ' + e.message, 'error');
   } finally {
