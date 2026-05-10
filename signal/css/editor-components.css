@@ -1020,7 +1020,7 @@
 }
 
 /* Accent colour pickers in Settings modal */
-.accent-picker-group { display: flex; flex-direction: column; gap: 10px; }
+.accent-picker-group { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
 .accent-picker-label { font-size: 10px; font-family: var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-cream-text-muted); }
 .accent-swatch-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .accent-swatch {
@@ -1047,12 +1047,6 @@
 /* Settings modal — extra body spacing */
 #app-settings-modal .modal-body {
   gap: var(--space-6);
-}
-
-.settings-section-sep {
-  height: 1px;
-  background: var(--color-cream-border);
-  margin: var(--space-2) 0;
 }
 
 /* Action rows in Settings modal */

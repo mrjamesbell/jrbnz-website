@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-10.44';
+const BUILD = '2026-05-10.45';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -483,11 +483,7 @@ async function createPost() {
 
 function openAuthorModal(e) {
   e.preventDefault();
-  document.getElementById('micropub-token-display').value = '';
-  Promise.all([
-    fetch('/api/author').then(r => r.ok ? r.json() : {}),
-    fetch('/api/micropub-token').then(r => r.ok ? r.json() : {}),
-  ]).then(([data, tokenData]) => {
+  fetch('/api/author').then(r => r.ok ? r.json() : {}).then(data => {
     document.getElementById('author-name').value = data.name || '';
     document.getElementById('author-bio').value = data.bio || '';
     document.getElementById('author-headshot').value = data.headshotUrl || '';
@@ -496,7 +492,6 @@ function openAuthorModal(e) {
     document.getElementById('author-linkedin').value = data.linkedin || '';
     document.getElementById('author-flickr').value = data.flickr || '';
     _updateHeadshotPreview(data.headshotUrl || '');
-    document.getElementById('micropub-token-display').value = tokenData.token || '';
     document.getElementById('author-modal').style.display = 'flex';
   }).catch(() => { document.getElementById('author-modal').style.display = 'flex'; });
 }
@@ -553,17 +548,22 @@ async function logout() {
 // ── App settings modal ────────────────────────────────────────────────────────
 
 function openAppSettingsModal() {
-  // Load saved API key
   const savedKey = localStorage.getItem('signal-apikey') || '';
   document.getElementById('app-settings-apikey').value = savedKey;
   document.getElementById('app-settings-apikey').type = 'password';
   document.getElementById('btn-show-apikey').textContent = 'Show';
 
-  // Mark active swatches
   const signalAccent = localStorage.getItem('signal-accent') || '';
   const liveAccent = localStorage.getItem('live-accent') || '';
   _markActiveSwatch('signal-swatch-row', signalAccent);
   _markActiveSwatch('live-swatch-row', liveAccent);
+
+  // Fetch iA Writer token
+  const tokenEl = document.getElementById('micropub-token-display');
+  tokenEl.value = '';
+  fetch('/api/micropub-token').then(r => r.ok ? r.json() : {}).then(d => {
+    tokenEl.value = d.token || '';
+  }).catch(() => {});
 
   document.getElementById('app-settings-modal').style.display = 'flex';
 }

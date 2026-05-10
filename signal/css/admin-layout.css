@@ -218,7 +218,6 @@ body {
   text-transform: uppercase;
   font-family: var(--font-display);
   padding: 0 0 10px;
-  border-bottom: var(--border-cream);
   margin-bottom: 0;
 }
 
@@ -230,7 +229,6 @@ body {
   display: flex;
   align-items: center;
   padding: 16px 0;
-  border-bottom: var(--border-cream);
   cursor: pointer;
   text-decoration: none;
   transition: background var(--transition-fast), margin var(--transition-fast), padding var(--transition-fast);
