@@ -507,6 +507,7 @@ export async function onRequest(context) {
     } else {
       if (action === 'publish' && method === 'POST') return handlePublishPage(env, slug);
       if (action === 'unpublish' && method === 'POST') return handleUnpublishPage(env, slug);
+      if (action === 'rename' && method === 'POST') return handleRenamePage(request, env, slug);
     }
   }
 
@@ -888,6 +889,33 @@ async function handleRename(request, env, oldSlug) {
   }
 
   return json(posts[idx]);
+}
+
+async function handleRenamePage(request, env, oldSlug) {
+  const { newSlug } = await request.json();
+  if (!newSlug) return json({ error: 'newSlug required' }, 400);
+  if (newSlug === oldSlug) return json({ ok: true });
+
+  const pages = await getPagesIndex(env);
+  if (pages.find(p => p.slug === newSlug)) return json({ error: 'slug already exists' }, 409);
+
+  const idx = pages.findIndex(p => p.slug === oldSlug);
+  if (idx === -1) return json({ error: 'Not found' }, 404);
+
+  // Copy all R2 objects under old slug to new slug, then delete old
+  const listed = await env.BLOG.list({ prefix: `pages/${oldSlug}/` });
+  await Promise.all(listed.objects.map(async o => {
+    const obj = await env.BLOG.get(o.key);
+    if (!obj) return;
+    const newKey = o.key.replace(`pages/${oldSlug}/`, `pages/${newSlug}/`);
+    await env.BLOG.put(newKey, obj.body, { httpMetadata: o.httpMetadata });
+    await env.BLOG.delete(o.key);
+  }));
+
+  pages[idx] = { ...pages[idx], slug: newSlug, updatedAt: new Date().toISOString() };
+  await savePagesIndex(env, pages);
+
+  return json(pages[idx]);
 }
 
 async function handleUpload(request, env, slug) {

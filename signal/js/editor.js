@@ -954,9 +954,12 @@ async function _saveSettings() {
     if (navUrlInput) currentPost.nav_url = navUrlInput.value.trim() || null;
   }
 
-  if (newSlug !== currentSlug && !isPage) {
+  if (newSlug !== currentSlug) {
+    const renameUrl = isPage
+      ? `/api/pages/${currentSlug}/rename`
+      : `/api/posts/${currentSlug}/rename`;
     try {
-      const res = await fetch(`/api/posts/${currentSlug}/rename`, {
+      const res = await fetch(renameUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newSlug })
@@ -968,7 +971,7 @@ async function _saveSettings() {
       }
       originalSlug = newSlug;
       currentSlug = newSlug;
-      navigate(`#edit/${newSlug}`);
+      navigate(isPage ? `#edit-page/${newSlug}` : `#edit/${newSlug}`);
     } catch (e) {
       showToast('Rename failed: ' + e.message, 'error');
       return;
