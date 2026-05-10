@@ -3,8 +3,8 @@
     --text-color: #f0ede8;
     --background-color: oklch(18% 0.01 50);
     --accent-color: oklch(68% 0.13 50);
-    --link-color: oklch(68% 0.13 50);
-    --hover-color: oklch(68% 0.13 50);
+    --link-color: var(--accent-color);
+    --hover-color: var(--accent-color);
     --gutter: clamp(24px, 5vw, 60px);
 }
 
@@ -99,7 +99,7 @@ a:focus-visible {
 }
 
 .site-nav .nav-logo:hover {
-    color: oklch(68% 0.13 50);
+    color: var(--accent-color);
     border-bottom: none;
 }
 
@@ -121,8 +121,8 @@ a:focus-visible {
 
 .site-nav .nav-links a:hover,
 .site-nav .nav-links a.active {
-    color: oklch(68% 0.13 50);
-    border-bottom-color: oklch(68% 0.13 50);
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
 }
 
 /* Page header */
