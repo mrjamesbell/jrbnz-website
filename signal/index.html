@@ -89,6 +89,15 @@
       <span class="rail-item-label">Snippets</span>
     </a>
 
+    <a href="#help" class="rail-item" id="rail-help" data-route="help" title="Help">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <span class="rail-item-label">Help</span>
+    </a>
+
     <div class="rail-spacer"></div>
 
     <!-- Bottom items -->
@@ -331,6 +340,68 @@
       </div>
     </div>
 
+    <div id="view-help" class="post-list-view" style="display:none">
+      <div class="post-list-inner">
+        <div class="post-list-header">
+          <h1 class="post-list-title">Help</h1>
+        </div>
+        <div class="help-content">
+
+          <div class="help-section">
+            <h2 class="help-heading">Writing posts &amp; pages</h2>
+            <p>Posts and pages use Markdown. Common syntax:</p>
+            <table class="help-table">
+              <tr><td><code># Heading 1</code></td><td>Large heading</td></tr>
+              <tr><td><code>## Heading 2</code></td><td>Section heading</td></tr>
+              <tr><td><code>**bold**</code></td><td><strong>bold</strong></td></tr>
+              <tr><td><code>*italic*</code></td><td><em>italic</em></td></tr>
+              <tr><td><code>[link](https://…)</code></td><td>Hyperlink</td></tr>
+              <tr><td><code>![alt](https://…)</code></td><td>Image</td></tr>
+              <tr><td><code>- item</code></td><td>Bullet list</td></tr>
+              <tr><td><code>1. item</code></td><td>Numbered list</td></tr>
+              <tr><td><code>---</code></td><td>Horizontal rule</td></tr>
+            </table>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Inserting images</h2>
+            <p>Use the <strong>image button</strong> in the editor toolbar. You can upload a new image or pick one from the media library. Layout options: full-width, left float, right float, centred.</p>
+            <p>You can also paste a URL directly into the image block dialog.</p>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Embedding YouTube</h2>
+            <p>Paste a YouTube URL on its own line — it will be converted to a full embed automatically. Or use the toolbar button to set width and alignment.</p>
+            <pre class="help-code">https://www.youtube.com/watch?v=dQw4w9WgXcQ</pre>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Snippets</h2>
+            <p>Snippets are reusable styled HTML blocks. Use the <strong>Insert snippet</strong> button in the editor toolbar to pick one. Current built-ins:</p>
+            <ul class="help-list">
+              <li><strong>Stats bar</strong> — a row of large numbers with labels (e.g. years, shows, cities)</li>
+              <li><strong>Two-column grid</strong> — side-by-side content blocks with headings and text</li>
+              <li><strong>Timeline</strong> — a vertical timeline with year, title, company, and optional tag/award</li>
+            </ul>
+            <p>Custom snippets can be created and managed in the <strong>Snippets</strong> view.</p>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Site navigation</h2>
+            <p>The site nav is built automatically from CMS pages with <strong>Include in site navigation</strong> checked. Order is: Now → Blog → Photos → everything else.</p>
+            <p>You can set a custom <strong>Nav link URL</strong> on a page to point the nav link somewhere else — useful for external sites.</p>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Publishing</h2>
+            <p>Hitting <strong>Publish</strong> on a post or page writes the HTML to R2 immediately — the live site updates within seconds. No deploy needed.</p>
+            <p>If you change navigation settings (adding/removing pages from the nav), use <strong>Rebuild site</strong> in the settings panel to regenerate all posts and pages with the updated nav.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div><!-- /.signal-main -->
 
 </div><!-- /.signal-app -->
@@ -359,6 +430,11 @@
           Include in site navigation
         </label>
         <p class="field-hint">Adds this page to the site nav bar.</p>
+        <div id="settings-nav-url-row" style="margin-top:10px;display:none">
+          <label class="field-label" for="settings-nav-url">Nav link URL (optional)</label>
+          <input class="field-input" type="url" id="settings-nav-url" placeholder="https://… (leave blank to link to this page)">
+          <p class="field-hint">Override the nav link destination — useful for external URLs.</p>
+        </div>
       </div>
       <div id="settings-date-row">
         <label class="field-label" for="settings-date">Date</label>

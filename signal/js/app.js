@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.65';
+const BUILD = '2026-05-10.66';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -310,6 +310,7 @@ function _route(hash) {
   const mediaMatch = hash === 'media';
   const pagesMatch = hash === 'pages';
   const snippetsMatch = hash === 'snippets';
+  const helpMatch = hash === 'help';
 
   if (editPageMatch) {
     _setRailActive('pages');
@@ -332,6 +333,10 @@ function _route(hash) {
     closeEditor();
     _showView('snippets');
     initSnippetsView();
+  } else if (helpMatch) {
+    _setRailActive('help');
+    closeEditor();
+    _showView('help');
   } else {
     _setRailActive('list');
     closeEditor();
@@ -359,18 +364,22 @@ function _showView(view) {
   const pagesEl = document.getElementById('view-pages');
   const mediaEl = document.getElementById('media-view');
   const snippetsEl = document.getElementById('view-snippets');
+  const helpEl = document.getElementById('view-help');
   const showList = view === 'list';
   const showPages = view === 'pages';
   const showMedia = view === 'media';
   const showSnippets = view === 'snippets';
+  const showHelp = view === 'help';
   listEl.style.display = showList ? '' : 'none';
   if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
   mediaEl.style.display = showMedia ? '' : 'none';
   if (snippetsEl) snippetsEl.style.display = showSnippets ? '' : 'none';
+  if (helpEl) helpEl.style.display = showHelp ? '' : 'none';
   if (showList) _animateIn(listEl);
   if (showPages && pagesEl) _animateIn(pagesEl);
   if (showMedia) _animateIn(mediaEl);
   if (showSnippets && snippetsEl) _animateIn(snippetsEl);
+  if (showHelp && helpEl) _animateIn(helpEl);
   // view-editor visibility managed by openEditor / closeEditor
 }
 

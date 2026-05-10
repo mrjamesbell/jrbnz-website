@@ -152,11 +152,12 @@ function _navLinks(menuPages) {
   const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published');
   const now = cmsPages.find(p => p.slug === 'now');
   const others = cmsPages.filter(p => p.slug !== 'now');
+  const pageLink = p => ({ href: p.nav_url || `/${p.slug}/`, label: p.title });
   return [
-    ...(now ? [{ href: '/now/', label: now.title }] : []),
+    ...(now ? [pageLink(now)] : []),
     { href: '/posts/', label: 'Blog' },
     { href: '/photos/', label: 'Photos' },
-    ...others.map(p => ({ href: `/${p.slug}/`, label: p.title })),
+    ...others.map(pageLink),
   ];
 }
 
@@ -1224,13 +1225,14 @@ async function handleGetPage(env, slug) {
 }
 
 async function handleSavePage(request, env, slug) {
-  const { title, body, include_in_menu, wordCount } = await request.json().catch(() => ({}));
+  const { title, body, include_in_menu, nav_url, wordCount } = await request.json().catch(() => ({}));
   const pages = await getPagesIndex(env);
   const idx = pages.findIndex(p => p.slug === slug);
   if (idx === -1) return json({ error: 'Not found' }, 404);
 
   if (title !== undefined) pages[idx].title = title;
   if (include_in_menu !== undefined) pages[idx].include_in_menu = !!include_in_menu;
+  if (nav_url !== undefined) pages[idx].nav_url = nav_url || null;
   if (wordCount !== undefined) pages[idx].wordCount = wordCount;
   pages[idx].updatedAt = new Date().toISOString();
   if (pages[idx].status === 'published') pages[idx].hasDraftChanges = true;

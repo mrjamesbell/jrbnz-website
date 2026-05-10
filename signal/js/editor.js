@@ -215,6 +215,7 @@ export async function openEditor(slug, type = 'post') {
       date: new Date().toISOString().slice(0, 10),
       tags: [],
       include_in_menu: false,
+      nav_url: null,
       status: 'draft',
       body: '',
       excerpt: '',
@@ -710,6 +711,7 @@ function _triggerSave() {
       excerpt: currentPost.excerpt,
       coverImage: currentPost.coverImage,
       include_in_menu: currentPost.include_in_menu,
+      nav_url: currentPost.nav_url || null,
       wordCount: currentPost.wordCount
     }),
     () => {},
@@ -758,7 +760,8 @@ function _takeSnapshot() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    include_in_menu: currentPost.include_in_menu
+    include_in_menu: currentPost.include_in_menu,
+    nav_url: currentPost.nav_url || null,
   };
 }
 
@@ -800,6 +803,7 @@ function _revertChanges() {
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
     include_in_menu: currentPost.include_in_menu,
+    nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
   })).catch(e => showToast('Revert save failed — ' + e.message, 'error'));
 
@@ -825,6 +829,7 @@ async function _publish() {
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
     include_in_menu: currentPost.include_in_menu,
+    nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
   };
 
@@ -885,7 +890,17 @@ function _openSettings(e) {
   const menuRow = document.getElementById('settings-menu-row');
   if (menuRow) menuRow.style.display = isPage ? '' : 'none';
   const menuCheck = document.getElementById('settings-include-menu');
-  if (menuCheck) menuCheck.checked = !!currentPost.include_in_menu;
+  if (menuCheck) {
+    menuCheck.checked = !!currentPost.include_in_menu;
+    menuCheck.onchange = () => {
+      const urlRow = document.getElementById('settings-nav-url-row');
+      if (urlRow) urlRow.style.display = menuCheck.checked ? '' : 'none';
+    };
+  }
+  const navUrlRow = document.getElementById('settings-nav-url-row');
+  if (navUrlRow) navUrlRow.style.display = currentPost.include_in_menu ? '' : 'none';
+  const navUrlInput = document.getElementById('settings-nav-url');
+  if (navUrlInput) navUrlInput.value = currentPost.nav_url || '';
   const deleteBtn = document.getElementById('settings-delete');
   if (deleteBtn) deleteBtn.textContent = isPage ? 'Delete page' : 'Delete post';
 
@@ -935,6 +950,8 @@ async function _saveSettings() {
   } else {
     const menuCheck = document.getElementById('settings-include-menu');
     if (menuCheck) currentPost.include_in_menu = menuCheck.checked;
+    const navUrlInput = document.getElementById('settings-nav-url');
+    if (navUrlInput) currentPost.nav_url = navUrlInput.value.trim() || null;
   }
 
   if (newSlug !== currentSlug && !isPage) {
