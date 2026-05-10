@@ -262,7 +262,6 @@ function buildAuthorCard(author) {
 }
 
 function buildPostHtml({ title, date, tags, contentHtml, author }) {
-  const mastheadTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="post-tag">#${esc(t)}</a>`).join(' ');
   const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
   const authorBlock = buildAuthorCard(author);
@@ -280,7 +279,6 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
     <h1 class="post-masthead-title">${esc(title)}</h1>
     <div class="post-masthead-meta">
       <time class="post-masthead-date" datetime="${esc(date)}">${fmtDate(date)}</time>
-      ${mastheadTags ? `<div class="post-masthead-tags">${mastheadTags}</div>` : ''}
     </div>
   </div>
 </header>
