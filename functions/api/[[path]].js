@@ -440,6 +440,12 @@ export async function onRequest(context) {
     }
   }
 
+  // Snippets
+  if (resource === 'snippets') {
+    if (method === 'GET') return handleGetSnippets(env);
+    if (method === 'PUT') return handleSaveSnippets(request, env);
+  }
+
   // Media
   if (resource === 'media') {
     if (!slug) {
@@ -1159,6 +1165,19 @@ async function handleSaveAccent(request, env) {
   if (!accent || typeof accent !== 'string') return json({ error: 'accent required' }, 400);
   await env.BLOG.put('settings/accent.json', JSON.stringify({ accent }), { httpMetadata: { contentType: 'application/json' } });
   return json({ accent });
+}
+
+async function handleGetSnippets(env) {
+  const obj = await env.BLOG.get('settings/snippets.json');
+  if (!obj) return json([]);
+  try { return json(await obj.json()); } catch { return json([]); }
+}
+
+async function handleSaveSnippets(request, env) {
+  const snippets = await request.json().catch(() => null);
+  if (!Array.isArray(snippets)) return json({ error: 'array required' }, 400);
+  await env.BLOG.put('settings/snippets.json', JSON.stringify(snippets), { httpMetadata: { contentType: 'application/json' } });
+  return json(snippets);
 }
 
 // ── Pages handlers ────────────────────────────────────────────────────────────

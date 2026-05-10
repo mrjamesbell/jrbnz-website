@@ -4,10 +4,11 @@ import { fmtDateShort, relativeTime, slugify } from './markdown.js';
 import { showToast } from './toast.js';
 import { initMedia } from './media.js';
 import { openCropModal } from './image-upload.js';
+import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.60';
+const BUILD = '2026-05-10.61';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -308,6 +309,7 @@ function _route(path) {
   const editPageMatch = path.match(/^\/signal\/edit-page\/(.+)$/);
   const mediaMatch = path === '/signal/media';
   const pagesMatch = path === '/signal/pages';
+  const snippetsMatch = path === '/signal/snippets';
 
   if (editPageMatch) {
     _setRailActive('pages');
@@ -325,6 +327,11 @@ function _route(path) {
     closeEditor();
     _showView('pages');
     loadPages();
+  } else if (snippetsMatch) {
+    _setRailActive('snippets');
+    closeEditor();
+    _showView('snippets');
+    initSnippetsView();
   } else {
     _setRailActive('list');
     closeEditor();
@@ -351,15 +358,19 @@ function _showView(view) {
   const listEl = document.getElementById('view-list');
   const pagesEl = document.getElementById('view-pages');
   const mediaEl = document.getElementById('media-view');
+  const snippetsEl = document.getElementById('view-snippets');
   const showList = view === 'list';
   const showPages = view === 'pages';
   const showMedia = view === 'media';
+  const showSnippets = view === 'snippets';
   listEl.style.display = showList ? '' : 'none';
   if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
   mediaEl.style.display = showMedia ? '' : 'none';
+  if (snippetsEl) snippetsEl.style.display = showSnippets ? '' : 'none';
   if (showList) _animateIn(listEl);
   if (showPages && pagesEl) _animateIn(pagesEl);
   if (showMedia) _animateIn(mediaEl);
+  if (showSnippets && snippetsEl) _animateIn(snippetsEl);
   // view-editor visibility managed by openEditor / closeEditor
 }
 

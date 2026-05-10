@@ -4,7 +4,7 @@ import { extractVideoId, insertYouTubeBlock, fetchYouTubeTitle } from './youtube
 import { openImageSheet } from './image-upload.js';
 import { showToast } from './toast.js';
 import { navigate, invalidatePostCache, invalidatePageCache, getAllTags } from './app.js';
-import { SNIPPETS } from './snippets.js';
+import { SNIPPETS, snippetInsert } from './snippets.js';
 
 let currentSlug = null;
 let currentPost = null;
@@ -532,7 +532,7 @@ function _initSnippetPicker() {
     const snippet = SNIPPETS.find(s => s.id === item.dataset.snippetId);
     if (!snippet) return;
     const textarea = _getActiveTextarea();
-    _insertAtCursor(textarea, '\n' + snippet.insert + '\n');
+    _insertAtCursor(textarea, '\n' + snippetInsert(snippet) + '\n');
     picker.hidden = true;
   });
 
