@@ -2,10 +2,17 @@ export function mdEsc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function safeUrl(url) {
+  try {
+    const u = new URL(url, 'https://jrbnz.com');
+    return ['http:', 'https:', 'mailto:'].includes(u.protocol) ? url : '#';
+  } catch { return '#'; }
+}
+
 export function mdInline(str) {
   return str
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => `<img src="${src}" alt="${mdEsc(alt)}" loading="lazy">`)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, href) => `<a href="${href}">${mdEsc(text)}</a>`)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => `<img src="${safeUrl(src)}" alt="${mdEsc(alt)}" loading="lazy">`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, href) => `<a href="${safeUrl(href)}">${mdEsc(text)}</a>`)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/__([^_]+)__/g, '<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')

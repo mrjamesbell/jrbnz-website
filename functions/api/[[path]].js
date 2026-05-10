@@ -78,6 +78,12 @@ async function resetRateLimit(env) {
   await env.BLOG.put(RATE_KEY, JSON.stringify({ attempts: 0, lastAttempt: 0 }), { httpMetadata: { contentType: 'application/json' } });
 }
 
+// ── Slug validation ───────────────────────────────────────────────────────────
+
+function isValidSlug(slug) {
+  return typeof slug === 'string' && /^[a-z0-9][a-z0-9-]{0,79}$/.test(slug);
+}
+
 // ── Markdown renderer ─────────────────────────────────────────────────────────
 
 // mdEsc, mdInline, mdToHtml — imported from ../lib/markdown.js
@@ -666,6 +672,7 @@ async function handleListPosts(env) {
 async function handleCreatePost(request, env) {
   const { title, slug, date, tags } = await request.json();
   if (!title || !slug) return json({ error: 'title and slug required' }, 400);
+  if (!isValidSlug(slug)) return json({ error: 'slug must be 1-80 lowercase letters, digits, or hyphens' }, 400);
 
   const posts = await getIndex(env);
   if (posts.find(p => p.slug === slug)) return json({ error: 'slug already exists' }, 409);
@@ -909,6 +916,7 @@ async function handleDeletePost(env, slug) {
 async function handleRename(request, env, oldSlug) {
   const { newSlug } = await request.json();
   if (!newSlug) return json({ error: 'newSlug required' }, 400);
+  if (!isValidSlug(newSlug)) return json({ error: 'slug must be 1-80 lowercase letters, digits, or hyphens' }, 400);
   if (newSlug === oldSlug) return json({ ok: true });
 
   const posts = await getIndex(env);
@@ -942,6 +950,7 @@ async function handleRename(request, env, oldSlug) {
 async function handleRenamePage(request, env, oldSlug) {
   const { newSlug } = await request.json();
   if (!newSlug) return json({ error: 'newSlug required' }, 400);
+  if (!isValidSlug(newSlug)) return json({ error: 'slug must be 1-80 lowercase letters, digits, or hyphens' }, 400);
   if (newSlug === oldSlug) return json({ ok: true });
 
   const pages = await getPagesIndex(env);
@@ -1055,15 +1064,35 @@ async function handleIndieAuth(request, env, slug) {
     if (request.method === 'POST') {
       const form = await request.formData().catch(() => new FormData());
       const password = form.get('password');
+      const client_id = form.get('client_id') || '';
       const redirect_uri = form.get('redirect_uri');
       const state = form.get('state') || '';
       const scope = form.get('scope') || 'create';
       const me = form.get('me') || 'https://jrbnz.com';
 
+      if (!redirect_uri) return new Response('redirect_uri required', { status: 400, headers: { 'content-type': 'text/plain' } });
+
+      // Validate redirect_uri origin matches client_id origin (IndieAuth spec)
+      try {
+        const clientOrigin = new URL(client_id).origin;
+        const redirectOrigin = new URL(redirect_uri).origin;
+        if (clientOrigin !== redirectOrigin) {
+          return new Response('redirect_uri does not match client_id', { status: 400, headers: { 'content-type': 'text/plain' } });
+        }
+      } catch {
+        return new Response('invalid client_id or redirect_uri', { status: 400, headers: { 'content-type': 'text/plain' } });
+      }
+
+      const rateCheck = await checkRateLimit(env);
+      if (rateCheck.locked) {
+        return new Response(`Too many attempts. Try again in ${rateCheck.retryAfter}s.`, { status: 429, headers: { 'content-type': 'text/plain' } });
+      }
+
       if (!password || password !== env.BLOG_PASSWORD) {
+        await recordFailedAttempt(env);
         return new Response('Invalid password', { status: 401, headers: { 'content-type': 'text/plain' } });
       }
-      if (!redirect_uri) return new Response('redirect_uri required', { status: 400, headers: { 'content-type': 'text/plain' } });
+      await resetRateLimit(env);
 
       // Self-contained signed code — no R2 storage needed
       const code = await makeAuthCode(env.BLOG_PASSWORD, {
@@ -1274,6 +1303,7 @@ async function handleListPages(env) {
 async function handleCreatePage(request, env) {
   const { title, slug, include_in_menu } = await request.json().catch(() => ({}));
   if (!title || !slug) return json({ error: 'title and slug required' }, 400);
+  if (!isValidSlug(slug)) return json({ error: 'slug must be 1-80 lowercase letters, digits, or hyphens' }, 400);
 
   const pages = await getPagesIndex(env);
   if (pages.find(p => p.slug === slug)) return json({ error: 'slug already exists' }, 409);

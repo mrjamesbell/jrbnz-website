@@ -1,2 +1,10 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
 /signal/*
   Cache-Control: no-cache, must-revalidate
+
+/posts/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; frame-src https://www.youtube.com; script-src 'self'

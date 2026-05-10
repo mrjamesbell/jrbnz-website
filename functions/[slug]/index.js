@@ -4,7 +4,7 @@ async function injectAccent(html, env) {
     if (!obj) return html;
     const { accent } = await obj.json().catch(() => ({}));
     if (!accent) return html;
-    return html.replace('</head>', `<style>:root{--accent-color:${accent}}</style></head>`);
+    return html.replace('</head>', `<style>:root{--accent-color:${accent.replace(/<\/style>/gi, '')}}</style></head>`);
   } catch {
     return html;
   }
