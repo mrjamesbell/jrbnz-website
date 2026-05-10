@@ -1141,7 +1141,7 @@ body {
   padding: 8px 12px;
   font-size: var(--text-sm);
   font-family: var(--font-sans);
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   outline: none;
 }
 
@@ -1154,7 +1154,7 @@ body {
   padding: 10px 12px;
   font-size: 12px;
   font-family: 'Menlo', 'Monaco', monospace;
-  color: var(--color-ink);
+  color: var(--color-cream-text-primary);
   outline: none;
   resize: vertical;
 }
