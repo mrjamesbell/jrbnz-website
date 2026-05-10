@@ -299,15 +299,17 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss) {
 function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss }) {
   const year = new Date().getFullYear();
   return `${SITE_HEAD(title, accent, snippetCss)}
-<nav class="site-nav">
-  <a href="/" class="nav-logo">JRBNZ</a>
-  <ul class="nav-links">
-    ${buildNav(menuPages, `/${slug}/`)}
-  </ul>
-</nav>
-<header class="index-masthead">
-  <h1 class="index-masthead-title">${esc(title)}</h1>
-</header>
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="site-nav">
+      <a href="/" class="nav-logo">JRBNZ</a>
+      <ul class="nav-links">
+        ${buildNav(menuPages, `/${slug}/`)}
+      </ul>
+    </nav>
+  </div>
+  <h1 class="page-header-title">${esc(title)}</h1>
+</div>
 <section class="content-section">
   <div class="post-content" style="max-width:72ch;margin:0 auto;padding:48px 24px 80px">${contentHtml}</div>
 </section>

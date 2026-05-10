@@ -647,6 +647,57 @@ img.leftalign {
   color: var(--text-color);
 }
 
+/* ── CMS page masthead — large right-aligned title ── */
+.page-header .site-nav {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.page-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  padding: 0 var(--gutter);
+  background: var(--background-color);
+}
+
+.page-header-left {
+  padding-bottom: 52px;
+}
+
+.page-header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(96px, 13.5vw, 210px);
+  line-height: 0.86;
+  letter-spacing: 0.01em;
+  color: var(--text-color);
+  text-align: right;
+  padding-top: 8px;
+  padding-left: 32px;
+  max-width: 55vw;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header-left {
+    padding-bottom: 0;
+  }
+
+  .page-header-title {
+    font-size: clamp(56px, 15vw, 80px);
+    line-height: 0.92;
+    text-align: left;
+    padding-left: 0;
+    padding-top: 16px;
+    padding-bottom: 40px;
+    max-width: 100%;
+  }
+}
+
 /* ── Back to posts button ── */
 .back-to-posts {
   display: inline-flex;
