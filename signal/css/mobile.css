@@ -499,3 +499,144 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+
+/* ════════════════════════════════════════════
+   BOTTOM TAB BAR
+   Replaces rail on mobile
+   ════════════════════════════════════════════ */
+.mobile-tabbar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(52px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--color-dark-base);
+    border-top: var(--border-dark);
+    z-index: var(--z-modal);
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--color-dark-text-muted);
+    text-decoration: none;
+    font-size: 9px;
+    font-family: var(--font-display);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 4px 6px;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--transition-fast);
+  }
+
+  .mobile-tab svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .mobile-tab.is-active { color: var(--color-accent); }
+  .mobile-tab:active { opacity: 0.6; }
+
+  /* All list/content views need bottom padding for tab bar */
+  .post-list-view,
+  .media-view,
+  #view-snippets,
+  #view-help {
+    padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+
+/* ════════════════════════════════════════════
+   MOBILE TOPBAR — strip clutter
+   ════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* Hide elements that don't fit */
+  .topbar-status,
+  .topbar-divider,
+  #btn-ai-review { display: none !important; }
+
+  /* Keep settings icon, hide view/revert which show conditionally via JS */
+  .topbar-post-name {
+    font-size: 12px;
+    min-width: 0;
+  }
+
+  /* Tighter topbar */
+  .editor-topbar {
+    gap: 6px;
+    padding: 0 10px 0 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Also hide draft pill — just keep Publish */
+  #topbar-draft-pill { display: none; }
+}
+
+
+/* ════════════════════════════════════════════
+   KP ACCESSORY BAR — fixed above keyboard
+   ════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* Stick kb bar to bottom of viewport, above keyboard */
+  .kb-accessory-bar {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(var(--mobile-kbbar-height) + env(safe-area-inset-bottom, 0px));
+    z-index: var(--z-modal);
+    border-top: var(--border-cream);
+  }
+
+  /* Add padding so content doesn't hide behind the bar */
+  .editor-writing {
+    padding-bottom: var(--mobile-kbbar-height) !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════
+   MODAL — full mobile treatment
+   ════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 92svh;
+    max-height: 92vh; /* fallback */
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    /* Safe area on notched phones */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Ensure body scrolls, footer stays visible */
+  .modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-footer {
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    flex-shrink: 0;
+  }
+}

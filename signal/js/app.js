@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.70';
+const BUILD = '2026-05-10.71';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -33,6 +33,15 @@ const BUILD = '2026-05-10.70';
       navigate(a.getAttribute('href'));
     });
   });
+
+  // Mobile tab bar
+  document.querySelectorAll('.mobile-tab[data-route]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      navigate(a.getAttribute('href'));
+    });
+  });
+  document.getElementById('mtab-settings')?.addEventListener('click', () => openAppSettingsModal());
 
   // Topbar breadcrumb interception (href is updated dynamically by openEditor)
   document.getElementById('topbar-breadcrumb')?.addEventListener('click', e => {
@@ -316,11 +325,14 @@ function _route(hash) {
   const snippetsMatch = hash === 'snippets';
   const helpMatch = hash === 'help';
 
+  const tabbar = document.getElementById('mobile-tabbar');
   if (editPageMatch) {
     _setRailActive('pages');
+    if (tabbar) tabbar.style.display = 'none';
     openEditor(editPageMatch[1], 'page');
   } else if (editMatch) {
     _setRailActive('list');
+    if (tabbar) tabbar.style.display = 'none';
     openEditor(editMatch[1]);
   } else if (mediaMatch) {
     _setRailActive('media');
@@ -385,6 +397,16 @@ function _showView(view) {
   if (showSnippets && snippetsEl) _animateIn(snippetsEl);
   if (showHelp && helpEl) _animateIn(helpEl);
   // view-editor visibility managed by openEditor / closeEditor
+
+  // Mobile tab bar: show/hide and update active tab
+  const tabbar = document.getElementById('mobile-tabbar');
+  if (tabbar) {
+    const isEditor = view === 'editor';
+    tabbar.style.display = isEditor ? 'none' : '';
+    tabbar.querySelectorAll('.mobile-tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.route === view);
+    });
+  }
 }
 
 // ── Post list ─────────────────────────────────────────────────────────────────

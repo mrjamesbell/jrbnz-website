@@ -33,6 +33,7 @@ body {
 .signal-app {
   display: flex;
   height: 100vh;
+  height: 100dvh; /* dynamic viewport — correct on iOS when keyboard appears */
   width: 100vw;
   overflow: hidden;
 }
