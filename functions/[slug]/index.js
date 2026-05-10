@@ -9,10 +9,12 @@ export async function onRequestGet({ params, env, request }) {
     });
   }
 
-  // Fall back to static asset (e.g. /directing/, /now/)
-  // ASSETS returns the root index.html for unknown paths, so only use it when
-  // the slug matches a real directory (status 200 on the exact path).
-  const staticRes = await env.ASSETS.fetch(request);
+  // Fall back to a real static file if one exists (e.g. /photos/).
+  // Fetch the explicit index.html path — avoids Cloudflare's SPA fallback
+  // which returns root index.html with status 200 for any unknown path.
+  const staticUrl = new URL(request.url);
+  staticUrl.pathname = `/${slug}/index.html`;
+  const staticRes = await env.ASSETS.fetch(new Request(staticUrl.toString(), request));
   if (staticRes.status === 200) return staticRes;
 
   return new Response('Page not found', { status: 404 });
