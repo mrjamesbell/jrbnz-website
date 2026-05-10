@@ -94,6 +94,17 @@ body {
 
 .rail-spacer { flex: 1; }
 
+.rail-build {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  color: var(--color-cream-text-ghost);
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 4px 2px;
+  opacity: 0.45;
+  word-break: break-all;
+}
+
 @keyframes pip-breathe {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.25; }
