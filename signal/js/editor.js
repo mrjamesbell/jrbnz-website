@@ -4,6 +4,7 @@ import { extractVideoId, insertYouTubeBlock, fetchYouTubeTitle } from './youtube
 import { openImageSheet } from './image-upload.js';
 import { showToast } from './toast.js';
 import { navigate, invalidatePostCache, invalidatePageCache } from './app.js';
+import { SNIPPETS } from './snippets.js';
 
 let currentSlug = null;
 let currentPost = null;
@@ -312,6 +313,9 @@ function _populateEditor() {
   fmtbar.onclick = _onFmtBarClick;
   document.getElementById('kb-accessory-bar').onclick = _onFmtBarClick;
 
+  // Snippet picker
+  _initSnippetPicker();
+
   _setViewMode('edit');
   _initReviewBtn();
 
@@ -447,12 +451,6 @@ function _applyFormat(action, textarea) {
       }
       break;
     }
-    case 'timeline':
-      _insertAtCursor(textarea, `\n<div class="tl">\n<div class="tl-entry">\n<div class="tl-year">2026</div>\n<div class="tl-mark"></div>\n<div class="tl-copy">\n<h3>Production title <span class="tl-win">★</span> <span class="tl-tag">Tag</span></h3>\n<p><em>Playwright</em> <span>/</span> Company</p>\n</div>\n</div>\n</div>\n`);
-      break;
-    case 'tl-entry':
-      _insertAtCursor(textarea, `\n<div class="tl-entry">\n<div class="tl-year">2025</div>\n<div class="tl-mark"></div>\n<div class="tl-copy">\n<h3>Production title</h3>\n<p><em>Playwright</em> <span>/</span> Company</p>\n</div>\n</div>\n`);
-      break;
   }
 }
 
@@ -503,6 +501,34 @@ function _insertAtCursor(textarea, text) {
   textarea.selectionStart = textarea.selectionEnd = start + text.length;
   textarea.dispatchEvent(new Event('input'));
   textarea.focus();
+}
+
+function _initSnippetPicker() {
+  const btn = document.getElementById('btn-snippet');
+  const picker = document.getElementById('snippet-picker');
+  if (!btn || !picker) return;
+
+  // Populate picker items
+  picker.innerHTML = SNIPPETS.map(s =>
+    `<button class="snippet-item" data-snippet-id="${s.id}">${s.label}</button>`
+  ).join('');
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    picker.hidden = !picker.hidden;
+  });
+
+  picker.addEventListener('click', e => {
+    const item = e.target.closest('.snippet-item');
+    if (!item) return;
+    const snippet = SNIPPETS.find(s => s.id === item.dataset.snippetId);
+    if (!snippet) return;
+    const textarea = _getActiveTextarea();
+    _insertAtCursor(textarea, '\n' + snippet.insert + '\n');
+    picker.hidden = true;
+  });
+
+  document.addEventListener('click', () => { picker.hidden = true; });
 }
 
 function _setViewMode(mode) {

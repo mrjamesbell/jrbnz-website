@@ -92,6 +92,49 @@
 .fmtbar-btn[data-action="h3"]        { font-weight: 700; }
 .fmtbar-btn[data-action="quote"]     { font-family: var(--font-serif); font-style: italic; }
 
+/* ── Snippet picker ── */
+.snippet-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.snippet-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 200;
+  min-width: 160px;
+  background: var(--color-surface);
+  border: var(--border-cream);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.snippet-picker[hidden] { display: none; }
+
+.snippet-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.snippet-item:hover {
+  background: var(--color-cream-dark);
+}
+
 
 /* ════════════════════════════════════════════
    WRITING SURFACE
