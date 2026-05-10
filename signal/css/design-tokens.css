@@ -85,7 +85,7 @@
   --space-16:  64px;
 
   /* ── Layout ── */
-  --rail-width:        48px;
+  --rail-width:        68px;
   --sidebar-width:     210px;
   --editor-max-width:  clamp(680px, 75vw, 1200px);
   --topbar-height:     54px;
@@ -97,6 +97,7 @@
   --radius-md:   6px;
   --radius-lg:   8px;
   --radius-xl:   12px;
+  --radius-2xl:  20px;
   --radius-pill: 999px;
 
   /* ── Borders ── */

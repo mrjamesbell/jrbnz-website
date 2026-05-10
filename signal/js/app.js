@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-09.38';
+const BUILD = '2026-05-10.41';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ const BUILD = '2026-05-09.38';
   initMobile();
 
   // Rail link interception
-  document.querySelectorAll('.rail-icon[data-route], .rail-logo').forEach(a => {
+  document.querySelectorAll('.rail-item[data-route]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
       navigate(a.getAttribute('href'));
@@ -59,22 +59,32 @@ const BUILD = '2026-05-09.38';
     if (e.key === 'Escape') closeNewPostModal();
   });
 
-  // Settings
-  document.getElementById('rail-settings').addEventListener('click', openAuthorModal);
+  // Rail buttons
+  document.getElementById('rail-author').addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
+  document.getElementById('rail-settings').addEventListener('click', e => { e.preventDefault(); openAppSettingsModal(); });
+
+  // Author modal
   document.getElementById('author-close').addEventListener('click', closeAuthorModal);
   document.getElementById('author-cancel').addEventListener('click', closeAuthorModal);
   document.getElementById('author-save').addEventListener('click', saveAuthor);
-  document.getElementById('author-logout').addEventListener('click', logout);
+  document.getElementById('author-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAuthorModal(); });
+
+  // App settings modal
+  document.getElementById('app-settings-close').addEventListener('click', closeAppSettingsModal);
+  document.getElementById('app-settings-cancel').addEventListener('click', closeAppSettingsModal);
+  document.getElementById('app-settings-save').addEventListener('click', saveAppSettings);
+  document.getElementById('app-settings-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAppSettingsModal(); });
+  document.getElementById('btn-app-logout').addEventListener('click', logout);
   document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
-  document.getElementById('btn-copy-token').addEventListener('click', () => {
-    const val = document.getElementById('micropub-token-display').value;
-    if (!val) return;
-    navigator.clipboard.writeText(val).then(() => {
-      const btn = document.getElementById('btn-copy-token');
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-    });
+  document.getElementById('btn-show-apikey').addEventListener('click', () => {
+    const inp = document.getElementById('app-settings-apikey');
+    const btn = document.getElementById('btn-show-apikey');
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+    else { inp.type = 'password'; btn.textContent = 'Show'; }
   });
+
+  // Accent colour pickers
+  _initAccentPickers();
 
   // Headshot buttons
   document.getElementById('btn-headshot-upload').addEventListener('click', () => {
@@ -284,7 +294,7 @@ function _route(path) {
 }
 
 function _setRailActive(route) {
-  document.querySelectorAll('.rail-icon[data-route]').forEach(el => {
+  document.querySelectorAll('.rail-item[data-route]').forEach(el => {
     el.classList.toggle('is-active', el.dataset.route === route);
   });
 }
@@ -529,6 +539,101 @@ async function logout() {
   try { await fetch('/api/auth/logout', { method: 'POST' }); } finally {
     window.location.href = '/signal/login.html';
   }
+}
+
+// ── App settings modal ────────────────────────────────────────────────────────
+
+function openAppSettingsModal() {
+  // Load saved API key
+  const savedKey = localStorage.getItem('signal-apikey') || '';
+  document.getElementById('app-settings-apikey').value = savedKey;
+  document.getElementById('app-settings-apikey').type = 'password';
+  document.getElementById('btn-show-apikey').textContent = 'Show';
+
+  // Mark active swatches
+  const signalAccent = localStorage.getItem('signal-accent') || '';
+  const liveAccent = localStorage.getItem('live-accent') || '';
+  _markActiveSwatch('signal-swatch-row', signalAccent);
+  _markActiveSwatch('live-swatch-row', liveAccent);
+
+  document.getElementById('app-settings-modal').style.display = 'flex';
+}
+
+function closeAppSettingsModal() {
+  document.getElementById('app-settings-modal').style.display = 'none';
+}
+
+async function saveAppSettings() {
+  const apiKey = document.getElementById('app-settings-apikey').value.trim();
+  if (apiKey) localStorage.setItem('signal-apikey', apiKey);
+  else localStorage.removeItem('signal-apikey');
+  closeAppSettingsModal();
+  showToast('Settings saved', 'success');
+}
+
+function _markActiveSwatch(rowId, savedColor) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  let matched = false;
+  row.querySelectorAll('.accent-swatch').forEach(s => {
+    const match = savedColor && s.dataset.color === savedColor;
+    s.classList.toggle('is-active', match);
+    if (match) matched = true;
+  });
+  const picker = row.querySelector('.accent-picker-input');
+  if (picker) {
+    picker.classList.toggle('is-active', !matched && !!savedColor);
+  }
+}
+
+function _applySignalAccent(color) {
+  document.documentElement.style.setProperty('--color-accent', color);
+  document.documentElement.style.setProperty('--color-accent-dim', `color-mix(in oklch, ${color} 15%, transparent)`);
+  localStorage.setItem('signal-accent', color);
+}
+
+function _applyLiveAccent(color) {
+  localStorage.setItem('live-accent', color);
+}
+
+function _initAccentPickers() {
+  // Signal swatches
+  const signalRow = document.getElementById('signal-swatch-row');
+  signalRow?.querySelectorAll('.accent-swatch').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      const color = swatch.dataset.color;
+      signalRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
+      swatch.classList.add('is-active');
+      _applySignalAccent(color);
+    });
+  });
+  const signalPicker = document.getElementById('signal-color-picker');
+  signalPicker?.addEventListener('input', () => {
+    signalRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
+    signalPicker.classList.add('is-active');
+    _applySignalAccent(signalPicker.value);
+  });
+
+  // Live swatches
+  const liveRow = document.getElementById('live-swatch-row');
+  liveRow?.querySelectorAll('.accent-swatch').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      const color = swatch.dataset.color;
+      liveRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
+      swatch.classList.add('is-active');
+      _applyLiveAccent(color);
+    });
+  });
+  const livePicker = document.getElementById('live-color-picker');
+  livePicker?.addEventListener('input', () => {
+    liveRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
+    livePicker.classList.add('is-active');
+    _applyLiveAccent(livePicker.value);
+  });
+
+  // Apply saved Signal accent on boot
+  const saved = localStorage.getItem('signal-accent');
+  if (saved) _applySignalAccent(saved);
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────

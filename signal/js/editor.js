@@ -538,6 +538,8 @@ function _updateWordCount() {
   const wc = countWords(currentPost.body || '');
   currentPost.wordCount = wc;
   document.getElementById('topbar-word-count').textContent = wc > 0 ? `${wc} words` : '';
+  const sep = document.getElementById('topbar-save-sep');
+  if (sep) sep.style.display = wc > 0 ? '' : 'none';
 }
 
 function _autoResizeTitle() {
@@ -645,18 +647,22 @@ function _triggerSave() {
 
 function _updatePublishButton() {
   const btn = document.getElementById('btn-publish');
+  const draftPill = document.getElementById('topbar-draft-pill');
   if (!btn) return;
   if (currentPost.status === 'published' && !_isDirty) {
     btn.textContent = 'Published';
     btn.classList.add('is-published');
     btn.classList.remove('is-republish');
+    if (draftPill) draftPill.style.display = 'none';
   } else if (currentPost.status === 'published' && _isDirty) {
     btn.textContent = 'Republish';
     btn.classList.remove('is-published');
     btn.classList.add('is-republish');
+    if (draftPill) draftPill.style.display = 'none';
   } else {
     btn.textContent = 'Publish';
     btn.classList.remove('is-published', 'is-republish');
+    if (draftPill) draftPill.style.display = '';
   }
 }
 
