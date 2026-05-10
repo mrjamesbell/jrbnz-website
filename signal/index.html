@@ -383,6 +383,15 @@
         <label class="field-label" for="author-flickr">Flickr</label>
         <input class="field-input" type="text" id="author-flickr" placeholder="username or https://flickr.com/photos/…">
       </div>
+      <div class="settings-section-sep"></div>
+      <div>
+        <label class="field-label">iA Writer token</label>
+        <p class="field-hint" style="margin-bottom:8px">Paste into iA Writer → Settings → Micropub to publish directly.</p>
+        <div style="display:flex;gap:8px">
+          <input class="field-input" type="text" id="micropub-token-display" readonly style="font-family:monospace;font-size:12px;flex:1;color:var(--color-cream-text-muted)" placeholder="Loading…">
+          <button class="btn btn-secondary btn-sm" id="btn-copy-token">Copy</button>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="author-cancel">Cancel</button>
@@ -390,10 +399,6 @@
     </div>
   </div>
 </div>
-
-<!-- Hidden micropub token input (kept for JS compatibility) -->
-<input type="hidden" id="micropub-token-display">
-<button type="button" style="display:none" id="btn-copy-token"></button>
 
 <!-- App settings modal -->
 <div class="modal-backdrop" id="app-settings-modal" style="display:none">
@@ -417,6 +422,7 @@
           </div>
         </div>
       </div>
+      <div class="settings-section-sep"></div>
       <div>
         <label class="field-label">Live site accent colour</label>
         <p class="field-hint">Applied to jrbnz.com on next rebuild.</p>
@@ -432,6 +438,7 @@
           </div>
         </div>
       </div>
+      <div class="settings-section-sep"></div>
       <div>
         <label class="field-label">Anthropic API key</label>
         <div style="display:flex;gap:8px">

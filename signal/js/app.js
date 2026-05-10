@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache };
 
-const BUILD = '2026-05-10.41';
+const BUILD = '2026-05-10.42';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -68,6 +68,15 @@ const BUILD = '2026-05-10.41';
   document.getElementById('author-cancel').addEventListener('click', closeAuthorModal);
   document.getElementById('author-save').addEventListener('click', saveAuthor);
   document.getElementById('author-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAuthorModal(); });
+  document.getElementById('btn-copy-token').addEventListener('click', () => {
+    const val = document.getElementById('micropub-token-display').value;
+    if (!val) return;
+    navigator.clipboard.writeText(val).then(() => {
+      const btn = document.getElementById('btn-copy-token');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    });
+  });
 
   // App settings modal
   document.getElementById('app-settings-close').addEventListener('click', closeAppSettingsModal);

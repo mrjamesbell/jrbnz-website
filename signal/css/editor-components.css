@@ -996,7 +996,21 @@
    MEDIA PICKER MODAL
    ════════════════════════════════════════════ */
 .modal-lg {
-  max-width: 640px;
+  max-width: 700px;
+}
+
+.modal-lg .modal-header {
+  padding: 32px 36px 0;
+  margin-bottom: 28px;
+}
+
+.modal-lg .modal-body {
+  padding: 0 36px 28px;
+  gap: var(--space-6);
+}
+
+.modal-lg .modal-footer {
+  padding: var(--space-5) 36px var(--space-8);
 }
 
 .modal-wide {
@@ -1027,6 +1041,17 @@
 .accent-picker-input.is-active { outline-color: var(--color-cream-text-secondary); border-style: solid; }
 .accent-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
 .accent-picker-input::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+/* Settings modal — extra body spacing */
+#app-settings-modal .modal-body {
+  gap: var(--space-6);
+}
+
+.settings-section-sep {
+  height: 1px;
+  background: var(--color-cream-border);
+  margin: var(--space-2) 0;
+}
 
 /* Action rows in Settings modal */
 .settings-action-row {

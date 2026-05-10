@@ -441,10 +441,10 @@ body {
 .topbar-save-dot.is-error { background: var(--color-danger); animation: none; }
 
 .btn-preview {
-  padding: 6px 14px;
+  padding: 4px 12px;
   border: var(--border-cream);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  font-size: 13px;
   color: var(--color-cream-text-secondary);
   background: none;
   cursor: pointer;
@@ -459,12 +459,12 @@ body {
 }
 
 .btn-publish {
-  padding: 6px 18px;
+  padding: 4px 14px;
   background: var(--color-accent);
   color: var(--color-dark-text-primary);
   border: none;
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  font-size: 13px;
   font-family: var(--font-sans);
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -476,10 +476,10 @@ body {
 .btn-publish.is-republish { background: var(--color-accent); color: var(--color-dark-text-primary); }
 
 .btn-revert {
-  padding: 6px 14px;
+  padding: 4px 12px;
   border: var(--border-cream);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
+  font-size: 13px;
   color: var(--color-cream-text-muted);
   background: none;
   cursor: pointer;
