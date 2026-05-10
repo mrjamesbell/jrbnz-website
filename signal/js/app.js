@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.68';
+const BUILD = '2026-05-10.69';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -768,14 +768,10 @@ function openAppSettingsModal() {
   const signalAccent = localStorage.getItem('signal-accent') || '';
   _markActiveSwatch('signal-swatch-row', signalAccent);
 
-  // Fetch live accent from server
+  // Fetch live accent from R2 — no localStorage fallback
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
-    const liveAccent = d.accent || localStorage.getItem('live-accent') || '';
-    if (d.accent) localStorage.setItem('live-accent', d.accent);
-    _markActiveSwatch('live-swatch-row', liveAccent);
-  }).catch(() => {
-    _markActiveSwatch('live-swatch-row', localStorage.getItem('live-accent') || '');
-  });
+    _markActiveSwatch('live-swatch-row', d.accent || '');
+  }).catch(() => {});
 
   // Fetch iA Writer token
   const tokenEl = document.getElementById('micropub-token-display');
@@ -822,8 +818,6 @@ function _applySignalAccent(color) {
 }
 
 function _applyLiveAccent(color) {
-  localStorage.setItem('live-accent', color);
-  // Save to R2 immediately so the live site updates
   fetch('/api/site/accent', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
