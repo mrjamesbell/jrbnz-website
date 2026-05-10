@@ -517,7 +517,13 @@ function _initSnippetPicker() {
 
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    picker.hidden = !picker.hidden;
+    const isHidden = picker.hidden;
+    picker.hidden = !isHidden;
+    if (isHidden) {
+      const r = btn.getBoundingClientRect();
+      picker.style.top = (r.bottom + 4) + 'px';
+      picker.style.left = r.left + 'px';
+    }
   });
 
   picker.addEventListener('click', e => {

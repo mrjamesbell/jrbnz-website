@@ -99,9 +99,7 @@
 }
 
 .snippet-picker {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed;
   z-index: 200;
   min-width: 160px;
   background: var(--color-surface);
