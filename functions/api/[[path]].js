@@ -262,7 +262,7 @@ function buildAuthorCard(author) {
 </div>`;
 }
 
-function buildNav(menuPages, activeHref) {
+function _navLinks(menuPages) {
   const staticLinks = [
     { href: '/now/', label: 'Now' },
     { href: '/photos/', label: 'Photos' },
@@ -271,9 +271,19 @@ function buildNav(menuPages, activeHref) {
   const dynamicLinks = (menuPages || [])
     .filter(p => p.include_in_menu && p.status === 'published')
     .map(p => ({ href: `/${p.slug}/`, label: p.title }));
-  return [...staticLinks, ...dynamicLinks]
+  return [...staticLinks, ...dynamicLinks];
+}
+
+function buildNav(menuPages, activeHref) {
+  return _navLinks(menuPages)
     .map(l => `<li><a href="${esc(l.href)}"${l.href === activeHref ? ' class="active"' : ''}>${esc(l.label)}</a></li>`)
     .join('\n    ');
+}
+
+function buildFooterNav(menuPages) {
+  return _navLinks(menuPages)
+    .map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`)
+    .join('\n      ');
 }
 
 function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPages }) {
@@ -324,9 +334,7 @@ function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPag
   </div>
   <div class="footer-right">
     <nav class="footer-nav">
-      <a href="/now/">Now</a>
-      <a href="/photos/">Photos</a>
-      <a href="/posts/">Blog</a>
+      ${buildFooterNav(menuPages)}
     </nav>
     <a href="/feed.xml" class="footer-rss">
       <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
@@ -391,9 +399,7 @@ function buildIndexHtml(posts, accent, menuPages) {
   </div>
   <div class="footer-right">
     <nav class="footer-nav">
-      <a href="/now/">Now</a>
-      <a href="/photos/">Photos</a>
-      <a href="/posts/">Blog</a>
+      ${buildFooterNav(menuPages)}
     </nav>
     <a href="/feed.xml" class="footer-rss">
       <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
@@ -429,9 +435,7 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent }) {
   </div>
   <div class="footer-right">
     <nav class="footer-nav">
-      <a href="/now/">Now</a>
-      <a href="/photos/">Photos</a>
-      <a href="/posts/">Blog</a>
+      ${buildFooterNav(menuPages)}
     </nav>
     <a href="/feed.xml" class="footer-rss">
       <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
@@ -668,21 +672,30 @@ async function handleSaveAuthor(request, env) {
 }
 
 async function handleRebuildSite(env) {
-  const [posts, { author, accent, menuPages }] = await Promise.all([
+  const [posts, pages, { author, accent, menuPages }] = await Promise.all([
     getIndex(env),
+    getPagesIndex(env),
     loadSiteContext(env),
   ]);
-  const published = posts.filter(p => p.status === 'published');
-  await Promise.all(published.map(async post => {
-    const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
-    const body = obj ? await obj.text() : '';
-    const contentHtml = mdToHtml(body);
-    const html = buildPostHtml({ ...post, contentHtml, author, accent, menuPages });
-    await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
-  }));
+  const publishedPosts = posts.filter(p => p.status === 'published');
+  const publishedPages = pages.filter(p => p.status === 'published');
+  await Promise.all([
+    ...publishedPosts.map(async post => {
+      const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
+      const body = obj ? await obj.text() : '';
+      const html = buildPostHtml({ ...post, contentHtml: mdToHtml(body), author, accent, menuPages });
+      await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
+    }),
+    ...publishedPages.map(async page => {
+      const obj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
+      const body = obj ? await obj.text() : '';
+      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent });
+      await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
+    }),
+  ]);
   const indexHtml = buildIndexHtml(posts, accent, menuPages);
   await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
-  return json({ rebuilt: published.length });
+  return json({ rebuilt: publishedPosts.length + publishedPages.length });
 }
 
 // ── Media handlers ────────────────────────────────────────────────────────────
@@ -1352,16 +1365,25 @@ async function handlePublishPage(env, slug) {
   const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
 
-  // If page is in the nav, rebuild all posts so nav stays in sync
+  // If page is in the nav, rebuild all posts and other pages so nav stays in sync
   if (pages[idx].include_in_menu) {
     const posts = await getIndex(env);
-    const published = posts.filter(p => p.status === 'published');
-    await Promise.all(published.map(async post => {
-      const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
-      const postBody = postObj ? await postObj.text() : '';
-      const postHtml = buildPostHtml({ ...post, contentHtml: mdToHtml(postBody), author, accent, menuPages });
-      await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
-    }));
+    const publishedPosts = posts.filter(p => p.status === 'published');
+    const otherPages = pages.filter(p => p.status === 'published' && p.slug !== slug);
+    await Promise.all([
+      ...publishedPosts.map(async post => {
+        const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
+        const postBody = postObj ? await postObj.text() : '';
+        const postHtml = buildPostHtml({ ...post, contentHtml: mdToHtml(postBody), author, accent, menuPages });
+        await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
+      }),
+      ...otherPages.map(async page => {
+        const pageObj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
+        const pageBody = pageObj ? await pageObj.text() : '';
+        const pageHtml = buildPageHtml({ ...page, contentHtml: mdToHtml(pageBody), menuPages, accent });
+        await env.BLOG.put(`pages/${page.slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
+      }),
+    ]);
     const indexHtml = buildIndexHtml(posts, accent, menuPages);
     await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
   }
