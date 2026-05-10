@@ -419,10 +419,8 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent }) {
     ${buildNav(menuPages, `/${slug}/`)}
   </ul>
 </nav>
-<header class="post-masthead">
-  <div class="post-masthead-inner">
-    <h1 class="post-masthead-title">${esc(title)}</h1>
-  </div>
+<header class="index-masthead">
+  <h1 class="index-masthead-title">${esc(title)}</h1>
 </header>
 <section class="content-section">
   <div class="post-content" style="max-width:72ch;margin:0 auto;padding:48px 24px 80px">${contentHtml}</div>
