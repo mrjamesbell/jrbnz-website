@@ -200,7 +200,7 @@ function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPag
     </div>
     <aside class="post-sidebar">
       ${authorBlock}
-      <div class="sidebar-block">
+      <div class="sidebar-block sidebar-block--date">
         <div class="sidebar-label">Published</div>
         <time class="sidebar-date" datetime="${esc(date)}">${fmtDate(date)}</time>
       </div>
@@ -1200,6 +1200,7 @@ async function handleSaveAccent(request, env) {
   const { accent } = await request.json().catch(() => ({}));
   if (!accent || typeof accent !== 'string') return json({ error: 'accent required' }, 400);
   await env.BLOG.put('settings/accent.json', JSON.stringify({ accent }), { httpMetadata: { contentType: 'application/json' } });
+  await handleRebuildSite(env);
   return json({ accent });
 }
 

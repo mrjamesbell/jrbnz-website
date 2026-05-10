@@ -496,7 +496,7 @@ img.leftalign {
   }
 
   /* Date is already in the masthead on mobile */
-  .sidebar-block:first-child {
+  .sidebar-block--date {
     display: none;
   }
 }
