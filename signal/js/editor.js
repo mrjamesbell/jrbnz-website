@@ -3,7 +3,7 @@ import { renderMarkdown, countWords, slugify, fmtDate } from './markdown.js';
 import { extractVideoId, insertYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
 import { openImageSheet } from './image-upload.js';
 import { showToast } from './toast.js';
-import { navigate, invalidatePostCache, invalidatePageCache } from './app.js';
+import { navigate, invalidatePostCache, invalidatePageCache, getAllTags } from './app.js';
 import { SNIPPETS } from './snippets.js';
 
 let currentSlug = null;
@@ -637,7 +637,18 @@ function _showTagInput(e) {
   e.preventDefault();
   const input = document.getElementById('tag-input');
   const addBtn = document.getElementById('btn-add-tag');
-  if (input) { input.style.display = ''; input.focus(); }
+  if (input) {
+    const dl = document.getElementById('tag-suggestions');
+    if (dl) {
+      const existing = new Set(tags);
+      dl.innerHTML = getAllTags()
+        .filter(t => !existing.has(t))
+        .map(t => `<option value="${t}">`)
+        .join('');
+    }
+    input.style.display = '';
+    input.focus();
+  }
   if (addBtn) addBtn.style.display = 'none';
 }
 

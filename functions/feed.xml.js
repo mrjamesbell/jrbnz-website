@@ -1,3 +1,5 @@
+import { mdToHtml } from './lib/markdown.js';
+
 const SITE_URL = 'https://jrbnz.com';
 const FEED_TITLE = 'James Bell';
 const FEED_DESCRIPTION = 'Writing by James Bell — Tāmaki Makaurau, Aotearoa';
@@ -31,10 +33,17 @@ export async function onRequestGet({ env }) {
 
   const lastBuildDate = published.length ? fmtRfc822(published[0].date) : fmtRfc822(new Date());
 
-  const items = published.map(p => {
+  // Fetch all post bodies in parallel
+  const bodies = await Promise.all(
+    published.map(p => env.BLOG.get(`posts/${p.slug}/draft.md`).then(o => o ? o.text() : ''))
+  );
+
+  const items = published.map((p, idx) => {
     const url = `${SITE_URL}/posts/${p.slug}/`;
     const tags = (p.tags || []).map(t => `    <category>${xmlEsc(t)}</category>`).join('\n');
     const description = p.excerpt ? `<![CDATA[${p.excerpt}]]>` : '';
+    const contentHtml = bodies[idx] ? mdToHtml(bodies[idx]) : '';
+    const content = contentHtml ? `<![CDATA[${contentHtml}]]>` : '';
     return `  <item>
     <title>${xmlEsc(p.title)}</title>
     <link>${url}</link>
@@ -42,11 +51,12 @@ export async function onRequestGet({ env }) {
     <pubDate>${fmtRfc822(p.date)}</pubDate>
 ${tags}
     <description>${description}</description>
+    <content:encoded>${content}</content:encoded>
   </item>`;
   }).join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${xmlEsc(FEED_TITLE)}</title>
     <link>${SITE_URL}</link>

@@ -5,9 +5,9 @@ import { showToast } from './toast.js';
 import { initMedia } from './media.js';
 import { openCropModal } from './image-upload.js';
 
-export { navigate, invalidatePostCache, invalidatePageCache };
+export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.59';
+const BUILD = '2026-05-10.60';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -368,6 +368,12 @@ function _showView(view) {
 let allPosts = [];
 
 function invalidatePostCache() { allPosts = []; }
+
+function getAllTags() {
+  const seen = new Set();
+  for (const p of allPosts) for (const t of (p.tags || [])) seen.add(t);
+  return [...seen].sort();
+}
 
 async function loadPosts() {
   await _fetchPosts();
