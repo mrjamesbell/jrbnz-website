@@ -4,65 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photos | James Bell</title>
-    <meta name="description" content="Photography portfolio by James Bell - Theatre and Travel photography">
-
-    <!-- Google Fonts -->
+    <meta name="description" content="Photography portfolio by James Bell — theatre and travel photography">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:wght@400;600&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/blog.css">
     <link rel="stylesheet" href="/photos/styles/gallery.css">
-
-    <!-- GLightbox for modal/lightbox -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">
 </head>
 <body>
-    <div id="site-header"></div>
 
-    <header class="page-header">
-        <h1>Photos</h1>
-    </header>
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="site-nav">
+      <a href="/" class="nav-logo">JRBNZ</a>
+      <ul class="nav-links">
+        <li><a href="/now/">Now</a></li>
+        <li><a href="/posts/">Blog</a></li>
+        <li><a href="/photos/" class="active">Photos</a></li>
+        <li><a href="/theatre/">Theatre</a></li>
+      </ul>
+    </nav>
+  </div>
+  <h1 class="page-header-title">Photos</h1>
+</div>
 
-    <!-- Cream content section with navigation and gallery -->
-    <section class="content-section">
-        <nav class="filter-nav">
-            <a href="/photos/" class="filter-back">← Photos</a>
-            <a href="/photos?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
-            <a href="/photos?category=travel" class="filter-link" data-category="travel">Travel</a>
-        </nav>
+<section class="content-section">
+    <nav class="filter-nav">
+        <a href="/photos/" class="filter-back">← Photos</a>
+        <a href="/photos/?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
+        <a href="/photos/?category=travel" class="filter-link" data-category="travel">Travel</a>
+    </nav>
 
-        <!-- Category overview (shown when 'All' is active) -->
-        <div class="category-overview hidden" id="category-overview"></div>
+    <div class="category-overview hidden" id="category-overview"></div>
 
-        <!-- Hero + description panel (shown per category) -->
-        <div class="hero-panel hidden" id="hero-panel">
-            <div class="hero-image-wrap">
-                <a class="glightbox" href="" id="hero-link" data-gallery="hero">
-                    <img id="hero-image" src="" alt="" loading="lazy">
-                </a>
-            </div>
-            <div class="hero-description" id="hero-description"></div>
+    <div class="hero-panel hidden" id="hero-panel">
+        <div class="hero-image-wrap">
+            <a class="glightbox" href="" id="hero-link" data-gallery="hero">
+                <img id="hero-image" src="" alt="" loading="lazy">
+            </a>
         </div>
+        <div class="hero-description" id="hero-description"></div>
+    </div>
 
-        <div id="loading" class="loading">Loading photos...</div>
-        <div id="gallery" class="gallery"></div>
-        <div id="error" class="error" style="display: none;"></div>
+    <div id="loading" class="loading">Loading photos...</div>
+    <div id="gallery" class="gallery"></div>
+    <div id="error" class="error" style="display:none"></div>
 
-        <nav class="pagination" id="pagination" style="display: none;">
-            <button id="prev-btn" class="pagination-btn" disabled>← Previous</button>
-            <span id="page-info" class="page-info"></span>
-            <button id="next-btn" class="pagination-btn" disabled>Next →</button>
-        </nav>
-    </section>
+    <nav class="pagination" id="pagination" style="display:none">
+        <button id="prev-btn" class="pagination-btn" disabled>← Previous</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="next-btn" class="pagination-btn" disabled>Next →</button>
+    </nav>
+</section>
 
-    <div id="site-footer"></div>
-    <script src="/scripts/components.js"></script>
+<footer class="footer">
+  <div class="footer-left">
+    <a href="/" class="footer-logo">JRBNZ</a>
+    <div class="footer-fineprint">&copy; <span class="footer-year"></span> James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  </div>
+  <div class="footer-right">
+    <nav class="footer-nav">
+      <a href="/now/">Now</a>
+      <a href="/posts/">Blog</a>
+      <a href="/photos/">Photos</a>
+      <a href="/theatre/">Theatre</a>
+    </nav>
+    <a href="/feed.xml" class="footer-rss">
+      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
+      RSS Feed
+    </a>
+  </div>
+</footer>
 
-    <!-- GLightbox -->
-    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
+<script>
+  document.querySelector('.footer-year').textContent = new Date().getFullYear();
+</script>
 
-    <!-- Gallery script -->
-    <script type="module" src="/photos/scripts/gallery.js"></script>
+<!-- GLightbox -->
+<script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
+<script type="module" src="/photos/scripts/gallery.js"></script>
+
 </body>
 </html>
