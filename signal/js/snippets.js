@@ -1,10 +1,5 @@
 // Built-in snippets — fallback when no custom snippets saved in R2.
-// Each snippet has css and html separately; the editor inserts a single-line
-// <!-- signal:css ... --> comment so the style is invisible in the textarea.
-
-function _cssComment(css) {
-  return '<!-- signal:css ' + css.split('\n').map(l => l.trim()).filter(Boolean).join(' ') + ' -->';
-}
+// CSS is injected globally via SITE_HEAD; the editor inserts only an id marker.
 
 export const SNIPPETS = [
   {
@@ -70,5 +65,5 @@ export const SNIPPETS = [
 ];
 
 export function snippetInsert(s) {
-  return _cssComment(s.css) + '\n' + s.html;
+  return '<!-- signal:snippet id="' + s.id + '" -->\n' + s.html;
 }

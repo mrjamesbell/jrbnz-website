@@ -21,13 +21,8 @@ export function mdToHtml(md) {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Snippet CSS comment — <!-- signal:css ... --> → <style>
-    const cssMatch = line.match(/^<!--\s*signal:css\s+(.*?)\s*-->$/);
-    if (cssMatch) {
-      out.push(`<style>${cssMatch[1]}</style>`);
-      i++;
-      continue;
-    }
+    // Snippet markers — CSS injected globally via SITE_HEAD; skip these comments
+    if (line.match(/^<!--\s*signal:(css|snippet)\b.*-->$/)) { i++; continue; }
 
     // YouTube signal block
     const ytMatch = line.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?(?:\s+align="([^"]*)")?\s*-->/);

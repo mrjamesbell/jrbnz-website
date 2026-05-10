@@ -1,4 +1,5 @@
 import { mdEsc, mdInline, mdToHtml } from '../lib/markdown.js';
+import { loadSnippetCss } from '../lib/snippets.js';
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -95,7 +96,7 @@ function fmtDateShort(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
 
-const SITE_HEAD = (title, accent) => `<!DOCTYPE html>
+const SITE_HEAD = (title, accent, snippetCss) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -109,6 +110,7 @@ const SITE_HEAD = (title, accent) => `<!DOCTYPE html>
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
 ${accent ? '<style>:root{--accent-color:' + accent.replace(/<\/style>/gi, '') + '}</style>' : ''}
+${snippetCss ? '<style>' + snippetCss + '</style>' : ''}
 </head>
 <body>`;
 
@@ -170,11 +172,11 @@ function buildFooterNav(menuPages) {
     .join('\n      ');
 }
 
-function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPages }) {
+function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPages, snippetCss }) {
   const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
   const authorBlock = buildAuthorCard(author);
-  return `${SITE_HEAD(title, accent)}
+  return `${SITE_HEAD(title, accent, snippetCss)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
   <ul class="nav-links">
@@ -230,7 +232,7 @@ function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPag
 </html>`;
 }
 
-function buildIndexHtml(posts, accent, menuPages) {
+function buildIndexHtml(posts, accent, menuPages, snippetCss) {
   const published = posts
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -251,7 +253,7 @@ function buildIndexHtml(posts, accent, menuPages) {
   const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
-  return `${SITE_HEAD('Blog - James Bell', accent)}
+  return `${SITE_HEAD('Blog - James Bell', accent, snippetCss)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
   <ul class="nav-links">
@@ -294,9 +296,9 @@ function buildIndexHtml(posts, accent, menuPages) {
 </body></html>`;
 }
 
-function buildPageHtml({ title, slug, contentHtml, menuPages, accent }) {
+function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss }) {
   const year = new Date().getFullYear();
-  return `${SITE_HEAD(title, accent)}
+  return `${SITE_HEAD(title, accent, snippetCss)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
   <ul class="nav-links">
@@ -342,8 +344,8 @@ async function saveIndex(env, posts) {
 }
 
 async function rebuildIndexHtml(env, posts) {
-  const { accent, menuPages } = await loadSiteContext(env);
-  const html = buildIndexHtml(posts, accent, menuPages);
+  const { accent, menuPages, snippetCss } = await loadSiteContext(env);
+  const html = buildIndexHtml(posts, accent, menuPages, snippetCss);
   await env.BLOG.put('posts/index.html', html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -354,21 +356,22 @@ async function rebuildPostHtml(env, slug, posts) {
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-  const { author, accent, menuPages } = await loadSiteContext(env);
-  const html = buildPostHtml({ ...post, contentHtml, author, accent, menuPages });
+  const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
+  const html = buildPostHtml({ ...post, contentHtml, author, accent, menuPages, snippetCss });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
 
 async function loadSiteContext(env) {
-  const [authorObj, accentObj, pagesObj] = await Promise.all([
+  const [authorObj, accentObj, pagesObj, snippetCss] = await Promise.all([
     env.BLOG.get('settings/author.json'),
     env.BLOG.get('settings/accent.json'),
     env.BLOG.get('pages/index.json'),
+    loadSnippetCss(env),
   ]);
   const author = authorObj ? JSON.parse(await authorObj.text()) : {};
   const accentData = accentObj ? JSON.parse(await accentObj.text()) : {};
   const menuPages = pagesObj ? JSON.parse(await pagesObj.text()) : [];
-  return { author, accent: accentData.accent || null, menuPages };
+  return { author, accent: accentData.accent || null, menuPages, snippetCss };
 }
 
 async function getPagesIndex(env) {
@@ -560,7 +563,7 @@ async function handleSaveAuthor(request, env) {
 }
 
 async function handleRebuildSite(env) {
-  const [posts, pages, { author, accent, menuPages }] = await Promise.all([
+  const [posts, pages, { author, accent, menuPages, snippetCss }] = await Promise.all([
     getIndex(env),
     getPagesIndex(env),
     loadSiteContext(env),
@@ -571,17 +574,17 @@ async function handleRebuildSite(env) {
     ...publishedPosts.map(async post => {
       const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPostHtml({ ...post, contentHtml: mdToHtml(body), author, accent, menuPages });
+      const html = buildPostHtml({ ...post, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss });
       await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
     ...publishedPages.map(async page => {
       const obj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent });
+      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss });
       await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
   ]);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
   await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
   return json({ rebuilt: publishedPosts.length + publishedPages.length });
 }
@@ -812,11 +815,11 @@ async function handlePublish(env, slug) {
   posts[idx].hasDraftChanges = false;
   posts[idx].updatedAt = new Date().toISOString();
 
-  const { author, accent, menuPages } = await loadSiteContext(env);
-  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, author, accent, menuPages });
+  const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
+  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, author, accent, menuPages, snippetCss });
   await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
   await saveIndex(env, posts);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
   await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
@@ -1261,9 +1264,9 @@ async function handlePublishPage(env, slug) {
   pages[idx].updatedAt = new Date().toISOString();
   await savePagesIndex(env, pages);
 
-  const { author, accent } = await loadSiteContext(env);
+  const { author, accent, snippetCss } = await loadSiteContext(env);
   const menuPages = pages;
-  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent });
+  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent, snippetCss });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
 
   // If page is in the nav, rebuild all posts and other pages so nav stays in sync
@@ -1275,17 +1278,17 @@ async function handlePublishPage(env, slug) {
       ...publishedPosts.map(async post => {
         const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
         const postBody = postObj ? await postObj.text() : '';
-        const postHtml = buildPostHtml({ ...post, contentHtml: mdToHtml(postBody), author, accent, menuPages });
+        const postHtml = buildPostHtml({ ...post, contentHtml: mdToHtml(postBody), author, accent, menuPages, snippetCss });
         await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
       }),
       ...otherPages.map(async page => {
         const pageObj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
         const pageBody = pageObj ? await pageObj.text() : '';
-        const pageHtml = buildPageHtml({ ...page, contentHtml: mdToHtml(pageBody), menuPages, accent });
+        const pageHtml = buildPageHtml({ ...page, contentHtml: mdToHtml(pageBody), menuPages, accent, snippetCss });
         await env.BLOG.put(`pages/${page.slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
       }),
     ]);
-    const indexHtml = buildIndexHtml(posts, accent, menuPages);
+    const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
     await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
   }
 
