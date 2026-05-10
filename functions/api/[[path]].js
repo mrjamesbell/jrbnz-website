@@ -149,15 +149,15 @@ function buildAuthorCard(author) {
 }
 
 function _navLinks(menuPages) {
-  const staticLinks = [
-    { href: '/now/', label: 'Now' },
-    { href: '/photos/', label: 'Photos' },
+  const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published');
+  const now = cmsPages.find(p => p.slug === 'now');
+  const others = cmsPages.filter(p => p.slug !== 'now');
+  return [
+    ...(now ? [{ href: '/now/', label: now.title }] : []),
     { href: '/posts/', label: 'Blog' },
+    { href: '/photos/', label: 'Photos' },
+    ...others.map(p => ({ href: `/${p.slug}/`, label: p.title })),
   ];
-  const dynamicLinks = (menuPages || [])
-    .filter(p => p.include_in_menu && p.status === 'published')
-    .map(p => ({ href: `/${p.slug}/`, label: p.title }));
-  return [...staticLinks, ...dynamicLinks];
 }
 
 function buildNav(menuPages, activeHref) {
