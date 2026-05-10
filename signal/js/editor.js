@@ -15,6 +15,7 @@ let tags = [];
 let splitDebounce = null;
 let _snapshot = null;
 let _isDirty = false;
+let _snippetPickerInited = false;
 
 // ── Module-level delegated handlers ───────────────────────────────────────────
 
@@ -504,11 +505,12 @@ function _insertAtCursor(textarea, text) {
 }
 
 function _initSnippetPicker() {
+  if (_snippetPickerInited) return;
   const btn = document.getElementById('btn-snippet');
   const picker = document.getElementById('snippet-picker');
   if (!btn || !picker) return;
+  _snippetPickerInited = true;
 
-  // Populate picker items
   picker.innerHTML = SNIPPETS.map(s =>
     `<button class="snippet-item" data-snippet-id="${s.id}">${s.label}</button>`
   ).join('');

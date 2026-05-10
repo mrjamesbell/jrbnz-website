@@ -3,6 +3,35 @@
 
 export const SNIPPETS = [
   {
+    id: 'stats',
+    label: 'Stats bar',
+    insert: `<style>
+.st{display:flex;flex-wrap:wrap;gap:24px 36px;margin:32px 0;padding:18px 0 16px;border-top:1px solid oklch(18% 0.01 50 / 0.18);border-bottom:1px solid oklch(18% 0.01 50 / 0.18)}
+.st-n{display:block;font-family:Georgia,serif;font-size:30px;font-weight:400;letter-spacing:-0.03em;line-height:1;color:oklch(18% 0.01 50)}
+.st-l{display:block;margin-top:5px;color:oklch(28% 0.01 50 / 0.55);font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase}
+</style>
+<div class="st">
+<div><strong class="st-n">42</strong><span class="st-l">Label</span></div>
+<div><strong class="st-n">3.2k</strong><span class="st-l">Label</span></div>
+<div><strong class="st-n">18</strong><span class="st-l">Label</span></div>
+</div>`,
+  },
+  {
+    id: 'grid',
+    label: 'Two-column grid',
+    insert: `<style>
+.gr{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:32px 0}
+.gr-c{padding-top:14px;border-top:2px solid var(--accent-color,oklch(68% 0.13 50))}
+.gr-c h4{margin:0 0 8px;font-family:Lora,serif;font-size:18px;font-weight:700;line-height:1.2;color:oklch(18% 0.01 50)}
+.gr-c p{margin:0;font-size:15px;line-height:1.6;color:oklch(28% 0.01 50 / 0.75)}
+@media(max-width:600px){.gr{grid-template-columns:1fr}}
+</style>
+<div class="gr">
+<div class="gr-c"><h4>Column heading</h4><p>Column body text goes here.</p></div>
+<div class="gr-c"><h4>Column heading</h4><p>Column body text goes here.</p></div>
+</div>`,
+  },
+  {
     id: 'timeline',
     label: 'Timeline',
     insert: `<style>

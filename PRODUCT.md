@@ -10,11 +10,11 @@ James Bell — sole user. Writes and publishes personal blog posts from Mac, iPa
 
 ## Product Purpose
 
-Private blog admin at /admin/ for jrbnz.com. Write posts in markdown, upload images, save drafts, and publish to the public blog. Success means posts get written and published without friction.
+Private blog admin (Signal) at /signal/ for jrbnz.com. Write posts in markdown, upload images, save drafts, and publish to the public blog. Success means posts get written and published without friction.
 
 ## Brand Personality
 
-Calm, focused, personal. The public site has bold typographic personality (Bebas Neue, strong color contrasts). The admin should feel like the quiet back-of-house version of that — intentional and unhurried.
+Calm, focused, personal. The public site has bold typographic personality (Bebas Neue display headings, Lora body, terracotta accent). The admin should feel like the quiet back-of-house version of that — intentional and unhurried.
 
 ## Anti-references
 
