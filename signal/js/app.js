@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.69';
+const BUILD = '2026-05-10.70';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -770,7 +770,13 @@ function openAppSettingsModal() {
 
   // Fetch live accent from R2 — no localStorage fallback
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
-    _markActiveSwatch('live-swatch-row', d.accent || '');
+    const accent = d.accent || '';
+    _markActiveSwatch('live-swatch-row', accent);
+    // Sync picker value if a custom hex is stored
+    if (accent.startsWith('#')) {
+      const picker = document.getElementById('live-color-picker');
+      if (picker) picker.value = accent;
+    }
   }).catch(() => {});
 
   // Fetch iA Writer token
