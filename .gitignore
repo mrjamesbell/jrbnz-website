@@ -37,3 +37,8 @@ photos/.wrangler/
 
 # Claude Code configuration
 .claude/
+
+# Old / archived files (kept locally for reference, not deployed)
+old/
+.wrangler/
+cf.env
