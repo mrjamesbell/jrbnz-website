@@ -3,10 +3,11 @@ import { renderMarkdown, countWords, slugify, fmtDate } from './markdown.js';
 import { extractVideoId, insertYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
 import { openImageSheet } from './image-upload.js';
 import { showToast } from './toast.js';
-import { navigate, invalidatePostCache } from './app.js';
+import { navigate, invalidatePostCache, invalidatePageCache } from './app.js';
 
 let currentSlug = null;
 let currentPost = null;
+let currentType = 'post'; // 'post' | 'page'
 let originalSlug = null;
 let viewMode = 'edit';
 let tags = [];
@@ -174,14 +175,26 @@ document.addEventListener('input', e => {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-export async function openEditor(slug) {
+function _getApiBase() {
+  return currentType === 'page' ? '/api/pages' : '/api/posts';
+}
+
+export async function openEditor(slug, type = 'post') {
   currentSlug = slug;
+  currentType = type;
   originalSlug = slug;
 
   const isNew = slug === 'new';
 
+  // Update back button label
+  const backLabelEl = document.getElementById('topbar-back-label');
+  if (backLabelEl) backLabelEl.textContent = type === 'page' ? 'Pages' : 'Posts';
+  const backEl = document.getElementById('topbar-breadcrumb');
+  if (backEl) backEl.href = type === 'page' ? '/signal/pages' : '/signal/';
+
   // Show editor, hide other views
   document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-pages')?.style && (document.getElementById('view-pages').style.display = 'none');
   document.getElementById('media-view').style.display = 'none';
   const editorEl = document.getElementById('view-editor');
   if (editorEl) {
@@ -199,6 +212,7 @@ export async function openEditor(slug) {
       title: '',
       date: new Date().toISOString().slice(0, 10),
       tags: [],
+      include_in_menu: false,
       status: 'draft',
       body: '',
       excerpt: '',
@@ -212,14 +226,14 @@ export async function openEditor(slug) {
   }
 
   try {
-    const res = await fetch(`/api/posts/${slug}`);
-    if (!res.ok) throw new Error('Post not found');
+    const res = await fetch(`${_getApiBase()}/${slug}`);
+    if (!res.ok) throw new Error(`${type === 'page' ? 'Page' : 'Post'} not found`);
     currentPost = await res.json();
     _isDirty = false;
     _snapshot = _takeSnapshot();
     _populateEditor();
   } catch (e) {
-    showToast('Failed to load post: ' + e.message, 'error');
+    showToast('Failed to load: ' + e.message, 'error');
   }
 }
 
@@ -237,8 +251,9 @@ export function closeEditor() {
 
   if (_isDirty && currentSlug && currentPost) {
     const slug = currentSlug;
-    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, wordCount: currentPost.wordCount };
-    fetch(`/api/posts/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
+    const apiBase = _getApiBase();
+    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
+    fetch(`${apiBase}/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
   }
   cancelScheduled();
   currentSlug = null;
@@ -261,6 +276,10 @@ function _populateEditor() {
   textarea.value = currentPost.body || '';
   tags = Array.isArray(currentPost.tags) ? [...currentPost.tags] : [];
 
+  // Show/hide type-specific UI
+  const metaRow = document.getElementById('post-meta-row');
+  if (metaRow) metaRow.style.display = currentType === 'page' ? 'none' : '';
+
   _updateTitleDisplay();
   _renderTags();
   _updateWordCount();
@@ -271,7 +290,7 @@ function _populateEditor() {
   const viewPostBtn = document.getElementById('btn-view-post');
   if (viewPostBtn) {
     if (currentPost.status === 'published') {
-      viewPostBtn.href = `/posts/${currentSlug}/`;
+      viewPostBtn.href = currentType === 'page' ? `/${currentSlug}/` : `/posts/${currentSlug}/`;
       viewPostBtn.style.display = '';
     } else {
       viewPostBtn.style.display = 'none';
@@ -632,12 +651,14 @@ function _triggerSave() {
   scheduleSave(
     () => ({
       slug: currentSlug,
+      apiBase: _getApiBase(),
       title: currentPost.title,
       body: currentPost.body,
       tags: currentPost.tags,
       date: currentPost.date,
       excerpt: currentPost.excerpt,
       coverImage: currentPost.coverImage,
+      include_in_menu: currentPost.include_in_menu,
       wordCount: currentPost.wordCount
     }),
     () => {},
@@ -685,7 +706,8 @@ function _takeSnapshot() {
     tags: [...(currentPost.tags || [])],
     date: currentPost.date,
     excerpt: currentPost.excerpt,
-    coverImage: currentPost.coverImage
+    coverImage: currentPost.coverImage,
+    include_in_menu: currentPost.include_in_menu
   };
 }
 
@@ -697,6 +719,7 @@ function _revertChanges() {
   currentPost.date = _snapshot.date;
   currentPost.excerpt = _snapshot.excerpt;
   currentPost.coverImage = _snapshot.coverImage;
+  currentPost.include_in_menu = _snapshot.include_in_menu;
   tags = [..._snapshot.tags];
 
   document.getElementById('post-title-input').value = currentPost.title || '';
@@ -718,12 +741,14 @@ function _revertChanges() {
 
   saveNow(() => ({
     slug: currentSlug,
+    apiBase: _getApiBase(),
     title: currentPost.title,
     body: currentPost.body,
     tags: currentPost.tags,
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
+    include_in_menu: currentPost.include_in_menu,
     wordCount: currentPost.wordCount
   })).catch(e => showToast('Revert save failed — ' + e.message, 'error'));
 
@@ -741,12 +766,14 @@ async function _publish() {
   const slug = currentSlug;
   const payload = {
     slug,
+    apiBase: _getApiBase(),
     title: currentPost.title,
     body: currentPost.body,
     tags: currentPost.tags,
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
+    include_in_menu: currentPost.include_in_menu,
     wordCount: currentPost.wordCount
   };
 
@@ -756,7 +783,7 @@ async function _publish() {
   try {
     await saveNow(() => payload);
 
-    const res = await fetch(`/api/posts/${slug}/publish`, { method: 'POST' });
+    const res = await fetch(`${_getApiBase()}/${slug}/publish`, { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
 
@@ -772,12 +799,13 @@ async function _publish() {
         setTimeout(() => btnEl.classList.remove('just-published'), 450);
       }
     }
-    invalidatePostCache();
+    if (currentType === 'page') invalidatePageCache(); else invalidatePostCache();
 
     const viewBtn = document.getElementById('btn-view-post');
-    if (viewBtn) { viewBtn.href = data.url || `/posts/${slug}/`; viewBtn.style.display = ''; }
+    const defaultUrl = currentType === 'page' ? `/${slug}/` : `/posts/${slug}/`;
+    if (viewBtn) { viewBtn.href = data.url || defaultUrl; viewBtn.style.display = ''; }
 
-    showToast('Published — View post ↗', 'success', 4000);
+    showToast('Published ↗', 'success', 4000);
   } catch (e) {
     showToast('Publish failed — ' + e.message, 'error');
   } finally {
@@ -793,6 +821,23 @@ function _openSettings(e) {
   document.getElementById('settings-date').value = currentPost.date || new Date().toISOString().slice(0, 10);
   document.getElementById('settings-excerpt').value = currentPost.excerpt || '';
   document.getElementById('settings-cover').value = currentPost.coverImage || '';
+
+  const isPage = currentType === 'page';
+  const slugHint = document.getElementById('settings-slug-hint');
+  if (slugHint) slugHint.textContent = isPage ? 'URL: jrbnz.com/' : 'URL: jrbnz.com/posts/';
+  const dateRow = document.getElementById('settings-date-row');
+  if (dateRow) dateRow.style.display = isPage ? 'none' : '';
+  const excerptRow = document.getElementById('settings-excerpt-row');
+  if (excerptRow) excerptRow.style.display = isPage ? 'none' : '';
+  const coverRow = document.getElementById('settings-cover-row');
+  if (coverRow) coverRow.style.display = isPage ? 'none' : '';
+  const menuRow = document.getElementById('settings-menu-row');
+  if (menuRow) menuRow.style.display = isPage ? '' : 'none';
+  const menuCheck = document.getElementById('settings-include-menu');
+  if (menuCheck) menuCheck.checked = !!currentPost.include_in_menu;
+  const deleteBtn = document.getElementById('settings-delete');
+  if (deleteBtn) deleteBtn.textContent = isPage ? 'Delete page' : 'Delete post';
+
   _updateSlugPreview();
   _updateExcerptCount();
   document.getElementById('settings-modal').style.display = 'flex';
@@ -811,7 +856,8 @@ function _onSlugInput() {
 
 function _updateSlugPreview() {
   const el = document.getElementById('settings-slug-preview');
-  if (el) el.textContent = document.getElementById('settings-slug').value || '';
+  const slug = document.getElementById('settings-slug').value || '';
+  if (el) el.textContent = currentType === 'page' ? `jrbnz.com/${slug}/` : `jrbnz.com/posts/${slug}/`;
 }
 
 function _onExcerptInput() { _updateExcerptCount(); }
@@ -824,17 +870,23 @@ function _updateExcerptCount() {
 
 async function _saveSettings() {
   const newSlug = document.getElementById('settings-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '');
-  const date = document.getElementById('settings-date').value;
-  const excerpt = document.getElementById('settings-excerpt').value;
-  const coverImage = document.getElementById('settings-cover').value.trim() || null;
-
   if (!newSlug) { showToast('Slug cannot be empty', 'error'); return; }
 
-  currentPost.date = date;
-  currentPost.excerpt = excerpt;
-  currentPost.coverImage = coverImage;
+  const isPage = currentType === 'page';
 
-  if (newSlug !== currentSlug) {
+  if (!isPage) {
+    const date = document.getElementById('settings-date').value;
+    const excerpt = document.getElementById('settings-excerpt').value;
+    const coverImage = document.getElementById('settings-cover').value.trim() || null;
+    currentPost.date = date;
+    currentPost.excerpt = excerpt;
+    currentPost.coverImage = coverImage;
+  } else {
+    const menuCheck = document.getElementById('settings-include-menu');
+    if (menuCheck) currentPost.include_in_menu = menuCheck.checked;
+  }
+
+  if (newSlug !== currentSlug && !isPage) {
     try {
       const res = await fetch(`/api/posts/${currentSlug}/rename`, {
         method: 'POST',
@@ -873,10 +925,10 @@ function _closeDelete() {
 async function _deletePost() {
   _closeDelete();
   try {
-    const res = await fetch(`/api/posts/${currentSlug}`, { method: 'DELETE' });
+    const res = await fetch(`${_getApiBase()}/${currentSlug}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(await res.text());
-    showToast('Post deleted', 'default');
-    navigate('/signal/');
+    if (currentType === 'page') { invalidatePageCache(); showToast('Page deleted', 'default'); navigate('/signal/pages'); }
+    else { invalidatePostCache(); showToast('Post deleted', 'default'); navigate('/signal/'); }
   } catch (e) {
     showToast('Delete failed: ' + e.message, 'error');
   }

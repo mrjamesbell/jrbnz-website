@@ -211,7 +211,7 @@ function fmtDateShort(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
 
-const SITE_HEAD = (title) => `<!DOCTYPE html>
+const SITE_HEAD = (title, accent) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -224,6 +224,7 @@ const SITE_HEAD = (title) => `<!DOCTYPE html>
 <link rel="stylesheet" href="/styles/blog.css">
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
+${accent ? '<style>:root{--color-accent:' + accent.replace(/<\/style>/gi, '') + '}</style>' : ''}
 </head>
 <body>`;
 
@@ -261,17 +262,29 @@ function buildAuthorCard(author) {
 </div>`;
 }
 
-function buildPostHtml({ title, date, tags, contentHtml, author }) {
+function buildNav(menuPages, activeHref) {
+  const staticLinks = [
+    { href: '/now/', label: 'Now' },
+    { href: '/photos/', label: 'Photos' },
+    { href: '/posts/', label: 'Blog' },
+  ];
+  const dynamicLinks = (menuPages || [])
+    .filter(p => p.include_in_menu && p.status === 'published')
+    .map(p => ({ href: `/${p.slug}/`, label: p.title }));
+  return [...staticLinks, ...dynamicLinks]
+    .map(l => `<li><a href="${esc(l.href)}"${l.href === activeHref ? ' class="active"' : ''}>${esc(l.label)}</a></li>`)
+    .join('\n    ');
+}
+
+function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPages }) {
   const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
   const authorBlock = buildAuthorCard(author);
-  return `${SITE_HEAD(title)}
+  return `${SITE_HEAD(title, accent)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
   <ul class="nav-links">
-    <li><a href="/now/">Now</a></li>
-    <li><a href="/photos/">Photos</a></li>
-    <li><a href="/posts/" class="active">Blog</a></li>
+    ${buildNav(menuPages, '/posts/')}
   </ul>
 </nav>
 <header class="post-masthead">
@@ -289,6 +302,7 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
       <a href="/posts/" class="back-to-posts">← All posts</a>
     </div>
     <aside class="post-sidebar">
+      ${authorBlock}
       <div class="sidebar-block">
         <div class="sidebar-label">Published</div>
         <time class="sidebar-date" datetime="${esc(date)}">${fmtDate(date)}</time>
@@ -299,7 +313,6 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
           ${sidebarTags}
         </div>
       </div>` : ''}
-      ${authorBlock}
     </aside>
   </div>
 </section>
@@ -325,7 +338,7 @@ function buildPostHtml({ title, date, tags, contentHtml, author }) {
 </html>`;
 }
 
-function buildIndexHtml(posts) {
+function buildIndexHtml(posts, accent, menuPages) {
   const published = posts
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -346,13 +359,11 @@ function buildIndexHtml(posts) {
   const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
-  return `${SITE_HEAD('Blog - James Bell')}
+  return `${SITE_HEAD('Blog - James Bell', accent)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
   <ul class="nav-links">
-    <li><a href="/now/">Now</a></li>
-    <li><a href="/photos/">Photos</a></li>
-    <li><a href="/posts/" class="active">Blog</a></li>
+    ${buildNav(menuPages, '/posts/')}
   </ul>
 </nav>
 <header class="index-masthead">
@@ -393,6 +404,40 @@ function buildIndexHtml(posts) {
 </body></html>`;
 }
 
+function buildPageHtml({ title, slug, contentHtml, menuPages, accent }) {
+  const year = new Date().getFullYear();
+  return `${SITE_HEAD(title, accent)}
+<nav class="site-nav">
+  <a href="/" class="nav-logo">JRBNZ</a>
+  <ul class="nav-links">
+    ${buildNav(menuPages, `/${slug}/`)}
+  </ul>
+</nav>
+<section class="content-section">
+  <div class="post-content" style="max-width:72ch;margin:0 auto;padding:48px 24px 80px">${contentHtml}</div>
+</section>
+<footer class="footer">
+  <div class="footer-left">
+    <a href="/" class="footer-logo">JRBNZ</a>
+    <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  </div>
+  <div class="footer-right">
+    <nav class="footer-nav">
+      <a href="/now/">Now</a>
+      <a href="/photos/">Photos</a>
+      <a href="/posts/">Blog</a>
+    </nav>
+    <a href="/feed.xml" class="footer-rss">
+      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
+      RSS Feed
+    </a>
+  </div>
+</footer>
+</body>
+</html>`;
+}
+
 // ── Index helpers ─────────────────────────────────────────────────────────────
 
 async function getIndex(env) {
@@ -406,7 +451,8 @@ async function saveIndex(env, posts) {
 }
 
 async function rebuildIndexHtml(env, posts) {
-  const html = buildIndexHtml(posts);
+  const { accent, menuPages } = await loadSiteContext(env);
+  const html = buildIndexHtml(posts, accent, menuPages);
   await env.BLOG.put('posts/index.html', html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -417,10 +463,31 @@ async function rebuildPostHtml(env, slug, posts) {
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-  const authorObj = await env.BLOG.get('settings/author.json');
-  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
-  const html = buildPostHtml({ ...post, contentHtml, author });
+  const { author, accent, menuPages } = await loadSiteContext(env);
+  const html = buildPostHtml({ ...post, contentHtml, author, accent, menuPages });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
+}
+
+async function loadSiteContext(env) {
+  const [authorObj, accentObj, pagesObj] = await Promise.all([
+    env.BLOG.get('settings/author.json'),
+    env.BLOG.get('settings/accent.json'),
+    env.BLOG.get('pages/index.json'),
+  ]);
+  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
+  const accentData = accentObj ? JSON.parse(await accentObj.text()) : {};
+  const menuPages = pagesObj ? JSON.parse(await pagesObj.text()) : [];
+  return { author, accent: accentData.accent || null, menuPages };
+}
+
+async function getPagesIndex(env) {
+  const obj = await env.BLOG.get('pages/index.json');
+  if (!obj) return [];
+  return obj.json();
+}
+
+async function savePagesIndex(env, pages) {
+  await env.BLOG.put('pages/index.json', JSON.stringify(pages), { httpMetadata: { contentType: 'application/json' } });
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -473,8 +540,14 @@ export async function onRequest(context) {
     return json({ token: mpToken });
   }
 
-  // Site rebuild
-  if (resource === 'site' && slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
+  // Site rebuild + accent
+  if (resource === 'site') {
+    if (slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
+    if (slug === 'accent') {
+      if (method === 'GET') return handleGetAccent(env);
+      if (method === 'PUT') return handleSaveAccent(request, env);
+    }
+  }
 
   // Media
   if (resource === 'media') {
@@ -514,6 +587,21 @@ export async function onRequest(context) {
       if (action === 'unpublish' && method === 'POST') return handleUnpublish(env, slug);
       if (action === 'rename' && method === 'POST') return handleRename(request, env, slug);
       if (action === 'review' && method === 'POST') return handleReviewPost(env, slug);
+    }
+  }
+
+  // Pages
+  if (resource === 'pages') {
+    if (!slug) {
+      if (method === 'GET') return handleListPages(env);
+      if (method === 'POST') return handleCreatePage(request, env);
+    } else if (!action) {
+      if (method === 'GET') return handleGetPage(env, slug);
+      if (method === 'PUT') return handleSavePage(request, env, slug);
+      if (method === 'DELETE') return handleDeletePage(env, slug);
+    } else {
+      if (action === 'publish' && method === 'POST') return handlePublishPage(env, slug);
+      if (action === 'unpublish' && method === 'POST') return handleUnpublishPage(env, slug);
     }
   }
 
@@ -575,18 +663,20 @@ async function handleSaveAuthor(request, env) {
 }
 
 async function handleRebuildSite(env) {
-  const posts = await getIndex(env);
-  const authorObj = await env.BLOG.get('settings/author.json');
-  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
+  const [posts, { author, accent, menuPages }] = await Promise.all([
+    getIndex(env),
+    loadSiteContext(env),
+  ]);
   const published = posts.filter(p => p.status === 'published');
   await Promise.all(published.map(async post => {
     const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
     const body = obj ? await obj.text() : '';
     const contentHtml = mdToHtml(body);
-    const html = buildPostHtml({ ...post, contentHtml, author });
+    const html = buildPostHtml({ ...post, contentHtml, author, accent, menuPages });
     await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
   }));
-  await rebuildIndexHtml(env, posts);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages);
+  await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
   return json({ rebuilt: published.length });
 }
 
@@ -816,13 +906,12 @@ async function handlePublish(env, slug) {
   posts[idx].hasDraftChanges = false;
   posts[idx].updatedAt = new Date().toISOString();
 
-  const authorObj = await env.BLOG.get('settings/author.json');
-  const author = authorObj ? JSON.parse(await authorObj.text()) : {};
-
-  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, author });
+  const { author, accent, menuPages } = await loadSiteContext(env);
+  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, author, accent, menuPages });
   await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
   await saveIndex(env, posts);
-  await rebuildIndexHtml(env, posts);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages);
+  await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
 }
@@ -1151,6 +1240,140 @@ async function handleMicropub(request, env) {
     status: 202,
     headers: { Location: `https://jrbnz.com/signal/#post/${slug}` },
   });
+}
+
+// ── Accent handlers ───────────────────────────────────────────────────────────
+
+async function handleGetAccent(env) {
+  try {
+    const obj = await env.BLOG.get('settings/accent.json');
+    if (!obj) return json({ accent: null });
+    return json(await obj.json());
+  } catch {
+    return json({ accent: null });
+  }
+}
+
+async function handleSaveAccent(request, env) {
+  const { accent } = await request.json().catch(() => ({}));
+  if (!accent || typeof accent !== 'string') return json({ error: 'accent required' }, 400);
+  await env.BLOG.put('settings/accent.json', JSON.stringify({ accent }), { httpMetadata: { contentType: 'application/json' } });
+  return json({ accent });
+}
+
+// ── Pages handlers ────────────────────────────────────────────────────────────
+
+async function handleListPages(env) {
+  return json(await getPagesIndex(env));
+}
+
+async function handleCreatePage(request, env) {
+  const { title, slug, include_in_menu } = await request.json().catch(() => ({}));
+  if (!title || !slug) return json({ error: 'title and slug required' }, 400);
+
+  const pages = await getPagesIndex(env);
+  if (pages.find(p => p.slug === slug)) return json({ error: 'slug already exists' }, 409);
+
+  const page = {
+    slug,
+    title,
+    include_in_menu: !!include_in_menu,
+    status: 'draft',
+    date: new Date().toISOString().slice(0, 10),
+    updatedAt: new Date().toISOString(),
+  };
+  pages.push(page);
+  await savePagesIndex(env, pages);
+  await env.BLOG.put(`pages/${slug}/draft.md`, `# ${title}\n`, { httpMetadata: { contentType: 'text/markdown' } });
+  return json(page);
+}
+
+async function handleGetPage(env, slug) {
+  const pages = await getPagesIndex(env);
+  const page = pages.find(p => p.slug === slug);
+  if (!page) return json({ error: 'Not found' }, 404);
+  const obj = await env.BLOG.get(`pages/${slug}/draft.md`);
+  const body = obj ? await obj.text() : '';
+  return json({ ...page, body });
+}
+
+async function handleSavePage(request, env, slug) {
+  const { title, body, include_in_menu, wordCount } = await request.json().catch(() => ({}));
+  const pages = await getPagesIndex(env);
+  const idx = pages.findIndex(p => p.slug === slug);
+  if (idx === -1) return json({ error: 'Not found' }, 404);
+
+  if (title !== undefined) pages[idx].title = title;
+  if (include_in_menu !== undefined) pages[idx].include_in_menu = !!include_in_menu;
+  if (wordCount !== undefined) pages[idx].wordCount = wordCount;
+  pages[idx].updatedAt = new Date().toISOString();
+  if (pages[idx].status === 'published') pages[idx].hasDraftChanges = true;
+
+  if (body !== undefined) {
+    await env.BLOG.put(`pages/${slug}/draft.md`, body, { httpMetadata: { contentType: 'text/markdown' } });
+  }
+  await savePagesIndex(env, pages);
+  return json(pages[idx]);
+}
+
+async function handleDeletePage(env, slug) {
+  const pages = await getPagesIndex(env);
+  const updated = pages.filter(p => p.slug !== slug);
+  if (updated.length === pages.length) return json({ error: 'Not found' }, 404);
+
+  const listed = await env.BLOG.list({ prefix: `pages/${slug}/` });
+  await Promise.all(listed.objects.map(o => env.BLOG.delete(o.key)));
+
+  await savePagesIndex(env, updated);
+  return json({ ok: true });
+}
+
+async function handlePublishPage(env, slug) {
+  const pages = await getPagesIndex(env);
+  const idx = pages.findIndex(p => p.slug === slug);
+  if (idx === -1) return json({ error: 'Not found' }, 404);
+
+  const obj = await env.BLOG.get(`pages/${slug}/draft.md`);
+  const body = obj ? await obj.text() : '';
+  const contentHtml = mdToHtml(body);
+
+  pages[idx].status = 'published';
+  pages[idx].hasDraftChanges = false;
+  pages[idx].updatedAt = new Date().toISOString();
+  await savePagesIndex(env, pages);
+
+  const { author, accent } = await loadSiteContext(env);
+  const menuPages = pages;
+  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent });
+  await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
+
+  // If page is in the nav, rebuild all posts so nav stays in sync
+  if (pages[idx].include_in_menu) {
+    const posts = await getIndex(env);
+    const published = posts.filter(p => p.status === 'published');
+    await Promise.all(published.map(async post => {
+      const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
+      const postBody = postObj ? await postObj.text() : '';
+      const postHtml = buildPostHtml({ ...post, contentHtml: mdToHtml(postBody), author, accent, menuPages });
+      await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
+    }));
+    const indexHtml = buildIndexHtml(posts, accent, menuPages);
+    await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
+  }
+
+  return json({ ...pages[idx], url: `/${slug}/` });
+}
+
+async function handleUnpublishPage(env, slug) {
+  const pages = await getPagesIndex(env);
+  const idx = pages.findIndex(p => p.slug === slug);
+  if (idx === -1) return json({ error: 'Not found' }, 404);
+
+  pages[idx].status = 'draft';
+  pages[idx].updatedAt = new Date().toISOString();
+  await env.BLOG.delete(`pages/${slug}/index.html`);
+  await savePagesIndex(env, pages);
+  return json(pages[idx]);
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────

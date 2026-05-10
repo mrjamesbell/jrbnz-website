@@ -5,9 +5,9 @@ import { showToast } from './toast.js';
 import { initMedia } from './media.js';
 import { openCropModal } from './image-upload.js';
 
-export { navigate, invalidatePostCache };
+export { navigate, invalidatePostCache, invalidatePageCache };
 
-const BUILD = '2026-05-10.46';
+const BUILD = '2026-05-10.47';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -33,16 +33,23 @@ const BUILD = '2026-05-10.46';
     });
   });
 
-  // Topbar breadcrumb interception
+  // Topbar breadcrumb interception (href is updated dynamically by openEditor)
   document.getElementById('topbar-breadcrumb')?.addEventListener('click', e => {
     e.preventDefault();
-    navigate('/signal/');
+    const href = document.getElementById('topbar-breadcrumb').getAttribute('href');
+    navigate(href || '/signal/');
   });
 
   // New post button
   document.getElementById('btn-new-post-main').addEventListener('click', e => {
     e.preventDefault();
     openNewPostModal();
+  });
+
+  // New page button
+  document.getElementById('btn-new-page-main').addEventListener('click', e => {
+    e.preventDefault();
+    openNewPageModal();
   });
 
   // New post modal
@@ -57,6 +64,20 @@ const BUILD = '2026-05-10.46';
   document.getElementById('new-post-title').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); createPost(); }
     if (e.key === 'Escape') closeNewPostModal();
+  });
+
+  // New page modal
+  document.getElementById('new-page-close').addEventListener('click', closeNewPageModal);
+  document.getElementById('new-page-cancel').addEventListener('click', closeNewPageModal);
+  document.getElementById('new-page-create').addEventListener('click', createPage);
+  document.getElementById('new-page-title').addEventListener('input', _onNewPageTitleInput);
+  document.getElementById('new-page-slug').addEventListener('input', _onNewPageSlugInput);
+  document.getElementById('new-page-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeNewPageModal();
+  });
+  document.getElementById('new-page-title').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); createPage(); }
+    if (e.key === 'Escape') closeNewPageModal();
   });
 
   // Rail buttons
@@ -284,9 +305,14 @@ function navigate(path, replace = false) {
 
 function _route(path) {
   const editMatch = path.match(/^\/signal\/edit\/(.+)$/);
+  const editPageMatch = path.match(/^\/signal\/edit-page\/(.+)$/);
   const mediaMatch = path === '/signal/media';
+  const pagesMatch = path === '/signal/pages';
 
-  if (editMatch) {
+  if (editPageMatch) {
+    _setRailActive('pages');
+    openEditor(editPageMatch[1], 'page');
+  } else if (editMatch) {
     _setRailActive('list');
     openEditor(editMatch[1]);
   } else if (mediaMatch) {
@@ -294,6 +320,11 @@ function _route(path) {
     closeEditor();
     _showView('media');
     initMedia();
+  } else if (pagesMatch) {
+    _setRailActive('pages');
+    closeEditor();
+    _showView('pages');
+    loadPages();
   } else {
     _setRailActive('list');
     closeEditor();
@@ -318,12 +349,16 @@ function _animateIn(el) {
 
 function _showView(view) {
   const listEl = document.getElementById('view-list');
+  const pagesEl = document.getElementById('view-pages');
   const mediaEl = document.getElementById('media-view');
   const showList = view === 'list';
+  const showPages = view === 'pages';
   const showMedia = view === 'media';
   listEl.style.display = showList ? '' : 'none';
+  if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
   mediaEl.style.display = showMedia ? '' : 'none';
   if (showList) _animateIn(listEl);
+  if (showPages && pagesEl) _animateIn(pagesEl);
   if (showMedia) _animateIn(mediaEl);
   // view-editor visibility managed by openEditor / closeEditor
 }
@@ -412,6 +447,84 @@ function listItem(p) {
   </div>`;
 }
 
+// ── Page list ─────────────────────────────────────────────────────────────────
+
+let allPages = [];
+
+function invalidatePageCache() { allPages = []; }
+
+async function loadPages() {
+  try {
+    const res = await fetch('/api/pages');
+    if (!res.ok) return;
+    allPages = await res.json();
+  } catch {}
+  renderPageList(allPages);
+}
+
+function renderPageList(pages) {
+  const draftsEl = document.getElementById('page-drafts-list');
+  const publishedEl = document.getElementById('page-published-list');
+  if (!draftsEl || !publishedEl) return;
+
+  const drafts = pages
+    .filter(p => p.status !== 'published' || p.hasDraftChanges)
+    .sort((a, b) => new Date(b.updatedAt || b.date) - new Date(a.updatedAt || a.date));
+  const published = pages
+    .filter(p => p.status === 'published' && !p.hasDraftChanges)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  draftsEl.innerHTML = drafts.map(pageListItem).join('');
+  publishedEl.innerHTML = published.map(pageListItem).join('');
+
+  document.querySelectorAll('.page-list-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.post-list-delete')) return;
+      navigate(`/signal/edit-page/${el.dataset.slug}`);
+    });
+  });
+
+  document.querySelectorAll('.page-list-item .post-list-delete').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const slug = btn.dataset.slug;
+      if (!confirm(`Delete page "${slug}"? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`/api/pages/${slug}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error(await res.text());
+        showToast('Page deleted');
+        invalidatePageCache();
+        await loadPages();
+      } catch (err) {
+        showToast('Delete failed: ' + err.message, 'error');
+      }
+    });
+  });
+}
+
+function pageListItem(p) {
+  const isDraft = p.status !== 'published';
+  const hasEdits = p.status === 'published' && p.hasDraftChanges;
+  const dateStr = (isDraft || hasEdits)
+    ? relativeTime(p.updatedAt || p.date)
+    : fmtDateShort(p.date);
+  const statusClass = isDraft ? 'is-draft' : hasEdits ? 'is-draft' : 'is-published';
+  const statusLabel = isDraft ? 'draft' : hasEdits ? 'published · edits' : 'published';
+  const menuLabel = p.include_in_menu ? '<span class="post-list-tags">in nav</span>' : '';
+
+  return `<div class="post-list-item page-list-item" data-slug="${esc(p.slug)}">
+    <div class="post-list-item-body">
+      <div class="post-list-title">${(isDraft || hasEdits) ? '<span class="draft-pip"></span>' : ''}${esc(p.title || 'Untitled')}</div>
+      <div class="post-list-meta">
+        <span>${esc(dateStr)}</span>
+        ${menuLabel}
+      </div>
+    </div>
+    <span class="post-list-status ${statusClass}">${statusLabel}</span>
+    <button class="post-list-delete" data-slug="${esc(p.slug)}" title="Delete page" tabindex="-1">×</button>
+  </div>`;
+}
+
 // ── New post modal ────────────────────────────────────────────────────────────
 
 let slugManuallyEdited = false;
@@ -471,6 +584,75 @@ async function createPost() {
     allPosts.unshift(post);
     closeNewPostModal();
     navigate(`/signal/edit/${post.slug}`);
+  } catch (e) {
+    showToast('Failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create & edit';
+  }
+}
+
+// ── New page modal ────────────────────────────────────────────────────────────
+
+let _pageSlugManuallyEdited = false;
+
+function openNewPageModal() {
+  _pageSlugManuallyEdited = false;
+  document.getElementById('new-page-title').value = '';
+  document.getElementById('new-page-slug').value = '';
+  document.getElementById('new-page-slug-hint').textContent = '';
+  document.getElementById('new-page-menu').checked = false;
+  document.getElementById('new-page-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('new-page-title').focus(), 50);
+}
+
+function closeNewPageModal() {
+  document.getElementById('new-page-modal').style.display = 'none';
+}
+
+function _onNewPageTitleInput() {
+  if (!_pageSlugManuallyEdited) {
+    const title = document.getElementById('new-page-title').value;
+    const slug = slugify(title);
+    document.getElementById('new-page-slug').value = slug;
+    document.getElementById('new-page-slug-hint').textContent = slug ? `jrbnz.com/${slug}/` : '';
+  }
+}
+
+function _onNewPageSlugInput() {
+  _pageSlugManuallyEdited = true;
+  const slug = document.getElementById('new-page-slug').value;
+  document.getElementById('new-page-slug-hint').textContent = slug ? `jrbnz.com/${slug}/` : '';
+}
+
+async function createPage() {
+  const title = document.getElementById('new-page-title').value.trim();
+  const rawSlug = document.getElementById('new-page-slug').value.trim();
+  const slug = (rawSlug || slugify(title)).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '');
+  const include_in_menu = document.getElementById('new-page-menu').checked;
+
+  if (!title) { document.getElementById('new-page-title').focus(); return; }
+  if (!slug) { showToast('Could not generate a slug from the title', 'error'); return; }
+
+  const btn = document.getElementById('new-page-create');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+
+  try {
+    const res = await fetch('/api/pages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, slug, include_in_menu })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(err.error || 'Failed to create page', 'error');
+      return;
+    }
+    const page = await res.json();
+    allPages.unshift(page);
+    closeNewPageModal();
+    navigate(`/signal/edit-page/${page.slug}`);
   } catch (e) {
     showToast('Failed: ' + e.message, 'error');
   } finally {
@@ -554,9 +736,16 @@ function openAppSettingsModal() {
   document.getElementById('btn-show-apikey').textContent = 'Show';
 
   const signalAccent = localStorage.getItem('signal-accent') || '';
-  const liveAccent = localStorage.getItem('live-accent') || '';
   _markActiveSwatch('signal-swatch-row', signalAccent);
-  _markActiveSwatch('live-swatch-row', liveAccent);
+
+  // Fetch live accent from server
+  fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
+    const liveAccent = d.accent || localStorage.getItem('live-accent') || '';
+    if (d.accent) localStorage.setItem('live-accent', d.accent);
+    _markActiveSwatch('live-swatch-row', liveAccent);
+  }).catch(() => {
+    _markActiveSwatch('live-swatch-row', localStorage.getItem('live-accent') || '');
+  });
 
   // Fetch iA Writer token
   const tokenEl = document.getElementById('micropub-token-display');
@@ -576,6 +765,19 @@ async function saveAppSettings() {
   const apiKey = document.getElementById('app-settings-apikey').value.trim();
   if (apiKey) localStorage.setItem('signal-apikey', apiKey);
   else localStorage.removeItem('signal-apikey');
+
+  // Save live accent to server
+  const liveAccent = localStorage.getItem('live-accent');
+  if (liveAccent) {
+    try {
+      await fetch('/api/site/accent', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accent: liveAccent })
+      });
+    } catch {}
+  }
+
   closeAppSettingsModal();
   showToast('Settings saved', 'success');
 }
