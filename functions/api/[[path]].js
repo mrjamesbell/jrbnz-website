@@ -224,7 +224,7 @@ const SITE_HEAD = (title, accent) => `<!DOCTYPE html>
 <link rel="stylesheet" href="/styles/blog.css">
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
-${accent ? '<style>:root{--color-accent:' + accent.replace(/<\/style>/gi, '') + '}</style>' : ''}
+${accent ? '<style>:root{--accent-color:' + accent.replace(/<\/style>/gi, '') + '}</style>' : ''}
 </head>
 <body>`;
 
