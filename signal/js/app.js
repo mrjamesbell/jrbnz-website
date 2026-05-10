@@ -7,7 +7,7 @@ import { openCropModal } from './image-upload.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache };
 
-const BUILD = '2026-05-10.47';
+const BUILD = '2026-05-10.53';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 

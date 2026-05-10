@@ -447,6 +447,12 @@ function _applyFormat(action, textarea) {
       }
       break;
     }
+    case 'timeline':
+      _insertAtCursor(textarea, `\n<div class="tl">\n<div class="tl-entry">\n<div class="tl-year">2026</div>\n<div class="tl-mark"></div>\n<div class="tl-copy">\n<h3>Production title <span class="tl-win">★</span> <span class="tl-tag">Tag</span></h3>\n<p><em>Playwright</em> <span>/</span> Company</p>\n</div>\n</div>\n</div>\n`);
+      break;
+    case 'tl-entry':
+      _insertAtCursor(textarea, `\n<div class="tl-entry">\n<div class="tl-year">2025</div>\n<div class="tl-mark"></div>\n<div class="tl-copy">\n<h3>Production title</h3>\n<p><em>Playwright</em> <span>/</span> Company</p>\n</div>\n</div>\n`);
+      break;
   }
 }
 
