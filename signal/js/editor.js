@@ -1044,7 +1044,8 @@ async function _runReview() {
   btn.textContent = '🔍 Reviewing…';
 
   try {
-    const res = await fetch(`/api/posts/${currentSlug}/review`, { method: 'POST' });
+    const apiBase = currentType === 'page' ? 'pages' : 'posts';
+    const res = await fetch(`/api/${apiBase}/${currentSlug}/review`, { method: 'POST' });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Error ${res.status}`);
