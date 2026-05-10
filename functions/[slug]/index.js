@@ -14,7 +14,7 @@ export async function onRequestGet({ params, env, request }) {
   // which returns root index.html with status 200 for any unknown path.
   const staticUrl = new URL(request.url);
   staticUrl.pathname = `/${slug}/index.html`;
-  const staticRes = await env.ASSETS.fetch(new Request(staticUrl.toString(), request));
+  const staticRes = await env.ASSETS.fetch(staticUrl.toString());
   if (staticRes.status === 200) return staticRes;
 
   return new Response('Page not found', { status: 404 });
