@@ -254,15 +254,17 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss) {
   const year = new Date().getFullYear();
 
   return `${SITE_HEAD('Blog - James Bell', accent, snippetCss)}
-<nav class="site-nav">
-  <a href="/" class="nav-logo">JRBNZ</a>
-  <ul class="nav-links">
-    ${buildNav(menuPages, '/posts/')}
-  </ul>
-</nav>
-<header class="index-masthead">
-  <h1 class="index-masthead-title">Blog</h1>
-</header>
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="site-nav">
+      <a href="/" class="nav-logo">JRBNZ</a>
+      <ul class="nav-links">
+        ${buildNav(menuPages, '/posts/')}
+      </ul>
+    </nav>
+  </div>
+  <h1 class="page-header-title">Blog</h1>
+</div>
 <section class="content-section">
   <div class="post-list-wrap">
     ${published.length ? `<ul class="post-list">${items}</ul>` : '<p>No posts yet.</p>'}
