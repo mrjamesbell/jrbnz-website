@@ -1,3 +1,15 @@
+async function injectAccent(html, env) {
+  try {
+    const obj = await env.BLOG.get('settings/accent.json');
+    if (!obj) return html;
+    const { accent } = await obj.json().catch(() => ({}));
+    if (!accent) return html;
+    return html.replace('</head>', `<style>:root{--accent-color:${accent}}</style></head>`);
+  } catch {
+    return html;
+  }
+}
+
 export async function onRequestGet({ params, env, request }) {
   const slug = params.slug;
 
@@ -19,7 +31,12 @@ export async function onRequestGet({ params, env, request }) {
   const staticUrl = new URL(request.url);
   staticUrl.pathname = `/${slug}/index.html`;
   const staticRes = await env.ASSETS.fetch(staticUrl.toString());
-  if (staticRes.status === 200) return staticRes;
+  if (staticRes.status === 200) {
+    const html = await injectAccent(await staticRes.text(), env);
+    return new Response(html, {
+      headers: { 'content-type': 'text/html;charset=utf-8', 'cache-control': 'public,max-age=60' }
+    });
+  }
 
   return new Response(`Page not found: no CMS page or static file for /${slug}/`, { status: 404 });
 }

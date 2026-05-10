@@ -194,6 +194,29 @@ body {
 }
 .post-list-heading svg { color: var(--color-accent); flex-shrink: 0; }
 
+.post-list-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mobile-icon-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-dark-raised);
+  border: var(--border-dark);
+  border-radius: var(--radius-md);
+  color: var(--color-dark-text-secondary);
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .mobile-icon-btn { display: flex; }
+}
+
 .build-label {
   font-size: var(--text-xs);
   font-family: var(--font-display);

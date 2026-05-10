@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-10.67';
+const BUILD = '2026-05-10.68';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -84,6 +84,10 @@ const BUILD = '2026-05-10.67';
   // Rail buttons
   document.getElementById('rail-author').addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
   document.getElementById('rail-settings').addEventListener('click', e => { e.preventDefault(); openAppSettingsModal(); });
+
+  // Mobile icon buttons (post list header, visible when rail is hidden)
+  document.getElementById('mobile-author-btn')?.addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
+  document.getElementById('mobile-settings-btn')?.addEventListener('click', e => { e.preventDefault(); openAppSettingsModal(); });
 
   // Author modal
   document.getElementById('author-close').addEventListener('click', closeAuthorModal);
@@ -792,18 +796,6 @@ async function saveAppSettings() {
   if (apiKey) localStorage.setItem('signal-apikey', apiKey);
   else localStorage.removeItem('signal-apikey');
 
-  // Save live accent to server
-  const liveAccent = localStorage.getItem('live-accent');
-  if (liveAccent) {
-    try {
-      await fetch('/api/site/accent', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accent: liveAccent })
-      });
-    } catch {}
-  }
-
   closeAppSettingsModal();
   showToast('Settings saved', 'success');
 }
@@ -831,6 +823,12 @@ function _applySignalAccent(color) {
 
 function _applyLiveAccent(color) {
   localStorage.setItem('live-accent', color);
+  // Save to R2 immediately so the live site updates
+  fetch('/api/site/accent', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accent: color }),
+  }).catch(() => {});
 }
 
 function _initAccentPickers() {
@@ -868,9 +866,15 @@ function _initAccentPickers() {
     _applyLiveAccent(livePicker.value);
   });
 
-  // Apply saved Signal accent on boot
+  // Apply Signal accent on boot — localStorage first, fall back to live accent from R2
   const saved = localStorage.getItem('signal-accent');
-  if (saved) _applySignalAccent(saved);
+  if (saved) {
+    _applySignalAccent(saved);
+  } else {
+    fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
+      if (d.accent) _applySignalAccent(d.accent);
+    }).catch(() => {});
+  }
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
