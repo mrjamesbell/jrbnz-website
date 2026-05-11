@@ -721,7 +721,8 @@ async function handleUploadMedia(request, env) {
   const key = `media/${Date.now()}-${safeName}`;
   const ct = file.type || 'application/octet-stream';
 
-  await env.BLOG.put(key, file.stream(), { httpMetadata: { contentType: ct } });
+  const body = await file.arrayBuffer();
+  await env.BLOG.put(key, body, { httpMetadata: { contentType: ct } });
 
   return json({ key, publicUrl: `/${key}`, filename: file.name || safeName, size: file.size });
 }
