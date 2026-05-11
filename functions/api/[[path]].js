@@ -197,6 +197,26 @@ function buildFooterNav(menuPages) {
     .join('\n      ');
 }
 
+const SIGNAL_MARK = `<svg class="footer-signal-icon" viewBox="0 0 190 200" fill="currentColor" aria-hidden="true"><g transform="translate(1 1)"><path d="M7.533,135.533C2.413,135.533-1,132.12-1,127C-1,56.173,56.173-1,127,-1c5.12,0,8.533,3.413,8.533,8.533s-3.413,8.533-8.533,8.533C65.56,16.067,16.067,65.56,16.067,127C16.067,132.12,12.653,135.533,7.533,135.533z"/><path d="M50.2,135.533c-5.12,0-8.533-3.413-8.533-8.533c0-46.933,38.4-85.333,85.333-85.333c5.12,0,8.533,3.413,8.533,8.533s-3.413,8.533-8.533,8.533c-37.547,0-68.267,30.72-68.267,68.267C58.733,132.12,55.32,135.533,50.2,135.533z"/><path d="M92.867,144.067c-5.12,0-8.533-3.413-8.533-8.533c0-28.16,23.04-51.2,51.2-51.2c5.12,0,8.533,3.413,8.533,8.533s-3.413,8.533-8.533,8.533c-18.773,0-34.133,15.36-34.133,34.133C101.4,140.653,97.987,144.067,92.867,144.067z"/><path d="M152.6,195.267c-18.773,0-34.133-15.36-34.133-34.133S133.827,127,152.6,127s34.133,15.36,34.133,34.133S171.373,195.267,152.6,195.267z M152.6,144.067c-9.387,0-17.067,7.68-17.067,17.067s7.68,17.067,17.067,17.067s17.067-7.68,17.067-17.067S161.987,144.067,152.6,144.067z"/></g></svg>`;
+
+function buildFooterRight(menuPages) {
+  return `<div class="footer-right">
+    <nav class="footer-nav">
+      ${buildFooterNav(menuPages)}
+    </nav>
+    <div class="footer-bottom-links">
+      <a href="/feed.xml" class="footer-rss">
+        <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
+        RSS Feed
+      </a>
+      <a href="/signal/" class="footer-signal">
+        ${SIGNAL_MARK}
+        Made with Signal
+      </a>
+    </div>
+  </div>`;
+}
+
 function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPages, snippetCss }) {
   const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
@@ -243,15 +263,7 @@ function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPag
     <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
     <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
   </div>
-  <div class="footer-right">
-    <nav class="footer-nav">
-      ${buildFooterNav(menuPages)}
-    </nav>
-    <a href="/feed.xml" class="footer-rss">
-      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
-      RSS Feed
-    </a>
-  </div>
+  ${buildFooterRight(menuPages)}
 </footer>
 </body>
 </html>`;
@@ -310,15 +322,7 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss) {
     <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
     <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
   </div>
-  <div class="footer-right">
-    <nav class="footer-nav">
-      ${buildFooterNav(menuPages)}
-    </nav>
-    <a href="/feed.xml" class="footer-rss">
-      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
-      RSS Feed
-    </a>
-  </div>
+  ${buildFooterRight(menuPages)}
 </footer>
 </body></html>`;
 }
@@ -338,7 +342,7 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss
   <h1 class="page-header-title">${esc(title)}</h1>
 </div>
 <section class="content-section">
-  <div class="post-content" style="max-width:72ch;margin:0 auto;padding:48px 24px 80px">${contentHtml}</div>
+  <div class="post-content" style="max-width:85ch;margin:0 auto;padding:48px 24px 80px">${contentHtml}</div>
 </section>
 <footer class="footer">
   <div class="footer-left">
@@ -346,15 +350,7 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss
     <div class="footer-fineprint">&copy; <span class="footer-year">${year}</span> James Bell</div>
     <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
   </div>
-  <div class="footer-right">
-    <nav class="footer-nav">
-      ${buildFooterNav(menuPages)}
-    </nav>
-    <a href="/feed.xml" class="footer-rss">
-      <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></svg>
-      RSS Feed
-    </a>
-  </div>
+  ${buildFooterRight(menuPages)}
 </footer>
 </body>
 </html>`;

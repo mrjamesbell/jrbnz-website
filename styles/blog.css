@@ -235,6 +235,11 @@
   color: var(--background-color);
 }
 
+/* Extra breathing room between masthead and body copy */
+.post-masthead + .content-section {
+  padding-top: 64px;
+}
+
 /* Post layout — 72ch main column + sidebar */
 .post-layout {
   display: grid;
@@ -780,13 +785,13 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 32px;
   letter-spacing: 0.03em;
-  color: var(--accent-color);
+  color: var(--text-color);
   line-height: 1;
   border-bottom: none;
 }
 
 .footer-logo:hover {
-  color: color-mix(in oklch, var(--accent-color) 70%, white);
+  color: var(--accent-color);
   border-bottom: none;
 }
 
@@ -816,7 +821,14 @@ img.leftalign {
   border-bottom: none;
 }
 
-.footer-rss {
+.footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer-rss,
+.footer-signal {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -828,12 +840,14 @@ img.leftalign {
   transition: color 0.2s;
 }
 
-.footer-rss:hover {
+.footer-rss:hover,
+.footer-signal:hover {
   color: var(--accent-color);
   border-bottom: none;
 }
 
-.footer-rss-icon {
+.footer-rss-icon,
+.footer-signal-icon {
   width: 14px;
   height: 14px;
   fill: currentColor;

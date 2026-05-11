@@ -93,13 +93,13 @@ a:focus-visible {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 40px;
     letter-spacing: 0.03em;
-    color: var(--accent-color);
+    color: var(--text-color);
     border-bottom: none;
     line-height: 1;
 }
 
 .site-nav .nav-logo:hover {
-    color: color-mix(in oklch, var(--accent-color) 70%, white);
+    color: var(--accent-color);
     border-bottom: none;
 }
 
