@@ -1072,7 +1072,10 @@
 }
 .accent-swatch:hover { transform: scale(1.12); }
 .accent-swatch.is-active { outline-color: var(--color-cream-text-secondary); }
-.accent-picker-input { display: none; }
+.accent-picker-input {
+  position: absolute; width: 1px; height: 1px;
+  opacity: 0; pointer-events: none; overflow: hidden;
+}
 .accent-custom-btn {
   width: 26px; height: 26px; border-radius: 50%;
   cursor: pointer; border: none; flex-shrink: 0;
