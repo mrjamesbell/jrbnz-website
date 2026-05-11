@@ -1293,11 +1293,26 @@ async function handleGetAccent(env) {
 }
 
 async function handleSaveAccent(request, env) {
-  const { accent } = await request.json().catch(() => ({}));
-  if (!accent || typeof accent !== 'string') return json({ error: 'accent required' }, 400);
-  await env.BLOG.put('settings/accent.json', JSON.stringify({ accent }), { httpMetadata: { contentType: 'application/json' } });
-  await handleRebuildSite(env);
-  return json({ accent });
+  const { accent, signalAccent } = await request.json().catch(() => ({}));
+  if (!accent && !signalAccent) return json({ error: 'accent or signalAccent required' }, 400);
+
+  // Merge with existing so the two fields are independent
+  let existing = {};
+  try {
+    const obj = await env.BLOG.get('settings/accent.json');
+    if (obj) existing = await obj.json();
+  } catch {}
+
+  const updated = { ...existing };
+  if (accent && typeof accent === 'string') updated.accent = accent;
+  if (signalAccent && typeof signalAccent === 'string') updated.signalAccent = signalAccent;
+
+  await env.BLOG.put('settings/accent.json', JSON.stringify(updated), { httpMetadata: { contentType: 'application/json' } });
+
+  // Only rebuild the public site when the live accent changed
+  if (accent) await handleRebuildSite(env);
+
+  return json(updated);
 }
 
 async function handleGetSnippets(env) {

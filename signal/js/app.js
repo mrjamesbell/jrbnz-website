@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.75';
+const BUILD = '2026-05-11.76';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -787,22 +787,20 @@ function openAppSettingsModal() {
   document.getElementById('app-settings-apikey').type = 'password';
   document.getElementById('btn-show-apikey').textContent = 'Show';
 
-  const signalAccent = localStorage.getItem('signal-accent') || '';
-  _markActiveSwatch('signal-swatch-row', signalAccent);
-  // Sync colour picker to saved value so it shows the right colour on mobile
-  if (signalAccent.startsWith('#')) {
-    const sp = document.getElementById('signal-color-picker');
-    if (sp) sp.value = signalAccent;
-  }
-
-  // Fetch live accent from R2 — no localStorage fallback
+  // Fetch both accents from R2 in one call
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
-    const accent = d.accent || '';
-    _markActiveSwatch('live-swatch-row', accent);
-    // Sync picker value if a custom hex is stored
-    if (accent.startsWith('#')) {
+    const signalAccent = d.signalAccent || '';
+    _markActiveSwatch('signal-swatch-row', signalAccent);
+    if (signalAccent.startsWith('#')) {
+      const sp = document.getElementById('signal-color-picker');
+      if (sp) sp.value = signalAccent;
+    }
+
+    const liveAccent = d.accent || '';
+    _markActiveSwatch('live-swatch-row', liveAccent);
+    if (liveAccent.startsWith('#')) {
       const picker = document.getElementById('live-color-picker');
-      if (picker) picker.value = accent;
+      if (picker) picker.value = liveAccent;
     }
   }).catch(() => {});
 
@@ -848,7 +846,12 @@ function _applySignalAccent(color) {
   document.documentElement.style.setProperty('--color-accent', color);
   document.documentElement.style.setProperty('--color-accent-dim', `color-mix(in oklch, ${color} 15%, transparent)`);
   document.documentElement.style.setProperty('--color-accent-fg', accentFg(color));
-  localStorage.setItem('signal-accent', color);
+  // Save to R2 — fire-and-forget, UI already updated instantly above
+  fetch('/api/site/accent', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ signalAccent: color }),
+  }).catch(() => {});
 }
 
 // Returns the best text colour for a given accent background.
@@ -919,9 +922,19 @@ function _initAccentPickers() {
   livePicker?.addEventListener('input', _onLivePicker);
   livePicker?.addEventListener('change', _onLivePicker);
 
-  // Apply Signal accent on boot from localStorage — CSS token default applies if nothing saved
-  const saved = localStorage.getItem('signal-accent');
-  if (saved) _applySignalAccent(saved);
+  // Apply Signal accent on boot from R2; migrate any legacy localStorage value on first run
+  fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
+    if (d.signalAccent) {
+      _applySignalAccent(d.signalAccent);
+      localStorage.removeItem('signal-accent');
+    } else {
+      const legacy = localStorage.getItem('signal-accent');
+      if (legacy) {
+        _applySignalAccent(legacy); // saves to R2 via _applySignalAccent
+        localStorage.removeItem('signal-accent');
+      }
+    }
+  }).catch(() => {});
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
