@@ -781,7 +781,8 @@ img.leftalign {
   gap: 6px;
 }
 
-.footer-logo {
+.footer-logo,
+.footer-logo:visited {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 32px;
   letter-spacing: 0.03em;
@@ -852,15 +853,16 @@ img.leftalign {
   color: var(--accent-color);
 }
 
-.footer-signal:hover {
-  color: color-mix(in oklch, var(--accent-color) 70%, white);
-  border-bottom: none;
-}
-
-.footer-rss-icon,
-.footer-signal-icon {
+.footer-rss-icon {
   width: 14px;
   height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.footer-signal-icon {
+  width: 32px;
+  height: 32px;
   fill: currentColor;
   flex-shrink: 0;
 }
