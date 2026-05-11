@@ -96,15 +96,14 @@ body {
 .rail-spacer { flex: 1; }
 
 .rail-build {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-cream-text-ghost);
-  letter-spacing: 0.04em;
   text-align: center;
-  padding: 6px 0;
+  padding: 6px 0 2px;
   opacity: 0.45;
-  writing-mode: vertical-rl;
-  white-space: nowrap;
 }
 
 @keyframes pip-breathe {
