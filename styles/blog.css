@@ -857,7 +857,6 @@ img.leftalign {
 
 .footer-signal {
   color: var(--accent-color);
-  margin-top: 8px;
 }
 
 .footer-rss-icon {
@@ -868,8 +867,8 @@ img.leftalign {
 }
 
 .footer-signal-icon {
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   fill: currentColor;
   flex-shrink: 0;
 }

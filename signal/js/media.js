@@ -1,4 +1,4 @@
-import { uploadToR2 } from './image-upload.js';
+import { uploadToR2, openCropModal } from './image-upload.js';
 import { showToast } from './toast.js';
 
 let mediaInitialized = false;
@@ -128,38 +128,34 @@ function _renderItem(item) {
   return el;
 }
 
-async function uploadFile(file) {
-  const progressEl = _createProgressItem(file.name);
-  document.getElementById('uploads-active')?.appendChild(progressEl);
+function uploadFile(file) {
+  openCropModal(file, async processedFile => {
+    const progressEl = _createProgressItem(processedFile.name);
+    document.getElementById('uploads-active')?.appendChild(progressEl);
 
-  try {
-    const result = await uploadToR2(file, progress => {
-      const bar = progressEl.querySelector('.media-upload-bar');
+    try {
+      const result = await uploadToR2(processedFile);
+      progressEl.remove();
+
+      if (result) {
+        const newItem = {
+          key: result.key,
+          publicUrl: result.publicUrl,
+          url: result.publicUrl,
+          filename: processedFile.name,
+          size: processedFile.size,
+          contentType: processedFile.type
+        };
+        document.getElementById('media-grid')?.prepend(_renderItem(newItem));
+        showToast('Uploaded', 'success');
+      }
+    } catch {
       const status = progressEl.querySelector('.media-upload-status');
-      if (bar) bar.style.width = `${Math.round(progress * 100)}%`;
-      if (status) status.textContent = `${Math.round(progress * 100)}%`;
-    });
-
-    progressEl.remove();
-
-    if (result) {
-      const newItem = {
-        key: result.key,
-        publicUrl: result.publicUrl,
-        url: result.publicUrl,
-        filename: file.name,
-        size: file.size,
-        contentType: file.type
-      };
-      document.getElementById('media-grid')?.prepend(_renderItem(newItem));
-      showToast('Uploaded', 'success');
+      if (status) status.textContent = 'Failed';
+      setTimeout(() => progressEl.remove(), 3000);
+      showToast('Upload failed', 'error');
     }
-  } catch {
-    const status = progressEl.querySelector('.media-upload-status');
-    if (status) status.textContent = 'Failed';
-    setTimeout(() => progressEl.remove(), 3000);
-    showToast('Upload failed', 'error');
-  }
+  });
 }
 
 function _createProgressItem(filename) {

@@ -174,6 +174,10 @@ export function openCropModal(file, onComplete, options = {}) {
   const cropImg = document.getElementById('crop-img');
   const box = document.getElementById('crop-box');
 
+  // Reset apply button — it may still be disabled from a previous successful crop
+  const applyBtn = document.getElementById('crop-apply');
+  if (applyBtn) { applyBtn.disabled = false; applyBtn.textContent = 'Apply crop'; }
+
   // Apply circle mode defaults
   if (_cropCircle) {
     _cropAspect = 1;
