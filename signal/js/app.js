@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.90';
+const BUILD = '2026-05-11.91';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -828,7 +828,10 @@ function _markActiveSwatch(rowId, savedColor) {
     if (match) matched = true;
   });
   const customBtn = row.querySelector('.accent-custom-btn');
-  if (customBtn) customBtn.classList.toggle('is-active', !matched && !!savedColor);
+  if (customBtn) {
+    customBtn.classList.toggle('is-active', !matched && !!savedColor);
+    customBtn.style.background = (!matched && savedColor) ? savedColor : '';
+  }
   // Keep hidden picker in sync so it opens at the current custom colour
   const picker = row.querySelector('.accent-picker-input');
   if (picker && !matched && savedColor && savedColor.startsWith('#')) picker.value = savedColor;
@@ -884,6 +887,7 @@ function _initAccentPickers() {
     swatch.addEventListener('click', () => {
       signalRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
       swatch.classList.add('is-active');
+      if (signalCustomBtn) signalCustomBtn.style.background = '';
       _applySignalAccent(swatch.dataset.color);
     });
   });
@@ -891,6 +895,7 @@ function _initAccentPickers() {
   const _onSignalPicker = () => {
     signalRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
     signalCustomBtn?.classList.add('is-active');
+    if (signalCustomBtn) signalCustomBtn.style.background = signalPicker.value;
     _applySignalAccent(signalPicker.value);
   };
   // iOS fires 'change' not 'input' when the colour wheel closes; listen to both
@@ -906,6 +911,7 @@ function _initAccentPickers() {
     swatch.addEventListener('click', () => {
       liveRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
       swatch.classList.add('is-active');
+      if (liveCustomBtn) liveCustomBtn.style.background = '';
       _applyLiveAccent(swatch.dataset.color);
     });
   });
@@ -913,6 +919,7 @@ function _initAccentPickers() {
   const _onLivePicker = () => {
     liveRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
     liveCustomBtn?.classList.add('is-active');
+    if (liveCustomBtn) liveCustomBtn.style.background = livePicker.value;
     _applyLiveAccent(livePicker.value);
   };
   livePicker?.addEventListener('input', _onLivePicker);
