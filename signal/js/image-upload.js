@@ -168,6 +168,7 @@ export function openCropModal(file, onComplete, options = {}) {
   _cropAspect = null;
   _cropCircle = !!(options && options.circle);
   _cropDrag = null;
+  _cropBox = { x: 0, y: 0, w: 0, h: 0 }; // always reset — never inherit stale values
 
   const modal = document.getElementById('crop-modal');
   const cropImg = document.getElementById('crop-img');
@@ -252,12 +253,9 @@ export function openCropModal(file, onComplete, options = {}) {
     applyBtn.textContent = 'Cropping…';
     try {
       const ir = _imgRect();
-      const cropRect = {
-        x: _cropBox.x / ir.w,
-        y: _cropBox.y / ir.h,
-        width: _cropBox.w / ir.w,
-        height: _cropBox.h / ir.h
-      };
+      const cropRect = (ir.w && ir.h && _cropBox.w >= 1 && _cropBox.h >= 1)
+        ? { x: _cropBox.x / ir.w, y: _cropBox.y / ir.h, width: _cropBox.w / ir.w, height: _cropBox.h / ir.h }
+        : { x: 0, y: 0, width: 1, height: 1 }; // box never initialised — use full image
       const blob = await cropImage(_cropFile, cropRect, 1200);
       const croppedFile = new File([blob], _cropFile.name, { type: 'image/jpeg' });
       _closeCropModal();
@@ -289,7 +287,7 @@ function _imgRect() {
 
 function _initCropBox() {
   const ir = _imgRect();
-  if (!ir.w || !ir.h) return;
+  if (!ir.w || !ir.h) { requestAnimationFrame(_initCropBox); return; } // retry until rendered
   const pad = Math.min(ir.w, ir.h) * 0.08;
   _cropBox = { x: pad, y: pad, w: ir.w - 2 * pad, h: ir.h - 2 * pad };
   if (_cropAspect) _enforceAspect();
