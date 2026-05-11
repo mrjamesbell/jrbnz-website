@@ -94,6 +94,24 @@ function esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Returns the best text colour for a given accent background colour.
+// Crossover at relative luminance ≈ 0.175 (equal WCAG contrast vs near-white and near-black).
+function siteAccentFg(color) {
+  let lum;
+  if (color.startsWith('#') && color.length >= 7) {
+    const r = parseInt(color.slice(1, 3), 16) / 255;
+    const g = parseInt(color.slice(3, 5), 16) / 255;
+    const b = parseInt(color.slice(5, 7), 16) / 255;
+    const lin = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  } else {
+    const m = color.match(/oklch\(\s*([0-9.]+)%/);
+    if (!m) return 'oklch(97% 0.008 75)';
+    lum = Math.pow(parseFloat(m[1]) / 100, 3);
+  }
+  return lum > 0.175 ? '#1c1c1c' : 'oklch(97% 0.008 75)';
+}
+
 function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
@@ -115,7 +133,7 @@ const SITE_HEAD = (title, accent, snippetCss) => `<!DOCTYPE html>
 <link rel="stylesheet" href="/styles/blog.css">
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
-${accent ? '<style>:root{--accent-color:' + accent.replace(/<\/style>/gi, '') + '}</style>' : ''}
+${accent ? '<style>:root{--accent-color:' + accent.replace(/<\/style>/gi, '') + ';--accent-fg:' + siteAccentFg(accent) + '}</style>' : ''}
 ${snippetCss ? '<style>' + snippetCss + '</style>' : ''}
 </head>
 <body>`;

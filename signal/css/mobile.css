@@ -83,7 +83,7 @@
 /* Primary action buttons (img, yt) — teal tint */
 .kb-btn.is-primary {
   background: var(--color-accent);
-  color: var(--color-dark-text-primary);
+  color: var(--color-accent-fg);
   border-color: transparent;
 }
 

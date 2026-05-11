@@ -52,7 +52,7 @@ a:hover {
     left: 0;
     padding: 12px 24px;
     background: var(--accent-color);
-    color: oklch(97% 0.008 75);
+    color: var(--accent-fg, oklch(97% 0.008 75));
     font-family: 'Bebas Neue', sans-serif;
     font-size: 20px;
     letter-spacing: 0.05em;

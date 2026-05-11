@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.73';
+const BUILD = '2026-05-11.74';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -842,7 +842,28 @@ function _markActiveSwatch(rowId, savedColor) {
 function _applySignalAccent(color) {
   document.documentElement.style.setProperty('--color-accent', color);
   document.documentElement.style.setProperty('--color-accent-dim', `color-mix(in oklch, ${color} 15%, transparent)`);
+  document.documentElement.style.setProperty('--color-accent-fg', accentFg(color));
   localStorage.setItem('signal-accent', color);
+}
+
+// Returns the best text colour for a given accent background.
+// Crossover at oklch L ≈ 56% (equal WCAG contrast vs cream and near-black).
+function accentFg(color) {
+  let lum;
+  if (color.startsWith('#') && color.length >= 7) {
+    const r = parseInt(color.slice(1, 3), 16) / 255;
+    const g = parseInt(color.slice(3, 5), 16) / 255;
+    const b = parseInt(color.slice(5, 7), 16) / 255;
+    const lin = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  } else {
+    // oklch — L³ approximates relative luminance well enough for a threshold check
+    const m = color.match(/oklch\(\s*([0-9.]+)%/);
+    if (!m) return '#f0ede8';
+    lum = Math.pow(parseFloat(m[1]) / 100, 3);
+  }
+  // lum > 0.175 → accent is lighter than the crossover → dark text reads better
+  return lum > 0.175 ? '#1c1c1c' : '#f0ede8';
 }
 
 function _applyLiveAccent(color) {

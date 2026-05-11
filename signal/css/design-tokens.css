@@ -15,6 +15,7 @@
   --color-cream-dark:   #28251f;   /* input bg, hover, raised surfaces                  */
   --color-accent:       oklch(66% 0.09 140);          /* warm sage — tags, links, active states, publish btn */
   --color-accent-dim:   oklch(66% 0.09 140 / 0.15);  /* sage border on tag pills                            */
+  --color-accent-fg:    var(--color-dark-text-primary); /* text ON accent bg — JS overrides to #1c1c1c when accent is light */
 
   /* ── Colour: Dark chrome (rail, sidebar, post list) ── */
   --color-dark-base:    #141414;   /* rail background                      */

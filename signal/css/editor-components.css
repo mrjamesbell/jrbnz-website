@@ -667,7 +667,7 @@
 
 .toast.is-success {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-accent-fg);
   border-color: transparent;
 }
 
@@ -940,7 +940,7 @@
 .img-layout-btn.is-active {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: var(--color-dark-text-primary);
+  color: var(--color-accent-fg);
 }
 
 
@@ -1001,7 +1001,7 @@
 .btn-primary,
 .btn-teal {
   background: var(--color-accent);
-  color: var(--color-dark-text-primary);
+  color: var(--color-accent-fg);
 }
 
 .btn-primary:hover,
