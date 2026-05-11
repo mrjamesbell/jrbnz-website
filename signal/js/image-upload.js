@@ -10,10 +10,14 @@ export async function uploadToR2(file) {
     return null;
   }
 
-  const form = new FormData();
-  form.append('file', file, file.name || 'upload.jpg');
+  const filename = encodeURIComponent(file.name || 'upload.jpg');
+  const ct = file.type || _mimeFromName(file.name);
 
-  const res = await fetch('/api/media/upload', { method: 'POST', body: form });
+  const res = await fetch(`/api/media/upload?filename=${filename}`, {
+    method: 'POST',
+    headers: { 'Content-Type': ct },
+    body: file,
+  });
   if (!res.ok) throw new Error(`Upload failed: HTTP ${res.status}`);
   return res.json(); // { publicUrl, key, filename, size }
 }

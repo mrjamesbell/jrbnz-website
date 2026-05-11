@@ -713,18 +713,20 @@ async function handleListMedia(env) {
 }
 
 async function handleUploadMedia(request, env) {
-  const formData = await request.formData().catch(() => null);
-  const file = formData?.get('file');
-  if (!file || typeof file === 'string') return json({ error: 'file required' }, 400);
+  const url = new URL(request.url);
+  const rawFilename = url.searchParams.get('filename') || 'upload.jpg';
+  const filename = decodeURIComponent(rawFilename);
+  const ct = request.headers.get('Content-Type') || 'application/octet-stream';
+  const size = parseInt(request.headers.get('Content-Length') || '0', 10) || null;
 
-  const safeName = (file.name || 'upload.jpg').replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
+  if (!request.body) return json({ error: 'body required' }, 400);
+
+  const safeName = filename.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
   const key = `media/${Date.now()}-${safeName}`;
-  const ct = file.type || 'application/octet-stream';
 
-  const body = await file.arrayBuffer();
-  await env.BLOG.put(key, body, { httpMetadata: { contentType: ct } });
+  await env.BLOG.put(key, request.body, { httpMetadata: { contentType: ct } });
 
-  return json({ key, publicUrl: `/${key}`, filename: file.name || safeName, size: file.size });
+  return json({ key, publicUrl: `/${key}`, filename, size });
 }
 
 async function handleDeleteMedia(env, key) {

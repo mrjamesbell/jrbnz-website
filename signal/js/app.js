@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.76';
+const BUILD = '2026-05-11.80';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -23,6 +23,8 @@ const BUILD = '2026-05-11.76';
   requestAnimationFrame(() => appEl.classList.add('is-entering'));
   const buildEl = document.getElementById('build-label');
   if (buildEl) buildEl.textContent = `build ${BUILD}`;
+  const postsBuildEl = document.getElementById('posts-build-label');
+  if (postsBuildEl) postsBuildEl.textContent = `build ${BUILD}`;
 
   initMobile();
 
