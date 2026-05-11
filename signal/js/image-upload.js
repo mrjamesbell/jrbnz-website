@@ -10,26 +10,12 @@ export async function uploadToR2(file) {
     return null;
   }
 
-  const contentType = file.type || _mimeFromName(file.name);
+  const form = new FormData();
+  form.append('file', file, file.name || 'upload.jpg');
 
-  const { uploadUrl, publicUrl } = await fetch('/api/media/presign', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename: file.name || 'upload.jpg', contentType })
-  }).then(r => {
-    if (!r.ok) throw new Error('Could not get upload URL');
-    return r.json();
-  });
-
-  // Use fetch() — XHR PUT with Blob body sends an empty body on some iOS Safari versions
-  const uploadRes = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': contentType },
-    body: file,
-  });
-  if (!uploadRes.ok) throw new Error(`HTTP ${uploadRes.status}`);
-
-  return { publicUrl };
+  const res = await fetch('/api/media/upload', { method: 'POST', body: form });
+  if (!res.ok) throw new Error(`Upload failed: HTTP ${res.status}`);
+  return res.json(); // { publicUrl, key, filename, size }
 }
 
 // ── Crop (canvas-based) ───────────────────────────────────────────────────────

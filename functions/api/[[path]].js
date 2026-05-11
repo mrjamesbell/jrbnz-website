@@ -478,15 +478,8 @@ export async function onRequest(context) {
   if (resource === 'media') {
     if (!slug) {
       if (method === 'GET') return handleListMedia(env);
-    } else if (slug === 'presign') {
-      if (method === 'POST') return handlePresignMedia(request, env);
-    } else if (slug === 'upload' && method === 'PUT') {
-      const qKey = new URL(request.url).searchParams.get('key');
-      const key = qKey ? decodeURIComponent(qKey) : (action ? decodeURIComponent(action) : '');
-      if (!key) return json({ error: 'key required' }, 400);
-      const ct = request.headers.get('Content-Type') || 'application/octet-stream';
-      await env.BLOG.put(key, request.body, { httpMetadata: { contentType: ct } });
-      return new Response(null, { status: 200 });
+    } else if (slug === 'upload') {
+      if (method === 'POST') return handleUploadMedia(request, env);
     } else {
       if (method === 'DELETE') return handleDeleteMedia(env, slug);
     }
@@ -643,17 +636,18 @@ async function handleListMedia(env) {
   return json(items);
 }
 
-async function handlePresignMedia(request, env) {
-  const { filename, contentType } = await request.json();
-  if (!filename) return json({ error: 'filename required' }, 400);
+async function handleUploadMedia(request, env) {
+  const formData = await request.formData().catch(() => null);
+  const file = formData?.get('file');
+  if (!file || typeof file === 'string') return json({ error: 'file required' }, 400);
 
-  const ext = filename.split('.').pop().toLowerCase() || 'jpg';
-  const key = `media/${Date.now()}-${filename.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase()}`;
+  const safeName = (file.name || 'upload.jpg').replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
+  const key = `media/${Date.now()}-${safeName}`;
+  const ct = file.type || 'application/octet-stream';
 
-  // Use ?key= query param to avoid %2F path-encoding issues in WebKit/Safari
-  const uploadUrl = `/api/media/upload?key=${encodeURIComponent(key)}`;
-  const publicUrl = `/${key}`;
-  return json({ uploadUrl, publicUrl, key });
+  await env.BLOG.put(key, file.stream(), { httpMetadata: { contentType: ct } });
+
+  return json({ key, publicUrl: `/${key}`, filename: file.name || safeName, size: file.size });
 }
 
 async function handleDeleteMedia(env, key) {
