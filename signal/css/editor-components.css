@@ -1072,18 +1072,19 @@
 }
 .accent-swatch:hover { transform: scale(1.12); }
 .accent-swatch.is-active { outline-color: var(--color-cream-text-secondary); }
-.accent-picker-input {
+.accent-picker-input { display: none; }
+.accent-custom-btn {
   width: 26px; height: 26px; border-radius: 50%;
-  border: 2px dashed var(--color-cream-border-mid);
-  background: transparent; cursor: pointer; padding: 0; flex-shrink: 0;
+  cursor: pointer; border: none; flex-shrink: 0;
+  background: var(--color-cream-border-mid);
+  color: var(--color-cream-text-muted);
+  font-size: 11px; letter-spacing: 0.05em; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
   outline: 2px solid transparent; outline-offset: 3px;
-  transition: border-color 120ms, transform 120ms;
-  overflow: hidden;
+  transition: transform 120ms, outline-color 120ms, color 120ms;
 }
-.accent-picker-input:hover { border-color: var(--color-cream-text-muted); transform: scale(1.12); }
-.accent-picker-input.is-active { outline-color: var(--color-cream-text-secondary); border-style: solid; }
-.accent-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
-.accent-picker-input::-webkit-color-swatch { border: none; border-radius: 50%; }
+.accent-custom-btn:hover { transform: scale(1.12); color: var(--color-cream-text-primary); }
+.accent-custom-btn.is-active { outline-color: var(--color-cream-text-secondary); color: var(--color-cream-text-primary); }
 
 /* Settings modal — extra body spacing */
 #app-settings-modal .modal-body {

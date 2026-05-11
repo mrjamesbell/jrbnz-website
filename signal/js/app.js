@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.88';
+const BUILD = '2026-05-11.89';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -791,19 +791,8 @@ function openAppSettingsModal() {
 
   // Fetch both accents from R2 in one call
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
-    const signalAccent = d.signalAccent || '';
-    _markActiveSwatch('signal-swatch-row', signalAccent);
-    if (signalAccent.startsWith('#')) {
-      const sp = document.getElementById('signal-color-picker');
-      if (sp) sp.value = signalAccent;
-    }
-
-    const liveAccent = d.accent || '';
-    _markActiveSwatch('live-swatch-row', liveAccent);
-    if (liveAccent.startsWith('#')) {
-      const picker = document.getElementById('live-color-picker');
-      if (picker) picker.value = liveAccent;
-    }
+    _markActiveSwatch('signal-swatch-row', d.signalAccent || '');
+    _markActiveSwatch('live-swatch-row', d.accent || '');
   }).catch(() => {});
 
   // Fetch iA Writer token
@@ -834,14 +823,15 @@ function _markActiveSwatch(rowId, savedColor) {
   if (!row) return;
   let matched = false;
   row.querySelectorAll('.accent-swatch').forEach(s => {
-    const match = savedColor && s.dataset.color === savedColor;
+    const match = savedColor && s.dataset.color.toLowerCase() === savedColor.toLowerCase();
     s.classList.toggle('is-active', match);
     if (match) matched = true;
   });
+  const customBtn = row.querySelector('.accent-custom-btn');
+  if (customBtn) customBtn.classList.toggle('is-active', !matched && !!savedColor);
+  // Keep hidden picker in sync so it opens at the current custom colour
   const picker = row.querySelector('.accent-picker-input');
-  if (picker) {
-    picker.classList.toggle('is-active', !matched && !!savedColor);
-  }
+  if (picker && !matched && savedColor && savedColor.startsWith('#')) picker.value = savedColor;
 }
 
 function _applySignalAccent(color) {
@@ -885,40 +875,44 @@ function _applyLiveAccent(color) {
 }
 
 function _initAccentPickers() {
-  // Signal swatches
+  // Signal
   const signalRow = document.getElementById('signal-swatch-row');
+  const signalPicker = document.getElementById('signal-color-picker');
+  const signalCustomBtn = document.getElementById('signal-custom-btn');
+
   signalRow?.querySelectorAll('.accent-swatch').forEach(swatch => {
     swatch.addEventListener('click', () => {
-      const color = swatch.dataset.color;
-      signalRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
+      signalRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
       swatch.classList.add('is-active');
-      _applySignalAccent(color);
+      _applySignalAccent(swatch.dataset.color);
     });
   });
-  const signalPicker = document.getElementById('signal-color-picker');
+  signalCustomBtn?.addEventListener('click', () => signalPicker?.click());
   const _onSignalPicker = () => {
-    signalRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
-    signalPicker.classList.add('is-active');
+    signalRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
+    signalCustomBtn?.classList.add('is-active');
     _applySignalAccent(signalPicker.value);
   };
   // iOS fires 'change' not 'input' when the colour wheel closes; listen to both
   signalPicker?.addEventListener('input', _onSignalPicker);
   signalPicker?.addEventListener('change', _onSignalPicker);
 
-  // Live swatches
+  // Live
   const liveRow = document.getElementById('live-swatch-row');
+  const livePicker = document.getElementById('live-color-picker');
+  const liveCustomBtn = document.getElementById('live-custom-btn');
+
   liveRow?.querySelectorAll('.accent-swatch').forEach(swatch => {
     swatch.addEventListener('click', () => {
-      const color = swatch.dataset.color;
-      liveRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
+      liveRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
       swatch.classList.add('is-active');
-      _applyLiveAccent(color);
+      _applyLiveAccent(swatch.dataset.color);
     });
   });
-  const livePicker = document.getElementById('live-color-picker');
+  liveCustomBtn?.addEventListener('click', () => livePicker?.click());
   const _onLivePicker = () => {
-    liveRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
-    livePicker.classList.add('is-active');
+    liveRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
+    liveCustomBtn?.classList.add('is-active');
     _applyLiveAccent(livePicker.value);
   };
   livePicker?.addEventListener('input', _onLivePicker);
@@ -932,7 +926,7 @@ function _initAccentPickers() {
     } else {
       const legacy = localStorage.getItem('signal-accent');
       if (legacy) {
-        _applySignalAccent(legacy); // saves to R2 via _applySignalAccent
+        _applySignalAccent(legacy);
         localStorage.removeItem('signal-accent');
       }
     }
