@@ -569,6 +569,9 @@
   .topbar-divider,
   #btn-ai-review { display: none !important; }
 
+  /* Settings cog is in the bottom tab bar — hide the duplicate in the list header */
+  #mobile-settings-btn { display: none !important; }
+
   /* Keep settings icon, hide view/revert which show conditionally via JS */
   .topbar-post-name {
     font-size: 12px;
@@ -625,12 +628,15 @@
     max-height: 92svh;
     max-height: 92vh; /* fallback */
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    /* Safe area on notched phones */
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* overflow: hidden so only .modal-body scrolls, header+footer stay fixed */
+    overflow: hidden;
+    padding-bottom: 0;
   }
 
-  /* Ensure body scrolls, footer stays visible */
+  /* Body scrolls within the fixed modal height */
   .modal-body {
+    flex: 1;
+    min-height: 0; /* required for flex children to shrink and scroll */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }

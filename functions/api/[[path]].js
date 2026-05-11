@@ -466,8 +466,10 @@ export async function onRequest(context) {
       if (method === 'GET') return handleListMedia(env);
     } else if (slug === 'presign') {
       if (method === 'POST') return handlePresignMedia(request, env);
-    } else if (slug === 'upload' && action && method === 'PUT') {
-      const key = decodeURIComponent(action);
+    } else if (slug === 'upload' && method === 'PUT') {
+      const qKey = new URL(request.url).searchParams.get('key');
+      const key = qKey ? decodeURIComponent(qKey) : (action ? decodeURIComponent(action) : '');
+      if (!key) return json({ error: 'key required' }, 400);
       const ct = request.headers.get('Content-Type') || 'application/octet-stream';
       await env.BLOG.put(key, request.body, { httpMetadata: { contentType: ct } });
       return new Response(null, { status: 200 });
@@ -634,9 +636,8 @@ async function handlePresignMedia(request, env) {
   const ext = filename.split('.').pop().toLowerCase() || 'jpg';
   const key = `media/${Date.now()}-${filename.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase()}`;
 
-  // Upload directly through the Worker (proxy upload)
-  // Return a worker-proxied URL so the client uploads to /api/media/upload/:key
-  const uploadUrl = `/api/media/upload/${encodeURIComponent(key)}`;
+  // Use ?key= query param to avoid %2F path-encoding issues in WebKit/Safari
+  const uploadUrl = `/api/media/upload?key=${encodeURIComponent(key)}`;
   const publicUrl = `/${key}`;
   return json({ uploadUrl, publicUrl, key });
 }

@@ -10,10 +10,12 @@ export async function uploadToR2(file, onProgress) {
     return null;
   }
 
+  const contentType = file.type || _mimeFromName(file.name);
+
   const { uploadUrl, publicUrl } = await fetch('/api/media/presign', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename: file.name, contentType: file.type })
+    body: JSON.stringify({ filename: file.name || 'upload.jpg', contentType })
   }).then(r => {
     if (!r.ok) throw new Error('Could not get upload URL');
     return r.json();
@@ -22,12 +24,13 @@ export async function uploadToR2(file, onProgress) {
   await new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', uploadUrl);
-    xhr.setRequestHeader('Content-Type', file.type);
+    // Safari throws DOMException if Content-Type is empty string — always provide a value
+    xhr.setRequestHeader('Content-Type', contentType);
     xhr.upload.addEventListener('progress', e => {
       if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
     });
-    xhr.onload = () => xhr.status < 400 ? resolve() : reject(new Error(xhr.statusText));
-    xhr.onerror = reject;
+    xhr.onload = () => xhr.status < 400 ? resolve() : reject(new Error(`HTTP ${xhr.status}`));
+    xhr.onerror = () => reject(new Error('Network error'));
     xhr.send(file);
   });
 
@@ -543,4 +546,11 @@ function _fmtBytes(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function _mimeFromName(name) {
+  const ext = (name || '').split('.').pop().toLowerCase();
+  return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+           webp: 'image/webp', heic: 'image/heic', heif: 'image/heif',
+           avif: 'image/avif' }[ext] || 'application/octet-stream';
 }

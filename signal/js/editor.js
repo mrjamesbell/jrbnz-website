@@ -437,6 +437,9 @@ function _applyFormat(action, textarea) {
       textarea.dispatchEvent(new Event('input'));
       break;
     }
+    case 'ai-review':
+      _runReview();
+      break;
     case 'image':
     case 'img':
       openImageSheet(textarea);
