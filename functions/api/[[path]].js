@@ -356,6 +356,76 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss
 </html>`;
 }
 
+function buildPhotosHtml(menuPages, accent) {
+  const year = new Date().getFullYear();
+  const accentStyle = accent ? `<style>:root{--accent-color:${accent.replace(/<\/style>/gi, '')};--accent-fg:${siteAccentFg(accent)}}</style>` : '';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Photos - James Bell</title>
+<meta name="description" content="Photography portfolio by James Bell — theatre and travel photography">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles/main.css">
+<link rel="stylesheet" href="/styles/blog.css">
+<link rel="stylesheet" href="/photos/styles/gallery.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">
+<link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
+${accentStyle}
+</head>
+<body>
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="site-nav">
+      <a href="/" class="nav-logo">JRBNZ</a>
+      <ul class="nav-links">
+        ${buildNav(menuPages, '/photos/')}
+      </ul>
+    </nav>
+  </div>
+  <h1 class="page-header-title">Photos</h1>
+</div>
+<section class="content-section">
+    <nav class="filter-nav">
+        <a href="/photos/" class="filter-back">← Photos</a>
+        <a href="/photos/?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
+        <a href="/photos/?category=travel" class="filter-link" data-category="travel">Travel</a>
+    </nav>
+    <div class="category-overview hidden" id="category-overview"></div>
+    <div class="hero-panel hidden" id="hero-panel">
+        <div class="hero-image-wrap">
+            <a class="glightbox" href="" id="hero-link" data-gallery="hero">
+                <img id="hero-image" src="" alt="" loading="lazy">
+            </a>
+        </div>
+        <div class="hero-description" id="hero-description"></div>
+    </div>
+    <div id="loading" class="loading">Loading photos...</div>
+    <div id="gallery" class="gallery"></div>
+    <div id="error" class="error" style="display:none"></div>
+    <nav class="pagination" id="pagination" style="display:none">
+        <button id="prev-btn" class="pagination-btn" disabled>← Previous</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="next-btn" class="pagination-btn" disabled>Next →</button>
+    </nav>
+</section>
+<footer class="footer">
+  <div class="footer-left">
+    <a href="/" class="footer-logo">JRBNZ</a>
+    <div class="footer-fineprint">&copy; ${year} James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  </div>
+  ${buildFooterRight(menuPages)}
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
+<script type="module" src="/photos/scripts/gallery.js"></script>
+</body>
+</html>`;
+}
+
 // ── Index helpers ─────────────────────────────────────────────────────────────
 
 async function getIndex(env) {
@@ -606,8 +676,14 @@ async function handleRebuildSite(env) {
       await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
   ]);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
-  await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
+  const [indexHtml, photosHtml] = [
+    buildIndexHtml(posts, accent, menuPages, snippetCss),
+    buildPhotosHtml(menuPages, accent),
+  ];
+  await Promise.all([
+    env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
+    env.BLOG.put('pages/photos/index.html', photosHtml, { httpMetadata: { contentType: 'text/html' } }),
+  ]);
   return json({ rebuilt: publishedPosts.length + publishedPages.length });
 }
 
