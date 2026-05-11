@@ -828,14 +828,20 @@ img.leftalign {
   gap: 20px;
 }
 
-.footer-rss,
-.footer-signal {
+.footer-rss {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   font-family: 'Bebas Neue', sans-serif;
   font-size: 15px;
   letter-spacing: 0.07em;
+  border-bottom: none;
+  transition: color 0.2s;
+}
+
+.footer-signal {
+  display: inline-flex;
+  align-items: center;
   border-bottom: none;
   transition: color 0.2s;
 }

@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.84';
+const BUILD = '2026-05-11.85';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
