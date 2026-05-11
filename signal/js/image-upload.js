@@ -12,11 +12,14 @@ export async function uploadToR2(file) {
 
   const filename = encodeURIComponent(file.name || 'upload.jpg');
   const ct = file.type || _mimeFromName(file.name);
+  // Convert to ArrayBuffer on the client — Safari has a bug where sending
+  // a File/Blob object directly as a fetch body produces an empty request body.
+  const buffer = await file.arrayBuffer();
 
   const res = await fetch(`/api/media/upload?filename=${filename}`, {
     method: 'POST',
     headers: { 'Content-Type': ct },
-    body: file,
+    body: buffer,
   });
   if (!res.ok) throw new Error(`Upload failed: HTTP ${res.status}`);
   return res.json(); // { publicUrl, key, filename, size }

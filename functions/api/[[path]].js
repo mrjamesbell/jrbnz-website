@@ -719,12 +719,13 @@ async function handleUploadMedia(request, env) {
   const ct = request.headers.get('Content-Type') || 'application/octet-stream';
   const size = parseInt(request.headers.get('Content-Length') || '0', 10) || null;
 
-  if (!request.body) return json({ error: 'body required' }, 400);
-
   const safeName = filename.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
   const key = `media/${Date.now()}-${safeName}`;
 
-  await env.BLOG.put(key, request.body, { httpMetadata: { contentType: ct } });
+  const body = await request.arrayBuffer();
+  if (!body.byteLength) return json({ error: 'empty body — file not received' }, 400);
+
+  await env.BLOG.put(key, body, { httpMetadata: { contentType: ct } });
 
   return json({ key, publicUrl: `/${key}`, filename, size });
 }
