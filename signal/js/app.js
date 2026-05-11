@@ -5,10 +5,9 @@ import { showToast } from './toast.js';
 import { initMedia } from './media.js';
 import { openCropModal } from './image-upload.js';
 import { initSnippetsView } from './snippets-ui.js';
+import { BUILD } from './build.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
-
-const BUILD = '2026-05-11.92';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 

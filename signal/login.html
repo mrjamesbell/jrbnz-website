@@ -160,7 +160,7 @@ html, body {
         </g>
       </svg>
       <span class="login-wordmark">Signal</span>
-      <span class="login-build">2026-05-11.92</span>
+      <span class="login-build" id="login-build"></span>
     </div>
 
     <form id="login-form">
@@ -175,6 +175,10 @@ html, body {
 
   </div>
 </div>
+<script type="module">
+  import { BUILD } from './js/build.js';
+  document.getElementById('login-build').textContent = BUILD;
+</script>
 <script>
 (function () {
   var form = document.getElementById('login-form');
