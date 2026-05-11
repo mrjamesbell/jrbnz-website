@@ -625,12 +625,20 @@
 
   .modal {
     max-width: 100%;
+    /* svh last so it wins in browsers that support it (iOS 16+) */
+    max-height: 92vh;
     max-height: 92svh;
-    max-height: 92vh; /* fallback */
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    /* overflow: hidden so only .modal-body scrolls, header+footer stay fixed */
+    /* overflow: hidden so only .modal-body scrolls; header + footer stay fixed */
     overflow: hidden;
     padding-bottom: 0;
+  }
+
+  /* Header and footer never shrink */
+  .modal-header {
+    flex-shrink: 0;
+    padding: 18px 20px 0;
+    margin-bottom: 16px;
   }
 
   /* Body scrolls within the fixed modal height */
@@ -639,10 +647,18 @@
     min-height: 0; /* required for flex children to shrink and scroll */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 0 20px 20px;
+    gap: var(--space-4);
+  }
+
+  /* Cap auto-growing textareas so they don't blow up the modal height */
+  .modal-body textarea.field-input {
+    max-height: 120px;
+    overflow-y: auto;
   }
 
   .modal-footer {
-    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    padding: var(--space-3) 20px calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
     flex-shrink: 0;
   }
 }
