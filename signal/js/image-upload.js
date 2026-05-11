@@ -142,7 +142,11 @@ export function openImageOptionsModal(textarea, publicUrl, altHint) {
     if (e.key === 'Enter') { e.preventDefault(); doInsert(); }
     if (e.key === 'Escape') close();
   };
-  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+  // Delay backdrop-click registration so any residual click/touch from the
+  // preceding crop modal doesn't immediately dismiss this modal.
+  setTimeout(() => {
+    modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+  }, 400);
 }
 
 // ── Crop modal ────────────────────────────────────────────────────────────────
@@ -380,14 +384,14 @@ export function openImageSheet(textarea) {
 
   document.getElementById('img-from-file').onclick = () => {
     close();
-    fileInput.onchange = e => _handleFile(e.target.files[0], textarea, fileInput);
+    fileInput.onchange = () => _handleFile(fileInput.files[0], textarea, fileInput);
     fileInput.click();
   };
 
   if (cameraOpt) {
     cameraOpt.onclick = () => {
       close();
-      cameraInput.onchange = e => _handleFile(e.target.files[0], textarea, cameraInput);
+      cameraInput.onchange = () => _handleFile(cameraInput.files[0], textarea, cameraInput);
       cameraInput.click();
     };
   }

@@ -69,7 +69,12 @@ function _triggerFilePicker() {
   input.type = 'file';
   input.accept = 'image/*';
   input.multiple = true;
-  input.onchange = () => Array.from(input.files).forEach(uploadFile);
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.onchange = () => {
+    Array.from(input.files).forEach(uploadFile);
+    document.body.removeChild(input);
+  };
   input.click();
 }
 
