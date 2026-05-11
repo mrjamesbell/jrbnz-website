@@ -780,13 +780,13 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 32px;
   letter-spacing: 0.03em;
-  color: oklch(68% 0.015 75);
+  color: var(--accent-color);
   line-height: 1;
   border-bottom: none;
 }
 
 .footer-logo:hover {
-  color: oklch(78% 0.015 75);
+  color: color-mix(in oklch, var(--accent-color) 70%, white);
   border-bottom: none;
 }
 
@@ -806,7 +806,7 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 22px;
   letter-spacing: 0.06em;
-  color: rgba(252, 244, 218, 0.65);
+  color: var(--text-color);
   border-bottom: none;
   transition: color 0.2s;
 }
@@ -823,7 +823,7 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 15px;
   letter-spacing: 0.07em;
-  color: oklch(52% 0.01 75);
+  color: color-mix(in oklch, var(--text-color) 55%, transparent);
   border-bottom: none;
   transition: color 0.2s;
 }
