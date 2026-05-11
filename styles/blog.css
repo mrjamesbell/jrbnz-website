@@ -857,6 +857,7 @@ img.leftalign {
 
 .footer-signal {
   color: var(--accent-color);
+  margin-top: 8px;
 }
 
 .footer-rss-icon {

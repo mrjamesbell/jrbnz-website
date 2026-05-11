@@ -28,9 +28,10 @@ export async function uploadToR2(file) {
 // ── Crop (canvas-based) ───────────────────────────────────────────────────────
 
 export async function cropImage(file, cropRect, outputWidth) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image could not be loaded')); };
     img.onload = () => {
       const srcX = cropRect.x * img.naturalWidth;
       const srcY = cropRect.y * img.naturalHeight;
@@ -42,7 +43,10 @@ export async function cropImage(file, cropRect, outputWidth) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
-      canvas.toBlob(resolve, 'image/jpeg', 0.88);
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('Canvas produced no output — try a different photo')); return; }
+        resolve(blob);
+      }, 'image/jpeg', 0.88);
     };
     img.src = url;
   });
@@ -178,6 +182,11 @@ export function openCropModal(file, onComplete, options = {}) {
   }
 
   const objectUrl = URL.createObjectURL(file);
+  cropImg.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    _closeCropModal();
+    showToast('Could not load image — try a different format', 'error');
+  };
   cropImg.onload = () => {
     URL.revokeObjectURL(objectUrl);
     // Double rAF ensures the image is painted and has a layout rect
