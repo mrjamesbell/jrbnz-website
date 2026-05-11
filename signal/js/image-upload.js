@@ -4,7 +4,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 // ── Upload ────────────────────────────────────────────────────────────────────
 
-export async function uploadToR2(file, onProgress) {
+export async function uploadToR2(file) {
   if (file.size > MAX_FILE_SIZE) {
     showToast('Max file size is 20 MB', 'error');
     return null;
@@ -21,18 +21,13 @@ export async function uploadToR2(file, onProgress) {
     return r.json();
   });
 
-  await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('PUT', uploadUrl);
-    // Safari throws DOMException if Content-Type is empty string — always provide a value
-    xhr.setRequestHeader('Content-Type', contentType);
-    xhr.upload.addEventListener('progress', e => {
-      if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
-    });
-    xhr.onload = () => xhr.status < 400 ? resolve() : reject(new Error(`HTTP ${xhr.status}`));
-    xhr.onerror = () => reject(new Error('Network error'));
-    xhr.send(file);
+  // Use fetch() — XHR PUT with Blob body sends an empty body on some iOS Safari versions
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': contentType },
+    body: file,
   });
+  if (!uploadRes.ok) throw new Error(`HTTP ${uploadRes.status}`);
 
   return { publicUrl };
 }
@@ -427,7 +422,7 @@ function _handleFile(file, textarea, input) {
   openCropModal(file, async processedFile => {
     showToast('Uploading…');
     try {
-      const result = await uploadToR2(processedFile, () => {});
+      const result = await uploadToR2(processedFile);
       if (result) {
         showToast('Uploaded', 'success', 1500);
         openImageOptionsModal(textarea, result.publicUrl, _altHint(processedFile.name));

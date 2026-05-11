@@ -231,7 +231,7 @@
 .all-posts-btn:hover {
   border-color: var(--accent-color);
   border-bottom-color: var(--accent-color);
-  background: color-mix(in oklch, var(--accent-color) 7%, transparent);
+  background: color-mix(in oklch, var(--accent-color) 14%, transparent);
   color: var(--background-color);
 }
 
@@ -756,6 +756,7 @@ img.leftalign {
   color: var(--accent-color);
   border-color: color-mix(in oklch, var(--accent-color) 40%, transparent);
   border-bottom-color: color-mix(in oklch, var(--accent-color) 40%, transparent);
+  background: color-mix(in oklch, var(--accent-color) 12%, transparent);
 }
 
 /* ── Enhanced footer ── */

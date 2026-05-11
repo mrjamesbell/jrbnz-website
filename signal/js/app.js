@@ -8,7 +8,7 @@ import { initSnippetsView } from './snippets-ui.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
-const BUILD = '2026-05-11.74';
+const BUILD = '2026-05-11.75';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -789,6 +789,11 @@ function openAppSettingsModal() {
 
   const signalAccent = localStorage.getItem('signal-accent') || '';
   _markActiveSwatch('signal-swatch-row', signalAccent);
+  // Sync colour picker to saved value so it shows the right colour on mobile
+  if (signalAccent.startsWith('#')) {
+    const sp = document.getElementById('signal-color-picker');
+    if (sp) sp.value = signalAccent;
+  }
 
   // Fetch live accent from R2 — no localStorage fallback
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
@@ -886,11 +891,14 @@ function _initAccentPickers() {
     });
   });
   const signalPicker = document.getElementById('signal-color-picker');
-  signalPicker?.addEventListener('input', () => {
+  const _onSignalPicker = () => {
     signalRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
     signalPicker.classList.add('is-active');
     _applySignalAccent(signalPicker.value);
-  });
+  };
+  // iOS fires 'change' not 'input' when the colour wheel closes; listen to both
+  signalPicker?.addEventListener('input', _onSignalPicker);
+  signalPicker?.addEventListener('change', _onSignalPicker);
 
   // Live swatches
   const liveRow = document.getElementById('live-swatch-row');
@@ -903,21 +911,17 @@ function _initAccentPickers() {
     });
   });
   const livePicker = document.getElementById('live-color-picker');
-  livePicker?.addEventListener('input', () => {
+  const _onLivePicker = () => {
     liveRow.querySelectorAll('.accent-swatch, .accent-picker-input').forEach(s => s.classList.remove('is-active'));
     livePicker.classList.add('is-active');
     _applyLiveAccent(livePicker.value);
-  });
+  };
+  livePicker?.addEventListener('input', _onLivePicker);
+  livePicker?.addEventListener('change', _onLivePicker);
 
-  // Apply Signal accent on boot — localStorage first, fall back to live accent from R2
+  // Apply Signal accent on boot from localStorage — CSS token default applies if nothing saved
   const saved = localStorage.getItem('signal-accent');
-  if (saved) {
-    _applySignalAccent(saved);
-  } else {
-    fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
-      if (d.accent) _applySignalAccent(d.accent);
-    }).catch(() => {});
-  }
+  if (saved) _applySignalAccent(saved);
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
