@@ -835,14 +835,25 @@ img.leftalign {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 15px;
   letter-spacing: 0.07em;
-  color: color-mix(in oklch, var(--text-color) 55%, transparent);
   border-bottom: none;
   transition: color 0.2s;
 }
 
-.footer-rss:hover,
-.footer-signal:hover {
+.footer-rss {
+  color: color-mix(in oklch, var(--text-color) 55%, transparent);
+}
+
+.footer-rss:hover {
   color: var(--accent-color);
+  border-bottom: none;
+}
+
+.footer-signal {
+  color: var(--accent-color);
+}
+
+.footer-signal:hover {
+  color: color-mix(in oklch, var(--accent-color) 70%, white);
   border-bottom: none;
 }
 
