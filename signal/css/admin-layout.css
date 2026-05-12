@@ -839,6 +839,74 @@ body {
 }
 
 .btn-upload-media:hover { opacity: 0.88; }
+.btn-upload-media:disabled { opacity: 0.4; pointer-events: none; }
+
+.btn-select-media {
+  padding: 8px 18px;
+  background: none;
+  color: var(--color-cream-text-muted);
+  border: var(--border-cream);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-select-media:hover { color: var(--color-cream-text); border-color: var(--color-cream-text); }
+.btn-select-media:disabled { opacity: 0.4; pointer-events: none; }
+
+.media-select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: var(--color-cream-dark);
+  border-radius: var(--radius-lg);
+  border: var(--border-cream);
+}
+
+.select-count {
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--color-cream-text-muted);
+}
+
+.select-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-select-done {
+  padding: 6px 14px;
+  background: none;
+  color: var(--color-cream-text-muted);
+  border: var(--border-cream);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.btn-select-done:hover { color: var(--color-cream-text); }
+
+.btn-delete-selected {
+  padding: 6px 14px;
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-delete-selected:hover { opacity: 0.85; }
+.btn-delete-selected:disabled { opacity: 0.35; pointer-events: none; }
 
 .media-dropzone {
   border: 2px dashed var(--color-cream-border);
@@ -940,6 +1008,8 @@ body {
 
 .media-item-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
   margin-top: 4px;
 }
@@ -958,6 +1028,9 @@ body {
 
 .media-item-btn:hover { background: rgba(240,237,232,0.15); }
 .media-item-btn.is-danger:hover { background: rgba(192,57,43,0.7); border-color: transparent; }
+
+.media-grid.is-select-mode .media-item { cursor: pointer; }
+.media-grid.is-select-mode .media-item-actions { display: none; }
 
 .media-item.is-selected { border-color: var(--color-accent); border-width: 2px; }
 

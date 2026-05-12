@@ -4,7 +4,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 // ── Upload ────────────────────────────────────────────────────────────────────
 
-export async function uploadToR2(file) {
+export async function uploadToR2(file, replaceKey = null) {
   if (file.size > MAX_FILE_SIZE) {
     showToast('Max file size is 20 MB', 'error');
     return null;
@@ -16,7 +16,10 @@ export async function uploadToR2(file) {
   // a File/Blob object directly as a fetch body produces an empty request body.
   const buffer = await file.arrayBuffer();
 
-  const res = await fetch(`/api/media/upload?filename=${filename}`, {
+  const params = new URLSearchParams({ filename });
+  if (replaceKey) params.set('replaceKey', replaceKey);
+
+  const res = await fetch(`/api/media/upload?${params}`, {
     method: 'POST',
     headers: { 'Content-Type': ct },
     body: buffer,

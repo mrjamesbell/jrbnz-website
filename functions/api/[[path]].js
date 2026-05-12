@@ -716,10 +716,12 @@ async function handleUploadMedia(request, env) {
   const rawFilename = url.searchParams.get('filename') || 'upload.jpg';
   const filename = decodeURIComponent(rawFilename);
   const ct = request.headers.get('Content-Type') || 'application/octet-stream';
-  const size = parseInt(request.headers.get('Content-Length') || '0', 10) || null;
+
+  const rawReplaceKey = url.searchParams.get('replaceKey');
+  const replaceKey = rawReplaceKey ? decodeURIComponent(rawReplaceKey) : null;
 
   const safeName = filename.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
-  const key = `media/${Date.now()}-${safeName}`;
+  const key = replaceKey || `media/${Date.now()}-${safeName}`;
 
   const body = await request.arrayBuffer();
   if (!body.byteLength) return json({ error: 'empty body — file not received' }, 400);

@@ -300,6 +300,7 @@
           <h1 class="media-heading">Media</h1>
           <div class="media-header-actions">
             <span class="media-storage-info" id="storage-info"></span>
+            <button class="btn-select-media" id="btn-select">Select</button>
             <button class="btn-upload-media" id="btn-upload">+ Upload</button>
           </div>
         </div>
@@ -311,6 +312,13 @@
           </div>
         </div>
         <div class="media-uploads-active" id="uploads-active"></div>
+        <div class="media-select-bar" id="media-select-bar" style="display:none">
+          <span class="select-count" id="select-count">0 selected</span>
+          <div class="select-bar-actions">
+            <button class="btn-select-done" id="btn-select-done">Done</button>
+            <button class="btn-delete-selected" id="btn-delete-selected" disabled>Delete selected</button>
+          </div>
+        </div>
         <div class="media-grid" id="media-grid"></div>
         <div class="media-load-more" id="load-more" style="display:none">
           <button class="btn-load-more" id="btn-load-more">Load more</button>
