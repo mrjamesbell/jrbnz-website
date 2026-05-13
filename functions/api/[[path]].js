@@ -726,6 +726,7 @@ async function handleUploadMedia(request, env) {
   const body = await request.arrayBuffer();
   if (!body.byteLength) return json({ error: 'empty body — file not received' }, 400);
 
+  const size = body.byteLength;
   await env.BLOG.put(key, body, { httpMetadata: { contentType: ct } });
 
   return json({ key, publicUrl: `/${key}`, filename, size });

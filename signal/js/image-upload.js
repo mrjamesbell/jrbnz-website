@@ -385,10 +385,6 @@ function _updateCropOverlay() {
 export function openImageSheet(textarea) {
   const sheet = document.getElementById('image-sheet');
   const fileInput = document.getElementById('file-input');
-  const cameraInput = document.getElementById('camera-input');
-
-  const cameraOpt = document.getElementById('img-from-camera');
-  if (cameraOpt) cameraOpt.style.display = /Mobi|Android/i.test(navigator.userAgent) ? '' : 'none';
 
   sheet.classList.add('is-open');
   const close = () => sheet.classList.remove('is-open');
@@ -401,14 +397,6 @@ export function openImageSheet(textarea) {
     fileInput.onchange = () => _handleFile(fileInput.files[0], textarea, fileInput);
     fileInput.click();
   };
-
-  if (cameraOpt) {
-    cameraOpt.onclick = () => {
-      close();
-      cameraInput.onchange = () => _handleFile(cameraInput.files[0], textarea, cameraInput);
-      cameraInput.click();
-    };
-  }
 
   document.getElementById('img-from-url').onclick = () => {
     close();
