@@ -706,7 +706,7 @@ async function handleListMedia(env) {
   const items = [
     ...uploaded.objects.map(o => toItem(o, `/${o.key}`)),
     ...imported.objects.map(o => toItem(o, `/${o.key}`)),
-  ];
+  ].sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
 
   return json(items);
 }
