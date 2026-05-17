@@ -3,7 +3,7 @@ import { initMobile } from './mobile.js';
 import { fmtDateShort, relativeTime, slugify } from './markdown.js';
 import { showToast } from './toast.js';
 import { initMedia } from './media.js';
-import { openCropModal } from './image-upload.js';
+import { openCropModal, uploadToR2 } from './image-upload.js';
 import { initSnippetsView } from './snippets-ui.js';
 import { BUILD } from './build.js';
 
@@ -137,8 +137,18 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = '';
-    openCropModal(file, async (croppedBlob) => {
-      await _uploadHeadshot(croppedBlob);
+    openCropModal(file, async processedFile => {
+      showToast('Uploading…');
+      try {
+        const result = await uploadToR2(processedFile);
+        if (result) {
+          document.getElementById('author-headshot').value = result.publicUrl;
+          _updateHeadshotPreview(result.publicUrl);
+          showToast('Uploaded', 'success', 1500);
+        }
+      } catch (e) {
+        showToast('Upload failed: ' + e.message, 'error');
+      }
     }, { circle: true });
   });
   document.getElementById('btn-headshot-media').addEventListener('click', _openHeadshotMediaPicker);
@@ -166,40 +176,6 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
   window.addEventListener('hashchange', () => _route(location.hash.slice(1)));
 })();
 
-// ── Headshot upload ───────────────────────────────────────────────────────────
-
-async function _uploadHeadshot(blob) {
-  if (!blob || blob.size < 100) {
-    showToast('Crop produced an invalid image', 'error');
-    return;
-  }
-  const prevUrl = document.getElementById('author-headshot').value;
-  try {
-    const filename = `headshot-${Date.now()}.jpg`;
-    const presignRes = await fetch('/api/media/presign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename, contentType: 'image/jpeg' })
-    });
-    if (!presignRes.ok) throw new Error('Presign failed');
-    const { uploadUrl, publicUrl } = await presignRes.json();
-
-    const uploadRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'image/jpeg' },
-      body: blob
-    });
-    if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
-
-    document.getElementById('author-headshot').value = publicUrl;
-    _updateHeadshotPreview(publicUrl);
-  } catch (e) {
-    document.getElementById('author-headshot').value = prevUrl;
-    _updateHeadshotPreview(prevUrl);
-    showToast('Upload failed: ' + e.message, 'error');
-  }
-}
-
 function _updateHeadshotPreview(url) {
   const img = document.getElementById('headshot-preview-img');
   const placeholder = document.getElementById('headshot-placeholder');
@@ -216,6 +192,8 @@ function _updateHeadshotPreview(url) {
 
 async function _openHeadshotMediaPicker() {
   const modal = document.getElementById('media-picker-modal');
+  if (!modal) { showToast('Media picker not available', 'error'); return; }
+
   const grid = document.getElementById('media-picker-grid');
   const insertBtn = document.getElementById('media-picker-insert');
   const closeBtn = document.getElementById('media-picker-close');
@@ -240,10 +218,12 @@ async function _openHeadshotMediaPicker() {
       grid.innerHTML = items.map(item => {
         const url = _escAttr(item.publicUrl || item.url || '');
         const name = _escAttr(item.filename || '');
-        return `<div class="media-item" data-url="${url}">
+        const size = _escAttr(_fmtBytes(item.size || 0));
+        return `<div class="media-item" data-url="${url}" data-key="${_escAttr(item.key)}">
           <img src="${url}" alt="${name}" loading="lazy">
           <div class="media-item-overlay">
             <div class="media-item-filename">${name}</div>
+            <div class="media-item-size">${size}</div>
           </div>
         </div>`;
       }).join('');
@@ -282,22 +262,13 @@ async function _openHeadshotMediaPicker() {
     if (searchEl) searchEl.oninput = null;
   };
 
-  insertBtn.onclick = async () => {
+  insertBtn.onclick = () => {
     const selected = grid.querySelector('.media-item.is-selected');
     if (!selected) return;
     const url = selected.dataset.url;
     close();
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-      const file = new File([blob], `headshot.${ext}`, { type: blob.type });
-      openCropModal(file, async (croppedBlob) => {
-        await _uploadHeadshot(croppedBlob);
-      }, { circle: true });
-    } catch {
-      showToast('Could not load image for cropping — try the URL option instead', 'error');
-    }
+    document.getElementById('author-headshot').value = url;
+    _updateHeadshotPreview(url);
   };
   if (closeBtn) closeBtn.onclick = close;
   if (cancelBtn) cancelBtn.onclick = close;
@@ -306,6 +277,12 @@ async function _openHeadshotMediaPicker() {
 
 function _escAttr(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _fmtBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
