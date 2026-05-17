@@ -341,7 +341,7 @@ function _populateEditor() {
   document.getElementById('delete-confirm').onclick = _deletePost;
 
   // Publish / Revert
-  document.getElementById('btn-publish').onclick = _publish;
+  document.getElementById('btn-publish').onclick = _openPublishModal;
   document.getElementById('btn-revert').onclick = _revertChanges;
   _updateRevertButton();
 }
@@ -813,14 +813,61 @@ function _revertChanges() {
   showToast('Reverted', 'default', 1500);
 }
 
-async function _publish() {
-  const btn = document.getElementById('btn-publish');
+// ── Publish modal ─────────────────────────────────────────────────────────────
+
+function _openPublishModal() {
   if (!currentSlug || currentSlug === 'new' || !currentPost) {
     showToast('Save the post first', 'error');
     return;
   }
 
-  // Snapshot values before any async work so they're safe if editor closes mid-flight
+  const isPage = currentType === 'page';
+  const isRepublish = currentPost.status === 'published';
+
+  document.getElementById('publish-modal-title').textContent =
+    isRepublish ? 'Republish post' : (isPage ? 'Publish page' : 'Publish post');
+  document.getElementById('publish-modal-confirm').disabled = true;
+  document.getElementById('publish-modal-confirm').textContent = 'Publish';
+
+  // Reset steps
+  ['pstep-save', 'pstep-excerpt', 'pstep-publish'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'publish-step';
+  });
+
+  // Hide excerpt and options sections initially
+  const excerptSection = document.getElementById('publish-excerpt-section');
+  const optionsSection = document.getElementById('publish-options');
+  excerptSection.hidden = true;
+  optionsSection.hidden = true;
+
+  // Pages skip excerpt and link update steps
+  const excerptStep = document.getElementById('pstep-excerpt');
+  if (excerptStep) excerptStep.hidden = isPage;
+
+  document.getElementById('publish-modal').style.display = 'flex';
+
+  document.getElementById('publish-modal-close').onclick = _closePublishModal;
+  document.getElementById('publish-modal-cancel').onclick = _closePublishModal;
+  document.getElementById('publish-modal').onclick = e => { if (e.target === e.currentTarget) _closePublishModal(); };
+  document.getElementById('publish-modal-confirm').onclick = _confirmPublish;
+  document.getElementById('btn-regenerate-excerpt').onclick = _regenerateExcerpt;
+  document.getElementById('publish-excerpt-textarea').oninput = _onPublishExcerptInput;
+
+  _runPublishFlow(isPage);
+}
+
+function _closePublishModal() {
+  document.getElementById('publish-modal').style.display = 'none';
+}
+
+function _setStep(stepId, state) {
+  const el = document.getElementById(stepId);
+  if (!el) return;
+  el.className = `publish-step is-${state}`;
+}
+
+async function _runPublishFlow(isPage) {
   const slug = currentSlug;
   const payload = {
     slug,
@@ -836,15 +883,110 @@ async function _publish() {
     wordCount: currentPost.wordCount
   };
 
-  btn.disabled = true;
-  btn.textContent = 'Publishing…';
-
+  // Step 1 — Save draft
+  _setStep('pstep-save', 'active');
   try {
     await saveNow(() => payload);
+    _setStep('pstep-save', 'done');
+  } catch (e) {
+    _setStep('pstep-save', 'error');
+    showToast('Save failed — ' + e.message, 'error');
+    return;
+  }
 
-    const res = await fetch(`${_getApiBase()}/${slug}/publish`, { method: 'POST' });
+  // Step 2 — Excerpt (posts only)
+  if (!isPage) {
+    _setStep('pstep-excerpt', 'active');
+    const excerptSection = document.getElementById('publish-excerpt-section');
+    const excerptTextarea = document.getElementById('publish-excerpt-textarea');
+
+    if (currentPost.excerpt) {
+      excerptTextarea.value = currentPost.excerpt;
+      _setStep('pstep-excerpt', 'skipped');
+    } else {
+      try {
+        const apiKey = localStorage.getItem('signal-apikey') || '';
+        const res = await fetch(`/api/posts/${slug}/generate-excerpt`, {
+          method: 'POST',
+          headers: apiKey ? { 'x-api-key': apiKey } : {}
+        });
+        const data = res.ok ? await res.json() : {};
+        excerptTextarea.value = data.excerpt || '';
+        _setStep('pstep-excerpt', data.excerpt ? 'done' : 'skipped');
+      } catch {
+        excerptTextarea.value = '';
+        _setStep('pstep-excerpt', 'skipped');
+      }
+    }
+
+    excerptSection.hidden = false;
+    _onPublishExcerptInput();
+  }
+
+  // Show options (update links checkbox) for posts
+  if (!isPage) {
+    document.getElementById('publish-options').hidden = false;
+  }
+
+  // Step 3 — ready for user confirmation
+  _setStep('pstep-publish', 'waiting');
+  document.getElementById('publish-modal-confirm').disabled = false;
+}
+
+function _onPublishExcerptInput() {
+  const val = document.getElementById('publish-excerpt-textarea').value;
+  const cnt = document.getElementById('publish-excerpt-count');
+  if (cnt) cnt.textContent = `${val.length}/160`;
+}
+
+async function _regenerateExcerpt() {
+  const btn = document.getElementById('btn-regenerate-excerpt');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  try {
+    const apiKey = localStorage.getItem('signal-apikey') || '';
+    const res = await fetch(`/api/posts/${currentSlug}/generate-excerpt`, {
+      method: 'POST',
+      headers: apiKey ? { 'x-api-key': apiKey } : {}
+    });
+    const data = res.ok ? await res.json() : {};
+    if (data.excerpt) {
+      document.getElementById('publish-excerpt-textarea').value = data.excerpt;
+      _onPublishExcerptInput();
+    }
+  } catch {}
+  btn.disabled = false;
+  btn.textContent = 'Regenerate';
+}
+
+async function _confirmPublish() {
+  const confirmBtn = document.getElementById('publish-modal-confirm');
+  const cancelBtn = document.getElementById('publish-modal-cancel');
+  confirmBtn.disabled = true;
+  cancelBtn.disabled = true;
+
+  const isPage = currentType === 'page';
+  const slug = currentSlug;
+
+  // Persist any edited excerpt back to the post
+  if (!isPage) {
+    const excerptVal = document.getElementById('publish-excerpt-textarea').value.trim();
+    if (currentPost) currentPost.excerpt = excerptVal;
+  }
+
+  const updateLinks = !isPage && document.getElementById('publish-update-links')?.checked;
+
+  _setStep('pstep-publish', 'active');
+  try {
+    const url = updateLinks
+      ? `${_getApiBase()}/${slug}/publish?updateLinks=1`
+      : `${_getApiBase()}/${slug}/publish`;
+    const res = await fetch(url, { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
+
+    _setStep('pstep-publish', 'done');
+    confirmBtn.textContent = 'Done';
 
     if (currentPost) {
       currentPost.status = 'published';
@@ -852,10 +994,10 @@ async function _publish() {
       _isDirty = false;
       _updatePublishButton();
       _updateRevertButton();
-      const btnEl = document.getElementById('btn-publish');
-      if (btnEl) {
-        btnEl.classList.add('just-published');
-        setTimeout(() => btnEl.classList.remove('just-published'), 450);
+      const pubBtn = document.getElementById('btn-publish');
+      if (pubBtn) {
+        pubBtn.classList.add('just-published');
+        setTimeout(() => pubBtn.classList.remove('just-published'), 450);
       }
     }
     if (currentType === 'page') invalidatePageCache(); else invalidatePostCache();
@@ -864,11 +1006,13 @@ async function _publish() {
     const defaultUrl = currentType === 'page' ? `/${slug}/` : `/posts/${slug}/`;
     if (viewBtn) { viewBtn.href = data.url || defaultUrl; viewBtn.style.display = ''; }
 
-    showToast('Published ↗', 'success', 4000);
+    setTimeout(() => _closePublishModal(), 1200);
   } catch (e) {
+    _setStep('pstep-publish', 'error');
     showToast('Publish failed — ' + e.message, 'error');
-  } finally {
-    if (btn) btn.disabled = false;
+    confirmBtn.disabled = false;
+    cancelBtn.disabled = false;
+    confirmBtn.textContent = 'Retry';
   }
 }
 

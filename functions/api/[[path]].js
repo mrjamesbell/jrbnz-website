@@ -572,10 +572,11 @@ export async function onRequest(context) {
       if (method === 'PUT') return handleSaveDraft(request, env, slug);
       if (method === 'DELETE') return handleDeletePost(env, slug);
     } else {
-      if (action === 'publish' && method === 'POST') return handlePublish(env, slug);
+      if (action === 'publish' && method === 'POST') return handlePublish(env, slug, request);
       if (action === 'unpublish' && method === 'POST') return handleUnpublish(env, slug);
       if (action === 'rename' && method === 'POST') return handleRename(request, env, slug);
       if (action === 'review' && method === 'POST') return handleReviewPost(env, slug);
+      if (action === 'generate-excerpt' && method === 'POST') return handleGenerateExcerpt(env, slug, request);
     }
   }
 
@@ -907,6 +908,45 @@ ${body}`;
   return json({ review });
 }
 
+async function handleGenerateExcerpt(env, slug, request) {
+  const posts = await getIndex(env);
+  const post = posts.find(p => p.slug === slug);
+  if (!post) return json({ error: 'Not found' }, 404);
+
+  const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
+  const body = obj ? await obj.text() : '';
+  if (!body.trim()) return json({ error: 'Post has no content' }, 400);
+
+  const apiKey = env.ANTHROPIC_API_KEY || (request.headers.get('x-api-key') || '');
+  if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 503);
+
+  const prompt = `Write a 1–2 sentence plain-text excerpt for the following blog post. Maximum 160 characters total. No quotes, no commentary, just the summary itself.
+
+Title: ${post.title}
+
+${body}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) return json({ error: `Anthropic API error ${res.status}` }, 502);
+
+  const data = await res.json();
+  const excerpt = (data.content?.[0]?.text || '').trim().slice(0, 160);
+  return json({ excerpt });
+}
+
 async function handleReviewPage(env, slug) {
   const pages = await getPagesIndex(env);
   const page = pages.find(p => p.slug === slug);
@@ -954,7 +994,9 @@ ${body}`;
   return json({ review });
 }
 
-async function handlePublish(env, slug) {
+async function handlePublish(env, slug, request) {
+  const updateLinks = request && new URL(request.url).searchParams.get('updateLinks') === '1';
+
   const posts = await getIndex(env);
   const idx = posts.findIndex(p => p.slug === slug);
   if (idx === -1) return json({ error: 'Not found' }, 404);
@@ -968,8 +1010,23 @@ async function handlePublish(env, slug) {
   posts[idx].updatedAt = new Date().toISOString();
 
   const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
-  const postHtml = buildPostHtml({ ...posts[idx], contentHtml, author, accent, menuPages, snippetCss });
+
+  const sorted = posts.filter(p => p.status === 'published').sort((a, b) => new Date(a.date) - new Date(b.date));
+  const postHtml = buildPostHtml({ ...posts[idx], body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts });
   await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
+
+  // Rebuild adjacent posts so their prev/next links are current
+  if (updateLinks) {
+    const sidx = sorted.findIndex(p => p.slug === slug);
+    const neighbours = [sorted[sidx - 1], sorted[sidx + 1]].filter(Boolean);
+    await Promise.all(neighbours.map(async neighbour => {
+      const nObj = await env.BLOG.get(`posts/${neighbour.slug}/draft.md`);
+      const nBody = nObj ? await nObj.text() : '';
+      const nHtml = buildPostHtml({ ...neighbour, body: nBody, contentHtml: mdToHtml(nBody), author, accent, menuPages, snippetCss, allPosts: posts });
+      await env.BLOG.put(`posts/${neighbour.slug}/index.html`, nHtml, { httpMetadata: { contentType: 'text/html' } });
+    }));
+  }
+
   await saveIndex(env, posts);
   const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
   await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });

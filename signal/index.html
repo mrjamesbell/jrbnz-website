@@ -729,6 +729,58 @@
 <!-- Hidden file inputs -->
 <input type="file" id="file-input" accept="image/*" style="display:none">
 
+<!-- Publish modal -->
+<div class="modal-backdrop" id="publish-modal" style="display:none">
+  <div class="modal publish-modal">
+    <div class="modal-header">
+      <span class="modal-title" id="publish-modal-title">Publish post</span>
+      <button class="modal-close" id="publish-modal-close">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="publish-steps" id="publish-steps">
+        <div class="publish-step" id="pstep-save" data-step="save">
+          <span class="publish-step-icon"></span>
+          <span class="publish-step-label">Save draft</span>
+        </div>
+        <div class="publish-step" id="pstep-excerpt" data-step="excerpt">
+          <span class="publish-step-icon"></span>
+          <span class="publish-step-label">Generate excerpt</span>
+        </div>
+        <div class="publish-step" id="pstep-publish" data-step="publish">
+          <span class="publish-step-icon"></span>
+          <span class="publish-step-label">Publish</span>
+        </div>
+      </div>
+
+      <div class="publish-excerpt-section" id="publish-excerpt-section" hidden>
+        <label class="field-label" for="publish-excerpt-textarea">
+          Excerpt
+          <span id="publish-excerpt-count" style="font-weight:400;text-transform:none;letter-spacing:0"></span>
+        </label>
+        <textarea class="field-input" id="publish-excerpt-textarea" rows="3" maxlength="160" style="height:auto;resize:none"></textarea>
+        <div class="publish-excerpt-actions">
+          <p class="field-hint" style="flex:1">Used in post lists and link previews.</p>
+          <button class="btn btn-secondary btn-sm" id="btn-regenerate-excerpt">Regenerate</button>
+        </div>
+      </div>
+
+      <div class="publish-options" id="publish-options" hidden>
+        <label class="publish-option-row">
+          <input type="checkbox" id="publish-update-links" checked>
+          <span class="publish-option-label">Update adjacent post links</span>
+          <span class="publish-option-hint">Rebuilds neighbouring posts so prev/next links stay current</span>
+        </label>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="publish-modal-cancel">Cancel</button>
+      <button class="btn btn-primary" id="publish-modal-confirm" disabled>Publish</button>
+    </div>
+  </div>
+</div>
+
 <!-- Delete confirm modal -->
 <div class="modal-backdrop" id="delete-modal" style="display:none">
   <div class="modal" style="max-width:360px">
