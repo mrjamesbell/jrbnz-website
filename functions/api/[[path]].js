@@ -142,6 +142,10 @@ ${extraHead}
 </head>
 <body>`;
 
+function calcReadingTime(wordCount) {
+  return Math.max(1, Math.ceil((wordCount || 0) / 200));
+}
+
 function extractFirstImage(body) {
   const signal = (body || '').match(/<!--\s*signal:image\s+src="([^"]+)"/);
   if (signal) return signal[1];
@@ -248,13 +252,32 @@ function buildFooterRight(menuPages) {
   </div>`;
 }
 
-function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, coverImage, author, accent, menuPages, snippetCss, allPosts }) {
+function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, coverImage, author, accent, menuPages, snippetCss, allPosts, wordCount }) {
   const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
   const authorBlock = buildAuthorCard(author);
   const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
   const postUrl = `${SITE_URL}/posts/${slug}/`;
   const extraHead = buildPostMeta({ title, postUrl, metaDesc: excerpt || '', ogImage });
+  const readTime = calcReadingTime(wordCount);
+
+  // Prev / next
+  const published = (allPosts || [])
+    .filter(p => p.status === 'published')
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const pidx = published.findIndex(p => p.slug === slug);
+  const prevPost = pidx > 0 ? published[pidx - 1] : null;
+  const nextPost = pidx < published.length - 1 ? published[pidx + 1] : null;
+
+  // Related posts (by tag overlap, then recency)
+  const tagSet = new Set(tags || []);
+  const related = tagSet.size ? (allPosts || [])
+    .filter(p => p.status === 'published' && p.slug !== slug)
+    .map(p => ({ ...p, _score: (p.tags || []).filter(t => tagSet.has(t)).length }))
+    .filter(p => p._score > 0)
+    .sort((a, b) => b._score - a._score || new Date(b.date) - new Date(a.date))
+    .slice(0, 3) : [];
+
   return `${SITE_HEAD(title, accent, snippetCss, extraHead)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
@@ -267,6 +290,7 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
     <h1 class="post-masthead-title">${esc(title)}</h1>
     <div class="post-masthead-meta">
       <time class="post-masthead-date" datetime="${esc(date)}">${fmtDate(date)}</time>
+      <span class="post-masthead-readtime">${readTime} min read</span>
     </div>
   </div>
 </header>
@@ -275,6 +299,16 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
     <div>
       <div class="post-content">${contentHtml}</div>
       <a href="/posts/" class="back-to-posts">← All posts</a>
+      ${(prevPost || nextPost) ? `<nav class="post-prevnext" aria-label="Post navigation">
+        ${prevPost ? `<a href="/posts/${esc(prevPost.slug)}/" class="prevnext-item prevnext-prev">
+          <span class="prevnext-dir">← Previous</span>
+          <span class="prevnext-title">${esc(prevPost.title)}</span>
+        </a>` : '<div class="prevnext-item prevnext-placeholder"></div>'}
+        ${nextPost ? `<a href="/posts/${esc(nextPost.slug)}/" class="prevnext-item prevnext-next">
+          <span class="prevnext-dir">Next →</span>
+          <span class="prevnext-title">${esc(nextPost.title)}</span>
+        </a>` : '<div class="prevnext-item prevnext-placeholder"></div>'}
+      </nav>` : ''}
     </div>
     <aside class="post-sidebar">
       ${authorBlock}
@@ -287,6 +321,12 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
         <div class="sidebar-tags">
           ${sidebarTags}
         </div>
+      </div>` : ''}
+      ${related.length ? `<div class="sidebar-block">
+        <div class="sidebar-label">Related</div>
+        <ul class="related-list">
+          ${related.map(r => `<li><a href="/posts/${esc(r.slug)}/">${esc(r.title)}</a></li>`).join('\n          ')}
+        </ul>
       </div>` : ''}
     </aside>
   </div>
@@ -310,12 +350,17 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss) {
 
   const items = published.map(p => {
     const tagsText = (p.tags || []).map(t => `#${esc(t)}`).join(' · ');
+    const readTime = calcReadingTime(p.wordCount);
     return `
   <li class="post-list-item" data-tags="${esc((p.tags || []).join(','))}">
     <time>${fmtDateShort(p.date)}</time>
     <div>
       <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a>
-      ${tagsText ? `<div class="post-item-tags">${tagsText}</div>` : ''}
+      ${p.excerpt ? `<p class="post-item-excerpt">${esc(p.excerpt)}</p>` : ''}
+      <div class="post-item-meta">
+        ${tagsText ? `<span class="post-item-tags">${tagsText}</span>` : ''}
+        <span class="post-item-readtime">${readTime} min read</span>
+      </div>
     </div>
   </li>`;
   }).join('');
