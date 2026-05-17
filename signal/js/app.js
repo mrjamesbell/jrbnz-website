@@ -132,7 +132,8 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = '';
-    openCropModal(file, async processedFile => {
+    // setTimeout defers until after focus/blur events from the OS file picker settle
+    setTimeout(() => openCropModal(file, async processedFile => {
       showToast('Uploading…');
       try {
         const result = await uploadToR2(processedFile);
@@ -144,7 +145,7 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
       } catch (e) {
         showToast('Upload failed: ' + e.message, 'error');
       }
-    }, { circle: true });
+    }, { circle: true }), 0);
   });
   document.getElementById('btn-headshot-media').addEventListener('click', _openHeadshotMediaPicker);
   document.getElementById('btn-headshot-url').addEventListener('click', () => {
