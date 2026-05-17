@@ -298,17 +298,19 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
   <div class="post-layout">
     <div>
       <div class="post-content">${contentHtml}</div>
-      <a href="/posts/" class="back-to-posts">← All posts</a>
-      ${(prevPost || nextPost) ? `<nav class="post-prevnext" aria-label="Post navigation">
+      <nav class="post-prevnext" aria-label="Post navigation">
         ${prevPost ? `<a href="/posts/${esc(prevPost.slug)}/" class="prevnext-item prevnext-prev">
           <span class="prevnext-dir">← Previous</span>
           <span class="prevnext-title">${esc(prevPost.title)}</span>
         </a>` : '<div class="prevnext-item prevnext-placeholder"></div>'}
+        <a href="/posts/" class="prevnext-item prevnext-all">
+          <span class="prevnext-dir">All posts</span>
+        </a>
         ${nextPost ? `<a href="/posts/${esc(nextPost.slug)}/" class="prevnext-item prevnext-next">
           <span class="prevnext-dir">Next →</span>
           <span class="prevnext-title">${esc(nextPost.title)}</span>
         </a>` : '<div class="prevnext-item prevnext-placeholder"></div>'}
-      </nav>` : ''}
+      </nav>
     </div>
     <aside class="post-sidebar">
       ${authorBlock}
@@ -1000,7 +1002,7 @@ async function handleGenerateExcerpt(env, slug, request) {
   const apiKey = env.ANTHROPIC_API_KEY || (request.headers.get('x-api-key') || '');
   if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
-  const prompt = `Write a 1–2 sentence plain-text excerpt for the following blog post. Maximum 160 characters total. No quotes, no commentary, just the summary itself.
+  const prompt = `Write a 1–2 sentence plain-text excerpt for the following blog post. Maximum 280 characters total. No quotes, no commentary, just the summary itself.
 
 Title: ${post.title}
 
@@ -1023,7 +1025,7 @@ ${body}`;
   if (!res.ok) return json({ error: `Anthropic API error ${res.status}` }, 502);
 
   const data = await res.json();
-  const excerpt = (data.content?.[0]?.text || '').trim().slice(0, 160);
+  const excerpt = (data.content?.[0]?.text || '').trim().slice(0, 280);
   return json({ excerpt });
 }
 
@@ -1076,6 +1078,7 @@ ${body}`;
 
 async function handlePublish(env, slug, request) {
   const updateLinks = request && new URL(request.url).searchParams.get('updateLinks') === '1';
+  const reqData = request ? await request.json().catch(() => ({})) : {};
 
   const posts = await getIndex(env);
   const idx = posts.findIndex(p => p.slug === slug);
@@ -1088,6 +1091,7 @@ async function handlePublish(env, slug, request) {
   posts[idx].status = 'published';
   posts[idx].hasDraftChanges = false;
   posts[idx].updatedAt = new Date().toISOString();
+  if (reqData.excerpt !== undefined) posts[idx].excerpt = reqData.excerpt;
 
   const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
 

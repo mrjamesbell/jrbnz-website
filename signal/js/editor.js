@@ -968,9 +968,9 @@ async function _confirmPublish() {
   const isPage = currentType === 'page';
   const slug = currentSlug;
 
-  // Persist any edited excerpt back to the post
+  let excerptVal = '';
   if (!isPage) {
-    const excerptVal = document.getElementById('publish-excerpt-textarea').value.trim();
+    excerptVal = document.getElementById('publish-excerpt-textarea').value.trim();
     if (currentPost) currentPost.excerpt = excerptVal;
   }
 
@@ -981,7 +981,11 @@ async function _confirmPublish() {
     const url = updateLinks
       ? `${_getApiBase()}/${slug}/publish?updateLinks=1`
       : `${_getApiBase()}/${slug}/publish`;
-    const res = await fetch(url, { method: 'POST' });
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(isPage ? {} : { excerpt: excerptVal }),
+    });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
 
