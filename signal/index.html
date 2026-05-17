@@ -117,13 +117,13 @@
       <span class="rail-item-label">Author</span>
     </button>
     <span class="rail-build" id="build-label"></span>
-    <button class="rail-item" id="rail-settings" title="Settings">
+    <a href="#settings" class="rail-item" id="rail-settings" data-route="settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
       </svg>
       <span class="rail-item-label">Settings</span>
-    </button>
+    </a>
   </nav>
 
   <!-- Main content -->
@@ -420,6 +420,89 @@
       </div>
     </div>
 
+    <!-- VIEW: Settings -->
+    <div id="view-settings" class="post-list-view" style="display:none">
+      <div class="post-list-inner">
+        <div class="post-list-header">
+          <h1 class="post-list-title">Settings</h1>
+          <button class="btn btn-primary btn-sm" id="app-settings-save">Save</button>
+        </div>
+        <div class="settings-page-body">
+
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Appearance</div>
+            <div class="settings-page-field">
+              <label class="field-label">Signal accent colour</label>
+              <div class="accent-picker-group">
+                <div class="accent-swatch-row" id="signal-swatch-row" data-target="signal">
+                  <button class="accent-swatch" data-color="#7E5B3F" style="background:#7E5B3F" title="Smoked Bronze"></button>
+                  <button class="accent-swatch" data-color="#526D7A" style="background:#526D7A" title="Storm Blue"></button>
+                  <button class="accent-swatch" data-color="#A97922" style="background:#A97922" title="Deep Marigold"></button>
+                  <button class="accent-swatch" data-color="#9A4634" style="background:#9A4634" title="Oxide Red"></button>
+                  <button class="accent-swatch" data-color="#C9821F" style="background:#C9821F" title="Signal Amber"></button>
+                  <button class="accent-custom-btn" id="signal-custom-btn" title="Custom colour">···</button>
+                  <input type="color" class="accent-picker-input" id="signal-color-picker" value="#888888">
+                </div>
+              </div>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label">Live site accent colour</label>
+              <p class="field-hint">Applied to jrbnz.com on next rebuild.</p>
+              <div class="accent-picker-group">
+                <div class="accent-swatch-row" id="live-swatch-row" data-target="live">
+                  <button class="accent-swatch" data-color="#7E5B3F" style="background:#7E5B3F" title="Smoked Bronze"></button>
+                  <button class="accent-swatch" data-color="#526D7A" style="background:#526D7A" title="Storm Blue"></button>
+                  <button class="accent-swatch" data-color="#A97922" style="background:#A97922" title="Deep Marigold"></button>
+                  <button class="accent-swatch" data-color="#9A4634" style="background:#9A4634" title="Oxide Red"></button>
+                  <button class="accent-swatch" data-color="#C9821F" style="background:#C9821F" title="Signal Amber"></button>
+                  <button class="accent-custom-btn" id="live-custom-btn" title="Custom colour">···</button>
+                  <input type="color" class="accent-picker-input" id="live-color-picker" value="#888888">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">AI</div>
+            <div class="settings-page-field">
+              <label class="field-label">Anthropic API key</label>
+              <div style="display:flex;gap:8px">
+                <input class="field-input" type="password" id="app-settings-apikey" placeholder="sk-ant-api03-…" autocomplete="off" style="font-family:monospace;font-size:12px;flex:1">
+                <button class="btn btn-secondary btn-sm" id="btn-show-apikey">Show</button>
+              </div>
+              <p class="field-hint">Used for AI review and excerpt generation. Stored locally only.</p>
+            </div>
+          </div>
+
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Publishing</div>
+            <div class="settings-page-field">
+              <label class="field-label">iA Writer token</label>
+              <p class="field-hint" style="margin-bottom:8px">Paste into iA Writer → Settings → Micropub to publish directly.</p>
+              <div style="display:flex;gap:8px">
+                <input class="field-input" type="text" id="micropub-token-display" readonly style="font-family:monospace;font-size:12px;flex:1;color:var(--color-cream-text-muted)" placeholder="Loading…">
+                <button class="btn btn-secondary btn-sm" id="btn-copy-token">Copy</button>
+              </div>
+            </div>
+            <div class="settings-page-field">
+              <div class="settings-action-row">
+                <div class="settings-action-info">
+                  <span class="settings-action-label">Rebuild site</span>
+                  <span class="settings-action-desc">Republish all posts with current author &amp; accent</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btn-rebuild-site">Rebuild</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-page-section settings-page-section--account">
+            <button class="btn btn-danger btn-sm" id="btn-app-logout">Sign out</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div><!-- /.signal-main -->
 
   <!-- Mobile bottom tab bar (hidden on desktop via CSS) -->
@@ -440,10 +523,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
       <span>Snippets</span>
     </a>
-    <button class="mobile-tab" id="mtab-settings">
+    <a href="#settings" class="mobile-tab" id="mtab-settings" data-route="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       <span>Settings</span>
-    </button>
+    </a>
   </nav>
 
 </div><!-- /.signal-app -->
@@ -610,77 +693,6 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" id="author-cancel">Cancel</button>
       <button class="btn btn-primary" id="author-save">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- App settings modal -->
-<div class="modal-backdrop" id="app-settings-modal" style="display:none">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">Settings</span>
-      <button class="modal-close" id="app-settings-close">×</button>
-    </div>
-    <div class="modal-body">
-      <div>
-        <label class="field-label">Signal accent colour</label>
-        <div class="accent-picker-group">
-          <div class="accent-swatch-row" id="signal-swatch-row" data-target="signal">
-            <button class="accent-swatch" data-color="#7E5B3F" style="background:#7E5B3F" title="Smoked Bronze"></button>
-            <button class="accent-swatch" data-color="#526D7A" style="background:#526D7A" title="Storm Blue"></button>
-            <button class="accent-swatch" data-color="#A97922" style="background:#A97922" title="Deep Marigold"></button>
-            <button class="accent-swatch" data-color="#9A4634" style="background:#9A4634" title="Oxide Red"></button>
-            <button class="accent-swatch" data-color="#C9821F" style="background:#C9821F" title="Signal Amber"></button>
-            <button class="accent-custom-btn" id="signal-custom-btn" title="Custom colour">···</button>
-            <input type="color" class="accent-picker-input" id="signal-color-picker" value="#888888">
-          </div>
-        </div>
-      </div>
-      <div>
-        <label class="field-label">Live site accent colour</label>
-        <p class="field-hint">Applied to jrbnz.com on next rebuild.</p>
-        <div class="accent-picker-group">
-          <div class="accent-swatch-row" id="live-swatch-row" data-target="live">
-            <button class="accent-swatch" data-color="#7E5B3F" style="background:#7E5B3F" title="Smoked Bronze"></button>
-            <button class="accent-swatch" data-color="#526D7A" style="background:#526D7A" title="Storm Blue"></button>
-            <button class="accent-swatch" data-color="#A97922" style="background:#A97922" title="Deep Marigold"></button>
-            <button class="accent-swatch" data-color="#9A4634" style="background:#9A4634" title="Oxide Red"></button>
-            <button class="accent-swatch" data-color="#C9821F" style="background:#C9821F" title="Signal Amber"></button>
-            <button class="accent-custom-btn" id="live-custom-btn" title="Custom colour">···</button>
-            <input type="color" class="accent-picker-input" id="live-color-picker" value="#888888">
-          </div>
-        </div>
-      </div>
-      <div>
-        <label class="field-label">Anthropic API key</label>
-        <div style="display:flex;gap:8px">
-          <input class="field-input" type="password" id="app-settings-apikey" placeholder="sk-ant-api03-…" autocomplete="off" style="font-family:monospace;font-size:12px;flex:1">
-          <button class="btn btn-secondary btn-sm" id="btn-show-apikey">Show</button>
-        </div>
-        <p class="field-hint">Used for AI Review. Stored locally only.</p>
-      </div>
-      <div>
-        <label class="field-label">iA Writer token</label>
-        <p class="field-hint" style="margin-bottom:8px">Paste into iA Writer → Settings → Micropub to publish directly.</p>
-        <div style="display:flex;gap:8px">
-          <input class="field-input" type="text" id="micropub-token-display" readonly style="font-family:monospace;font-size:12px;flex:1;color:var(--color-cream-text-muted)" placeholder="Loading…">
-          <button class="btn btn-secondary btn-sm" id="btn-copy-token">Copy</button>
-        </div>
-      </div>
-      <div>
-        <div class="settings-action-row">
-          <div class="settings-action-info">
-            <span class="settings-action-label">Rebuild site</span>
-            <span class="settings-action-desc">Republish all posts with current author &amp; accent</span>
-          </div>
-          <button class="btn btn-secondary btn-sm" id="btn-rebuild-site">Rebuild</button>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger" id="btn-app-logout" style="margin-right:auto">Sign out</button>
-      <button class="btn btn-secondary" id="app-settings-cancel">Cancel</button>
-      <button class="btn btn-primary" id="app-settings-save">Save</button>
     </div>
   </div>
 </div>

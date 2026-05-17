@@ -40,7 +40,6 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
       navigate(a.getAttribute('href'));
     });
   });
-  document.getElementById('mtab-settings')?.addEventListener('click', () => openAppSettingsModal());
 
   // Topbar breadcrumb interception (href is updated dynamically by openEditor)
   document.getElementById('topbar-breadcrumb')?.addEventListener('click', e => {
@@ -91,11 +90,10 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
   // Rail buttons
   document.getElementById('rail-author').addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
-  document.getElementById('rail-settings').addEventListener('click', e => { e.preventDefault(); openAppSettingsModal(); });
 
   // Mobile icon buttons (post list header, visible when rail is hidden)
   document.getElementById('mobile-author-btn')?.addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
-  document.getElementById('mobile-settings-btn')?.addEventListener('click', e => { e.preventDefault(); openAppSettingsModal(); });
+  document.getElementById('mobile-settings-btn')?.addEventListener('click', e => { e.preventDefault(); navigate('settings'); });
 
   // Author modal
   document.getElementById('author-close').addEventListener('click', closeAuthorModal);
@@ -112,11 +110,8 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     });
   });
 
-  // App settings modal
-  document.getElementById('app-settings-close').addEventListener('click', closeAppSettingsModal);
-  document.getElementById('app-settings-cancel').addEventListener('click', closeAppSettingsModal);
+  // Settings page
   document.getElementById('app-settings-save').addEventListener('click', saveAppSettings);
-  document.getElementById('app-settings-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAppSettingsModal(); });
   document.getElementById('btn-app-logout').addEventListener('click', logout);
   document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
   document.getElementById('btn-show-apikey').addEventListener('click', () => {
@@ -300,6 +295,7 @@ function _route(hash) {
   const pagesMatch = hash === 'pages';
   const snippetsMatch = hash === 'snippets';
   const helpMatch = hash === 'help';
+  const settingsMatch = hash === 'settings';
 
   const tabbar = document.getElementById('mobile-tabbar');
   if (editPageMatch) {
@@ -329,6 +325,11 @@ function _route(hash) {
     _setRailActive('help');
     closeEditor();
     _showView('help');
+  } else if (settingsMatch) {
+    _setRailActive('settings');
+    closeEditor();
+    _showView('settings');
+    openSettingsView();
   } else {
     _setRailActive('list');
     closeEditor();
@@ -357,21 +358,25 @@ function _showView(view) {
   const mediaEl = document.getElementById('media-view');
   const snippetsEl = document.getElementById('view-snippets');
   const helpEl = document.getElementById('view-help');
+  const settingsEl = document.getElementById('view-settings');
   const showList = view === 'list';
   const showPages = view === 'pages';
   const showMedia = view === 'media';
   const showSnippets = view === 'snippets';
   const showHelp = view === 'help';
+  const showSettings = view === 'settings';
   listEl.style.display = showList ? '' : 'none';
   if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
   mediaEl.style.display = showMedia ? '' : 'none';
   if (snippetsEl) snippetsEl.style.display = showSnippets ? '' : 'none';
   if (helpEl) helpEl.style.display = showHelp ? '' : 'none';
+  if (settingsEl) settingsEl.style.display = showSettings ? '' : 'none';
   if (showList) _animateIn(listEl);
   if (showPages && pagesEl) _animateIn(pagesEl);
   if (showMedia) _animateIn(mediaEl);
   if (showSnippets && snippetsEl) _animateIn(snippetsEl);
   if (showHelp && helpEl) _animateIn(helpEl);
+  if (showSettings && settingsEl) _animateIn(settingsEl);
   // view-editor visibility managed by openEditor / closeEditor
 
   // Mobile tab bar: show/hide and update active tab
@@ -755,40 +760,30 @@ async function logout() {
   }
 }
 
-// ── App settings modal ────────────────────────────────────────────────────────
+// ── Settings page ─────────────────────────────────────────────────────────────
 
-function openAppSettingsModal() {
+function openSettingsView() {
   const savedKey = localStorage.getItem('signal-apikey') || '';
   document.getElementById('app-settings-apikey').value = savedKey;
   document.getElementById('app-settings-apikey').type = 'password';
   document.getElementById('btn-show-apikey').textContent = 'Show';
 
-  // Fetch both accents from R2 in one call
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
     _markActiveSwatch('signal-swatch-row', d.signalAccent || '');
     _markActiveSwatch('live-swatch-row', d.accent || '');
   }).catch(() => {});
 
-  // Fetch iA Writer token
   const tokenEl = document.getElementById('micropub-token-display');
   tokenEl.value = '';
   fetch('/api/micropub-token').then(r => r.ok ? r.json() : {}).then(d => {
     tokenEl.value = d.token || '';
   }).catch(() => {});
-
-  document.getElementById('app-settings-modal').style.display = 'flex';
-}
-
-function closeAppSettingsModal() {
-  document.getElementById('app-settings-modal').style.display = 'none';
 }
 
 async function saveAppSettings() {
   const apiKey = document.getElementById('app-settings-apikey').value.trim();
   if (apiKey) localStorage.setItem('signal-apikey', apiKey);
   else localStorage.removeItem('signal-apikey');
-
-  closeAppSettingsModal();
   showToast('Settings saved', 'success');
 }
 

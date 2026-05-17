@@ -1186,3 +1186,43 @@
   .kb-btn:active                  { transform: none; }
   .btn-publish.just-published     { animation: none; }
 }
+
+/* ── Settings page ─────────────────────────────────────────────────────────── */
+
+.settings-page-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 40px;
+}
+
+.settings-page-section {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--color-cream-border);
+}
+
+.settings-page-section:last-child {
+  border-bottom: none;
+}
+
+.settings-page-section-title {
+  font-size: 11px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-cream-text-muted);
+  margin-bottom: 16px;
+}
+
+.settings-page-field {
+  margin-bottom: 20px;
+}
+
+.settings-page-field:last-child {
+  margin-bottom: 0;
+}
+
+.settings-page-section--account {
+  padding-top: 20px;
+}
