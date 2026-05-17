@@ -289,11 +289,12 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
     ${buildNav(menuPages, '/posts/')}
   </ul>
 </nav>
+<article class="h-entry">
 <header class="post-masthead">
   <div class="post-masthead-inner">
-    <h1 class="post-masthead-title">${esc(title)}</h1>
+    <h1 class="post-masthead-title p-name">${esc(title)}</h1>
     <div class="post-masthead-meta">
-      <time class="post-masthead-date" datetime="${esc(date)}">${fmtDate(date)}</time>
+      <time class="post-masthead-date dt-published" datetime="${esc(date)}">${fmtDate(date)}</time>
       <span class="post-masthead-readtime">${readTime} min read</span>
     </div>
   </div>
@@ -301,7 +302,7 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
 <section class="content-section">
   <div class="post-layout">
     <div>
-      <div class="post-content">${contentHtml}</div>
+      <div class="post-content e-content">${contentHtml}</div>
       <nav class="post-prevnext" aria-label="Post navigation">
         ${prevPost ? `<a href="/posts/${esc(prevPost.slug)}/" class="prevnext-item prevnext-prev">
           <span class="prevnext-dir">← Previous</span>
@@ -331,6 +332,8 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
     </aside>
   </div>
 </section>
+<a href="${esc(postUrl)}" class="u-url" hidden></a>
+</article>
 <footer class="footer">
   <div class="footer-left">
     <a href="/" class="footer-logo">JRBNZ</a>
@@ -999,7 +1002,7 @@ async function handleGenerateExcerpt(env, slug, request) {
   const apiKey = env.ANTHROPIC_API_KEY || (request.headers.get('x-api-key') || '');
   if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
-  const prompt = `Write a 1–2 sentence plain-text excerpt for the following blog post. Maximum 280 characters total. No quotes, no commentary, just the summary itself.
+  const prompt = `Write a 1–2 sentence plain-text excerpt for the following blog post, written in first person from the author's perspective (use "I", "my", "we" etc.). Maximum 280 characters total. No quotes, no commentary, just the excerpt itself.
 
 Title: ${post.title}
 
