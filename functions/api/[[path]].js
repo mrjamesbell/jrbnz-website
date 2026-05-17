@@ -153,11 +153,22 @@ function extractFirstImage(body) {
   return md ? md[1] : null;
 }
 
-function buildPostMeta({ title, postUrl, metaDesc, ogImage }) {
+function buildPostMeta({ title, postUrl, metaDesc, ogImage, date, authorName }) {
   const t = esc(title);
   const d = esc(metaDesc || '');
   const i = esc(ogImage);
   const u = esc(postUrl);
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    url: postUrl,
+    image: ogImage,
+    author: { '@type': 'Person', name: authorName || 'James Bell', url: SITE_URL },
+    publisher: { '@type': 'Person', name: authorName || 'James Bell', url: SITE_URL },
+  };
+  if (metaDesc) jsonLd.description = metaDesc;
+  if (date) { jsonLd.datePublished = date.slice(0, 10); jsonLd.dateModified = date.slice(0, 10); }
   return [
     d ? `<meta name="description" content="${d}">` : '',
     `<link rel="canonical" href="${u}">`,
@@ -171,6 +182,7 @@ function buildPostMeta({ title, postUrl, metaDesc, ogImage }) {
     `<meta name="twitter:title" content="${t}">`,
     d ? `<meta name="twitter:description" content="${d}">` : '',
     `<meta name="twitter:image" content="${i}">`,
+    `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`,
   ].filter(Boolean).join('\n');
 }
 
@@ -258,7 +270,7 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
   const authorBlock = buildAuthorCard(author);
   const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
   const postUrl = `${SITE_URL}/posts/${slug}/`;
-  const extraHead = buildPostMeta({ title, postUrl, metaDesc: excerpt || '', ogImage });
+  const extraHead = buildPostMeta({ title, postUrl, metaDesc: excerpt || '', ogImage, date, authorName: author?.name });
   const readTime = calcReadingTime(wordCount);
 
   // Prev / next
@@ -269,14 +281,6 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
   const prevPost = pidx > 0 ? published[pidx - 1] : null;
   const nextPost = pidx < published.length - 1 ? published[pidx + 1] : null;
 
-  // Related posts (by tag overlap, then recency)
-  const tagSet = new Set(tags || []);
-  const related = tagSet.size ? (allPosts || [])
-    .filter(p => p.status === 'published' && p.slug !== slug)
-    .map(p => ({ ...p, _score: (p.tags || []).filter(t => tagSet.has(t)).length }))
-    .filter(p => p._score > 0)
-    .sort((a, b) => b._score - a._score || new Date(b.date) - new Date(a.date))
-    .slice(0, 3) : [];
 
   return `${SITE_HEAD(title, accent, snippetCss, extraHead)}
 <nav class="site-nav">
@@ -324,12 +328,6 @@ function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, co
           ${sidebarTags}
         </div>
       </div>` : ''}
-      ${related.length ? `<div class="sidebar-block">
-        <div class="sidebar-label">Related</div>
-        <ul class="related-list">
-          ${related.map(r => `<li><a href="/posts/${esc(r.slug)}/">${esc(r.title)}</a></li>`).join('\n          ')}
-        </ul>
-      </div>` : ''}
     </aside>
   </div>
 </section>
@@ -358,7 +356,6 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss) {
     <time>${fmtDateShort(p.date)}</time>
     <div>
       <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a>
-      ${p.excerpt ? `<p class="post-item-excerpt">${esc(p.excerpt)}</p>` : ''}
       <div class="post-item-meta">
         ${tagsText ? `<span class="post-item-tags">${tagsText}</span>` : ''}
         <span class="post-item-readtime">${readTime} min read</span>
