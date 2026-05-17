@@ -1,6 +1,9 @@
 import { mdEsc, mdInline, mdToHtml } from '../lib/markdown.js';
 import { loadSnippetCss } from '../lib/snippets.js';
 
+const SITE_URL = 'https://jrbnz.com';
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 async function getMicropubToken(password) {
@@ -120,7 +123,7 @@ function fmtDateShort(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
 
-const SITE_HEAD = (title, accent, snippetCss) => `<!DOCTYPE html>
+const SITE_HEAD = (title, accent, snippetCss, extraHead = '') => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -135,8 +138,37 @@ const SITE_HEAD = (title, accent, snippetCss) => `<!DOCTYPE html>
 <link rel="micropub" href="/api/micropub">
 ${accent ? '<style>:root{--accent-color:' + accent.replace(/<\/style>/gi, '') + ';--accent-fg:' + siteAccentFg(accent) + '}</style>' : ''}
 ${snippetCss ? '<style>' + snippetCss + '</style>' : ''}
+${extraHead}
 </head>
 <body>`;
+
+function extractFirstImage(body) {
+  const signal = (body || '').match(/<!--\s*signal:image\s+src="([^"]+)"/);
+  if (signal) return signal[1];
+  const md = (body || '').match(/!\[[^\]]*\]\(([^)]+)\)/);
+  return md ? md[1] : null;
+}
+
+function buildPostMeta({ title, postUrl, metaDesc, ogImage }) {
+  const t = esc(title);
+  const d = esc(metaDesc || '');
+  const i = esc(ogImage);
+  const u = esc(postUrl);
+  return [
+    d ? `<meta name="description" content="${d}">` : '',
+    `<link rel="canonical" href="${u}">`,
+    `<meta property="og:title" content="${t}">`,
+    d ? `<meta property="og:description" content="${d}">` : '',
+    `<meta property="og:image" content="${i}">`,
+    `<meta property="og:url" content="${u}">`,
+    `<meta property="og:type" content="article">`,
+    `<meta property="og:site_name" content="James Bell">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:title" content="${t}">`,
+    d ? `<meta name="twitter:description" content="${d}">` : '',
+    `<meta name="twitter:image" content="${i}">`,
+  ].filter(Boolean).join('\n');
+}
 
 
 function buildAuthorCard(author) {
@@ -216,11 +248,14 @@ function buildFooterRight(menuPages) {
   </div>`;
 }
 
-function buildPostHtml({ title, date, tags, contentHtml, author, accent, menuPages, snippetCss }) {
+function buildPostHtml({ title, slug, date, tags, contentHtml, body, excerpt, coverImage, author, accent, menuPages, snippetCss, allPosts }) {
   const sidebarTags = (tags || []).map(t => `<a href="/posts/?tag=${esc(t)}" class="sidebar-tag">#${esc(t)}</a>`).join('\n          ');
   const year = new Date().getFullYear();
   const authorBlock = buildAuthorCard(author);
-  return `${SITE_HEAD(title, accent, snippetCss)}
+  const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
+  const postUrl = `${SITE_URL}/posts/${slug}/`;
+  const extraHead = buildPostMeta({ title, postUrl, metaDesc: excerpt || '', ogImage });
+  return `${SITE_HEAD(title, accent, snippetCss, extraHead)}
 <nav class="site-nav">
   <a href="/" class="nav-logo">JRBNZ</a>
   <ul class="nav-links">
@@ -451,7 +486,7 @@ async function rebuildPostHtml(env, slug, posts) {
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
   const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
-  const html = buildPostHtml({ ...post, contentHtml, author, accent, menuPages, snippetCss });
+  const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -666,7 +701,7 @@ async function handleRebuildSite(env) {
     ...publishedPosts.map(async post => {
       const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPostHtml({ ...post, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss });
+      const html = buildPostHtml({ ...post, body, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss, allPosts: posts });
       await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
     ...publishedPages.map(async page => {
@@ -1554,7 +1589,7 @@ async function handlePublishPage(env, slug) {
       ...publishedPosts.map(async post => {
         const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
         const postBody = postObj ? await postObj.text() : '';
-        const postHtml = buildPostHtml({ ...post, contentHtml: mdToHtml(postBody), author, accent, menuPages, snippetCss });
+        const postHtml = buildPostHtml({ ...post, body: postBody, contentHtml: mdToHtml(postBody), author, accent, menuPages, snippetCss, allPosts: posts });
         await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
       }),
       ...otherPages.map(async page => {

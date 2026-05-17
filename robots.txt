@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /signal/
+Disallow: /api/
+
+Sitemap: https://jrbnz.com/sitemap.xml
