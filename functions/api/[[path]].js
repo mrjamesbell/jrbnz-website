@@ -8,7 +8,7 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const SITE_THEME = 'dark'; // change to 'cinematic' to switch themes
+const SITE_THEME = 'cinematic'; // change to 'dark' to switch themes
 
 const THEMES = { dark: darkTheme, cinematic: cinematicTheme };
 
@@ -150,10 +150,15 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, cov
   const prevPost = pidx > 0 ? published[pidx - 1] : null;
   const nextPost = pidx < published.length - 1 ? published[pidx + 1] : null;
 
+  const recentPosts = (allPosts || [])
+    .filter(p => p.status === 'published' && p.slug !== slug)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 3);
+
   return {
     title, slug, date, dateFormatted, tags, contentHtml, author, accent,
     menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
-    authorCard, year, theme: SITE_THEME,
+    authorCard, year, theme: SITE_THEME, coverImage, recentPosts,
   };
 }
 
