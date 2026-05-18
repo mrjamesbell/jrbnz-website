@@ -100,10 +100,10 @@ body {
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-cream-text-ghost);
+  color: var(--color-dark-text-primary);
   text-align: center;
   padding: 6px 0 2px;
-  opacity: 0.45;
+  opacity: 0.6;
 }
 
 @keyframes pip-breathe {
