@@ -47,7 +47,6 @@
     background: rgba(9, 11, 13, 0.88);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--color-border);
     padding: 0 var(--gutter);
     display: flex;
     align-items: center;
@@ -230,8 +229,6 @@
 
 /* ── Author box — inline below article ────────────────────────────────────── */
 [data-theme="cinematic"] .author-box {
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
     padding: 40px clamp(24px, 5vw, 48px);
     background: var(--color-bg);
 }
@@ -320,7 +317,6 @@
     margin-top: var(--nav-h);
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
-    border-bottom: 1px solid var(--color-border);
 }
 
 [data-theme="cinematic"] .home-intro {
