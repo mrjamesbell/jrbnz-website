@@ -355,7 +355,6 @@ ${buildSiteNav(menuPages, '/posts/')}
   <div class="article-col article-open article-section">
     <div class="post-content e-content">${contentHtml}</div>
   </div>
-  ${authorBox}
 </div>
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>

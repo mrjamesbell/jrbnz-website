@@ -1,0 +1,7 @@
+{
+  "files": ["test/jrbnz_cinematic_essay_html_mockup.html"],
+  "exclude": ["old/**", ".claude/**"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

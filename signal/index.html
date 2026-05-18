@@ -371,26 +371,54 @@
             <table class="help-table">
               <tr><td><code># Heading 1</code></td><td>Large heading</td></tr>
               <tr><td><code>## Heading 2</code></td><td>Section heading</td></tr>
+              <tr><td><code>### Heading 3</code></td><td>Sub-heading</td></tr>
               <tr><td><code>**bold**</code></td><td><strong>bold</strong></td></tr>
               <tr><td><code>*italic*</code></td><td><em>italic</em></td></tr>
+              <tr><td><code>`code`</code></td><td>Inline code</td></tr>
               <tr><td><code>[link](https://…)</code></td><td>Hyperlink</td></tr>
-              <tr><td><code>![alt](https://…)</code></td><td>Image</td></tr>
+              <tr><td><code>![alt](https://…)</code></td><td>Inline image</td></tr>
               <tr><td><code>- item</code></td><td>Bullet list</td></tr>
               <tr><td><code>1. item</code></td><td>Numbered list</td></tr>
               <tr><td><code>---</code></td><td>Horizontal rule</td></tr>
+              <tr><td><code>&gt; text</code></td><td>Pull quote</td></tr>
             </table>
           </div>
 
           <div class="help-section">
+            <h2 class="help-heading">Pull quotes</h2>
+            <p>Start a line with <code>&gt;</code> to create a pull quote. In the cinematic theme these render as a gold left rule at 60% column width — good for setting a key sentence apart from the surrounding prose.</p>
+            <pre class="help-code">&gt; People often talk about carrying secrets to the grave.</pre>
+            <p>You can use multiple lines:</p>
+            <pre class="help-code">&gt; First line of the quote.
+&gt; Second line continues here.</pre>
+            <p>Pull quotes work best for one or two sentences. For longer material, use a section heading instead.</p>
+          </div>
+
+          <div class="help-section">
             <h2 class="help-heading">Inserting images</h2>
-            <p>Use the <strong>image button</strong> in the editor toolbar. You can upload a new image or pick one from the media library. Layout options: full-width, left float, right float, centred.</p>
-            <p>You can also paste a URL directly into the image block dialog.</p>
+            <p>Use the <strong>image button</strong> in the editor toolbar. You can upload a new image or pick one from the media library. Layout options:</p>
+            <ul class="help-list">
+              <li><strong>Full width</strong> — spans the reading column</li>
+              <li><strong>Left float</strong> — image floats left, text wraps around it</li>
+              <li><strong>Right float</strong> — image floats right, text wraps around it</li>
+              <li><strong>Centred</strong> — centred at a reduced width</li>
+            </ul>
+            <p>You can also set a percentage width (e.g. 50%) to reduce the image size. The cover/header image for a post is set in the post settings panel — use a landscape image at least 1600&times;900px.</p>
           </div>
 
           <div class="help-section">
             <h2 class="help-heading">Embedding YouTube</h2>
             <p>Paste a YouTube URL on its own line — it will be converted to a full embed automatically. Or use the toolbar button to set width and alignment.</p>
             <pre class="help-code">https://www.youtube.com/watch?v=dQw4w9WgXcQ</pre>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Code blocks</h2>
+            <p>Wrap code in triple backticks. Optionally add a language name for syntax highlighting.</p>
+            <pre class="help-code">```javascript
+const x = 1;
+```</pre>
+            <p>For short inline snippets, use single backticks: <code>`like this`</code>.</p>
           </div>
 
           <div class="help-section">
