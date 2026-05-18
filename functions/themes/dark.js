@@ -148,5 +148,6 @@ export function buildPhotos(data) {
         <button id="next-btn" class="pagination-btn" disabled>Next →</button>
     </nav>
 </section>
+<script src="/photos/scripts/gallery.js"></script>
 ${buildFooter(menuPages, year)}`;
 }

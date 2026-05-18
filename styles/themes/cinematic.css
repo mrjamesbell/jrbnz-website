@@ -261,6 +261,178 @@
     margin: 0;
 }
 
+/* ── CMS page masthead ────────────────────────────────────────────────────── */
+[data-theme="cinematic"] .ci-page-masthead {
+    padding: calc(var(--nav-h) + 64px) clamp(32px, 8vw, 120px) 56px;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .ci-page-title {
+    font-family: var(--font-body);
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    font-weight: 400;
+    color: var(--color-text);
+}
+
+/* ── Homepage ─────────────────────────────────────────────────────────────── */
+[data-theme="cinematic"] .home-hero {
+    min-height: 92vh;
+    margin-top: var(--nav-h);
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .home-intro {
+    padding: clamp(52px, 8vw, 110px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    background: var(--color-bg);
+}
+
+[data-theme="cinematic"] .home-intro-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}
+
+[data-theme="cinematic"] .home-intro-name {
+    font-family: var(--font-body);
+    font-size: clamp(58px, 8vw, 124px);
+    line-height: 0.88;
+    letter-spacing: -0.065em;
+    font-weight: 400;
+    color: var(--color-text);
+}
+
+[data-theme="cinematic"] .home-intro-bio {
+    max-width: 44ch;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.65;
+}
+
+[data-theme="cinematic"] .home-feature {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface);
+}
+
+[data-theme="cinematic"] .home-feature img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) brightness(0.62) contrast(1.16);
+    display: block;
+}
+
+[data-theme="cinematic"] .home-feature-empty {
+    background: var(--color-surface);
+}
+
+[data-theme="cinematic"] .feature-card {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(8, 9, 10, 0.78);
+    border: 1px solid var(--color-border);
+    padding: 24px 24px 20px;
+    backdrop-filter: blur(16px);
+}
+
+[data-theme="cinematic"] .feature-card .post-kicker { color: var(--color-accent); margin-bottom: 10px; }
+
+[data-theme="cinematic"] .feature-card h2 {
+    font-family: var(--font-body);
+    font-size: clamp(20px, 2.8vw, 34px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-weight: 400;
+    color: var(--color-text);
+    margin-bottom: 10px;
+}
+
+[data-theme="cinematic"] .feature-card h2 a { color: inherit; border-bottom: none; transition: color 0.15s; }
+[data-theme="cinematic"] .feature-card h2 a:hover { color: var(--color-accent); }
+
+[data-theme="cinematic"] .feature-card p {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin-bottom: 14px;
+}
+
+/* Three-up blocks */
+[data-theme="cinematic"] .home-blocks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .home-block {
+    min-height: 280px;
+    padding: 42px;
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-bottom: none;
+    transition: background 0.2s;
+}
+
+[data-theme="cinematic"] .home-block:last-child { border-right: none; }
+[data-theme="cinematic"] .home-block:hover { background: var(--color-surface); }
+
+[data-theme="cinematic"] .home-block-invert {
+    background: #f1eadf;
+    color: #2a2420;
+}
+
+[data-theme="cinematic"] .home-block-invert:hover { background: #e2d8c8; }
+
+[data-theme="cinematic"] .home-block-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 12px;
+}
+
+[data-theme="cinematic"] .home-block-invert .home-block-kicker { color: rgba(0,0,0,0.45); }
+
+[data-theme="cinematic"] .home-block-title {
+    font-family: var(--font-body);
+    font-size: clamp(20px, 2.5vw, 30px);
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    font-weight: 400;
+    color: inherit;
+}
+
+[data-theme="cinematic"] .home-block-link {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.42;
+}
+
+[data-theme="cinematic"] .home-essay-strip {
+    background: #08090a;
+}
+
 /* ── Post index — featured essay ─────────────────────────────────────────── */
 [data-theme="cinematic"] .ci-featured {
     min-height: 72vh;
@@ -468,6 +640,11 @@
     [data-theme="cinematic"] .essay-strip { grid-template-columns: 1fr 1fr; }
     [data-theme="cinematic"] .cinematic-footer { grid-template-columns: 1fr; padding: 40px var(--gutter); }
     [data-theme="cinematic"] .cinematic-footer-nav { justify-content: flex-start; }
+    [data-theme="cinematic"] .home-hero { grid-template-columns: 1fr; }
+    [data-theme="cinematic"] .home-feature { min-height: 60vw; }
+    [data-theme="cinematic"] .home-blocks { grid-template-columns: 1fr; }
+    [data-theme="cinematic"] .home-block { min-height: auto; border-right: none; border-bottom: 1px solid var(--color-border); }
+    [data-theme="cinematic"] .home-block:last-child { border-bottom: none; }
 }
 
 @media (max-width: 560px) {

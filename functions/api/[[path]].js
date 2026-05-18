@@ -210,6 +210,16 @@ function buildPhotosHtml(menuPages, accent) {
   });
 }
 
+function buildHomepageHtml(posts, author, accent, menuPages, snippetCss) {
+  const recentPosts = (posts || [])
+    .filter(p => p.status === 'published')
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
+  return themeRenderer(SITE_THEME).buildHomepage?.({
+    author, recentPosts, menuPages, accent, snippetCss, theme: SITE_THEME,
+  }) ?? '';
+}
+
 // ── Index helpers ─────────────────────────────────────────────────────────────
 
 async function getIndex(env) {
@@ -223,9 +233,13 @@ async function saveIndex(env, posts) {
 }
 
 async function rebuildIndexHtml(env, posts) {
-  const { accent, menuPages, snippetCss } = await loadSiteContext(env);
-  const html = buildIndexHtml(posts, accent, menuPages, snippetCss);
-  await env.BLOG.put('posts/index.html', html, { httpMetadata: { contentType: 'text/html' } });
+  const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
+  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss);
+  await Promise.all([
+    env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
+    ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
+  ]);
 }
 
 async function rebuildPostHtml(env, slug, posts) {
@@ -461,13 +475,15 @@ async function handleRebuildSite(env) {
       await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
   ]);
-  const [indexHtml, photosHtml] = [
+  const [indexHtml, photosHtml, homepageHtml] = [
     buildIndexHtml(posts, accent, menuPages, snippetCss),
     buildPhotosHtml(menuPages, accent),
+    buildHomepageHtml(posts, author, accent, menuPages, snippetCss),
   ];
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
     env.BLOG.put('pages/photos/index.html', photosHtml, { httpMetadata: { contentType: 'text/html' } }),
+    ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
   ]);
   return json({ rebuilt: publishedPosts.length + publishedPages.length });
 }

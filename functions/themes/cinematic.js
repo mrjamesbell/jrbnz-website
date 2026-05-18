@@ -37,6 +37,119 @@ function buildCinematicFooter(menuPages) {
 </footer>`;
 }
 
+export function buildPage(data) {
+  const { title, slug, contentHtml, menuPages, accent, snippetCss, year, theme } = data;
+  return `${buildHead({ title, theme, accent, snippetCss })}
+${buildSiteNav(menuPages, `/${slug}/`)}
+<div class="ci-page-masthead">
+  <h1 class="ci-page-title">${esc(title)}</h1>
+</div>
+<div class="surface-invert">
+  <div class="article-col article-open article-section">
+    <div class="post-content page-content">${contentHtml}</div>
+  </div>
+</div>
+${buildCinematicFooter(menuPages)}
+</body>
+</html>`;
+}
+
+export function buildHomepage(data) {
+  const { author, recentPosts, menuPages, accent, snippetCss, theme } = data;
+  const featured = (recentPosts || [])[0];
+  const stripPosts = (recentPosts || []).slice(1, 5);
+
+  const featuredCard = featured ? `
+<div class="home-feature">
+  ${featured.coverImage ? `<img src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center">` : ''}
+  <div class="feature-card">
+    <p class="post-kicker">${featured.tags?.[0] ? `${esc(featured.tags[0])} · ` : ''}${esc(_fmtDate(featured.date))}</p>
+    <h2><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
+    ${featured.excerpt ? `<p>${esc(featured.excerpt)}</p>` : ''}
+    <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
+  </div>
+</div>` : '<div class="home-feature home-feature-empty"></div>';
+
+  const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published' && p.slug !== 'now');
+  const thirdPage = cmsPages[0];
+  const thirdBlock = thirdPage
+    ? `<a class="home-block" href="${esc(thirdPage.nav_url || `/${thirdPage.slug}/`)}">
+    <div>
+      <p class="home-block-kicker">${esc(thirdPage.title)}</p>
+      <h2 class="home-block-title">${esc(thirdPage.title)}</h2>
+    </div>
+    <span class="home-block-link">View ${esc(thirdPage.title.toLowerCase())} →</span>
+  </a>`
+    : '';
+
+  const essayCards = stripPosts.map(p => {
+    const tag = (p.tags || [])[0] || '';
+    const meta = [tag, _fmtDate(p.date)].filter(Boolean).join(' · ');
+    return `<a href="/posts/${esc(p.slug)}/" class="essay-card">
+      ${p.coverImage
+        ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
+        : '<div class="essay-card-no-img"></div>'}
+      <p class="essay-card-title">${esc(p.title)}</p>
+      <p class="essay-card-meta">${esc(meta)}</p>
+    </a>`;
+  }).join('');
+
+  const essayStrip = recentPosts && recentPosts.length > 1 ? `
+<section class="more-essays home-essay-strip">
+  <p class="more-essays-label">Recently</p>
+  <div class="essay-strip">
+    ${essayCards}
+    <a href="/posts/" class="essay-card">
+      <div class="essay-card-no-img"></div>
+      <p class="essay-card-title">All essays →</p>
+      <p class="essay-card-meta">Archive</p>
+    </a>
+  </div>
+</section>` : '';
+
+  const extraHead = `<meta name="description" content="${esc(author?.bio || 'Writing about memory, theatre, technology and life in between.')}">
+<link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
+<link rel="authorization_endpoint" href="https://jrbnz.com/api/indieauth/auth">
+<link rel="token_endpoint" href="https://jrbnz.com/api/indieauth/token">
+<link rel="micropub" href="https://jrbnz.com/api/micropub">
+<link rel="me" href="https://github.com/mrjamesbell">`;
+
+  return `${buildHead({ title: 'James Bell', theme, accent, snippetCss, extraHead })}
+${buildSiteNav(menuPages, '/')}
+<main class="h-card">
+  <header class="home-hero">
+    <div class="home-intro">
+      <p class="home-intro-kicker">JRBNZ &nbsp;·&nbsp; Essays, photographs, notes</p>
+      <h1 class="home-intro-name u-name">${esc(author?.name || 'James Bell')}</h1>
+      <p class="home-intro-bio u-note">${esc(author?.bio || '')}</p>
+      <a href="/posts/" class="ci-read-link">Read the essays →</a>
+    </div>
+    ${featuredCard}
+  </header>
+  <section class="home-blocks">
+    <a class="home-block" href="/posts/">
+      <div>
+        <p class="home-block-kicker">Essays</p>
+        <h2 class="home-block-title">Long-form pieces that behave more like scenes than posts.</h2>
+      </div>
+      <span class="home-block-link">Read essays →</span>
+    </a>
+    <a class="home-block home-block-invert" href="/photos/">
+      <div>
+        <p class="home-block-kicker">Photographs</p>
+        <h2 class="home-block-title">Theatre, travel, lake and the odd quiet corner.</h2>
+      </div>
+      <span class="home-block-link">View photographs →</span>
+    </a>
+    ${thirdBlock}
+  </section>
+  ${essayStrip}
+</main>
+${buildCinematicFooter(menuPages)}
+</body>
+</html>`;
+}
+
 export function buildIndex(data) {
   const { posts, tagChips, menuPages, accent, snippetCss, year, theme } = data;
   const published = posts || [];
