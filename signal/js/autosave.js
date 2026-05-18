@@ -42,12 +42,12 @@ export async function saveNow(getPayload) {
   _setSaved();
 }
 
-async function _doSave({ slug, apiBase, title, body, tags, date, excerpt, coverImage, include_in_menu, wordCount }) {
+async function _doSave({ slug, apiBase, title, body, tags, date, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, include_in_menu, wordCount }) {
   const base = apiBase || '/api/posts';
   const res = await fetch(`${base}/${slug}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, body, tags, date, excerpt, coverImage, include_in_menu, wordCount, status: 'draft' })
+    body: JSON.stringify({ title, body, tags, date, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, include_in_menu, wordCount, status: 'draft' })
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();

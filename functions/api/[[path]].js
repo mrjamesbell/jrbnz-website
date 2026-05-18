@@ -170,7 +170,7 @@ function buildPostHtml(args) {
   return themeRenderer(SITE_THEME).buildPost(prepPostData(args));
 }
 
-function buildIndexHtml(posts, accent, menuPages, snippetCss) {
+function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage) {
   const published = posts
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -196,7 +196,7 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss) {
   const year = new Date().getFullYear();
 
   return themeRenderer(SITE_THEME).buildIndex({
-    items, tagChips, menuPages, accent, snippetCss, year, theme: SITE_THEME, posts: published,
+    items, tagChips, menuPages, accent, snippetCss, year, theme: SITE_THEME, posts: published, defaultCoverImage,
   });
 }
 
@@ -214,13 +214,13 @@ function buildPhotosHtml(menuPages, accent) {
   });
 }
 
-function buildHomepageHtml(posts, author, accent, menuPages, snippetCss) {
+function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage) {
   const recentPosts = (posts || [])
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 5);
   return themeRenderer(SITE_THEME).buildHomepage?.({
-    author, recentPosts, menuPages, accent, snippetCss, theme: SITE_THEME,
+    author, recentPosts, menuPages, accent, snippetCss, theme: SITE_THEME, defaultCoverImage,
   }) ?? '';
 }
 
@@ -256,9 +256,9 @@ async function saveIndex(env, posts) {
 }
 
 async function rebuildIndexHtml(env, posts) {
-  const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
-  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage);
+  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage);
   const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
@@ -520,9 +520,9 @@ async function handleRebuildSite(env) {
     }),
   ]);
   const [indexHtml, photosHtml, homepageHtml, notesHtml] = await Promise.all([
-    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss)),
+    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage)),
     Promise.resolve(buildPhotosHtml(menuPages, accent)),
-    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss)),
+    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage)),
     buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss),
   ]);
   await Promise.all([
@@ -884,7 +884,7 @@ async function handlePublish(env, slug, request) {
 
   await saveIndex(env, posts);
   const saveOps = [
-    env.BLOG.put('posts/index.html', buildIndexHtml(posts, accent, menuPages, snippetCss), { httpMetadata: { contentType: 'text/html' } }),
+    env.BLOG.put('posts/index.html', buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage), { httpMetadata: { contentType: 'text/html' } }),
   ];
   if ((posts[idx].tags || []).includes('note')) {
     const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
@@ -1425,7 +1425,7 @@ async function handlePublishPage(env, slug) {
         await env.BLOG.put(`pages/${page.slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
       }),
     ]);
-    const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
+    const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage);
     await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
   }
 

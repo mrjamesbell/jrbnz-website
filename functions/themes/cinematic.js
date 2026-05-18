@@ -94,14 +94,14 @@ ${buildCinematicFooter(menuPages)}
 }
 
 export function buildHomepage(data) {
-  const { author, recentPosts, menuPages, accent, snippetCss, theme } = data;
+  const { author, recentPosts, menuPages, accent, snippetCss, theme, defaultCoverImage } = data;
   const essays = (recentPosts || []).filter(p => !(p.tags || []).includes('note'));
   const featured = essays[0];
   const stripPosts = essays.slice(1, 5);
 
   const homeFeatured = featured ? `
 <section class="ci-featured" id="home-featured">
-  ${featured.coverImage ? `<img class="ci-featured-img" src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
+  ${(featured.coverImage || defaultCoverImage) ? `<img class="ci-featured-img" src="${esc(featured.coverImage || defaultCoverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
   <div class="ci-featured-overlay">
     <div class="ci-featured-inner">
       <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featured.date))}</p>
@@ -192,7 +192,7 @@ ${buildCinematicFooter(menuPages)}
 }
 
 export function buildIndex(data) {
-  const { posts, tagChips, menuPages, accent, snippetCss, year, theme } = data;
+  const { posts, tagChips, menuPages, accent, snippetCss, year, theme, defaultCoverImage } = data;
   const essays = (posts || []).filter(p => !(p.tags || []).includes('note'));
   const notes  = (posts || []).filter(p =>  (p.tags || []).includes('note'));
 
@@ -201,7 +201,7 @@ export function buildIndex(data) {
 
   const featuredCard = featured ? `
 <section class="ci-featured" id="ci-featured" data-tags="${esc((featured.tags || []).join(','))}">
-  ${featured.coverImage ? `<img class="ci-featured-img" src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
+  ${(featured.coverImage || defaultCoverImage) ? `<img class="ci-featured-img" src="${esc(featured.coverImage || defaultCoverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
   <div class="ci-featured-overlay">
     <div class="ci-featured-inner">
       <p class="post-kicker">${featured.tags?.[0] ? `${esc(featured.tags[0])} · ` : ''}${esc(_fmtDate(featured.date))}</p>
@@ -215,9 +215,10 @@ export function buildIndex(data) {
   const _postCard = (p, extraClass = '') => {
     const tag = (p.tags || [])[0] || '';
     const meta = [tag, _fmtDate(p.date)].filter(Boolean).join(' · ');
+    const img = p.coverImage || defaultCoverImage;
     return `<a href="/posts/${esc(p.slug)}/" class="essay-card post-list-item${extraClass ? ' ' + extraClass : ''}" data-tags="${esc((p.tags || []).join(','))}">
-      ${p.coverImage
-        ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
+      ${img
+        ? `<img class="essay-card-img" src="${esc(img)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
         : '<div class="essay-card-no-img"></div>'}
       <p class="essay-card-title">${esc(p.title)}</p>
       <p class="essay-card-meta">${esc(meta)}</p>
