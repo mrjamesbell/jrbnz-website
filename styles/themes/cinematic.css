@@ -338,19 +338,19 @@
 
 [data-theme="cinematic"] .home-intro-name {
     font-family: var(--font-body);
-    font-size: clamp(58px, 8vw, 124px);
-    line-height: 0.88;
+    font-size: clamp(72px, 10vw, 160px);
+    line-height: 0.86;
     letter-spacing: -0.065em;
     font-weight: 400;
     color: var(--color-text);
 }
 
 [data-theme="cinematic"] .home-intro-bio {
-    max-width: 44ch;
+    max-width: 38ch;
     color: var(--color-text-muted);
     font-family: var(--font-body);
-    font-size: clamp(16px, 1.6vw, 19px);
-    line-height: 1.65;
+    font-size: clamp(16px, 1.5vw, 19px);
+    line-height: 1.7;
 }
 
 [data-theme="cinematic"] .home-feature {
@@ -386,8 +386,8 @@
 
 [data-theme="cinematic"] .feature-card h2 {
     font-family: var(--font-body);
-    font-size: clamp(20px, 2.8vw, 34px);
-    line-height: 1.05;
+    font-size: clamp(22px, 3.2vw, 44px);
+    line-height: 1.02;
     letter-spacing: -0.04em;
     font-weight: 400;
     color: var(--color-text);
@@ -413,8 +413,8 @@
 }
 
 [data-theme="cinematic"] .home-block {
-    min-height: 280px;
-    padding: 42px;
+    min-height: 360px;
+    padding: 52px 44px;
     border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
@@ -446,8 +446,8 @@
 
 [data-theme="cinematic"] .home-block-title {
     font-family: var(--font-body);
-    font-size: clamp(20px, 2.5vw, 30px);
-    line-height: 1.1;
+    font-size: clamp(24px, 3vw, 38px);
+    line-height: 1.08;
     letter-spacing: -0.04em;
     font-weight: 400;
     color: inherit;
@@ -671,6 +671,99 @@
     border-bottom: none;
 }
 
+/* ── Homepage interlude — atmospheric pull-quote moment ─────────────────── */
+[data-theme="cinematic"] .home-interlude {
+    padding: clamp(80px, 12vw, 140px) clamp(32px, 8vw, 120px);
+    background: #03040a;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .home-interlude-text {
+    font-family: var(--font-body);
+    font-size: clamp(28px, 4.5vw, 66px);
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    font-weight: 400;
+    color: var(--color-text);
+    max-width: 880px;
+    margin: 0 auto;
+}
+
+/* ── Homepage recently — sparse title-dominant list ─────────────────────── */
+[data-theme="cinematic"] .home-recent {
+    padding: 72px clamp(28px, 5vw, 72px) 88px;
+    background: var(--color-bg);
+}
+
+[data-theme="cinematic"] .home-recent-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    margin-bottom: 40px;
+}
+
+[data-theme="cinematic"] .home-recent-list {
+    list-style: none;
+    max-width: 840px;
+}
+
+[data-theme="cinematic"] .home-recent-row {
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .home-recent-row:first-child {
+    border-top: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .home-recent-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 28px 0;
+    color: var(--color-text);
+    border-bottom: none;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .home-recent-item:hover {
+    color: var(--color-accent);
+    border-bottom: none;
+}
+
+[data-theme="cinematic"] .home-recent-title {
+    font-family: var(--font-body);
+    font-size: clamp(18px, 2.2vw, 28px);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    font-weight: 400;
+    flex: 1;
+}
+
+[data-theme="cinematic"] .home-recent-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 4px;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .home-recent-item:hover .home-recent-meta {
+    color: var(--color-accent);
+}
+
+[data-theme="cinematic"] .home-recent-all .home-recent-title {
+    font-style: italic;
+    color: var(--color-text-muted);
+}
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 960px) {
     [data-theme="cinematic"] .site-nav .nav-links { gap: 20px; }
@@ -682,10 +775,14 @@
     [data-theme="cinematic"] .home-blocks { grid-template-columns: 1fr; }
     [data-theme="cinematic"] .home-block { min-height: auto; border-right: none; border-bottom: 1px solid var(--color-border); }
     [data-theme="cinematic"] .home-block:last-child { border-bottom: none; }
+    [data-theme="cinematic"] .home-recent-title { font-size: clamp(17px, 4vw, 24px); }
 }
 
 @media (max-width: 560px) {
     [data-theme="cinematic"] .site-nav .nav-links { gap: 16px; }
     [data-theme="cinematic"] .essay-strip { grid-template-columns: 1fr; }
     [data-theme="cinematic"] .post-hero-title { letter-spacing: -0.04em; }
+    [data-theme="cinematic"] .home-recent-item { flex-direction: column; gap: 6px; padding: 22px 0; }
+    [data-theme="cinematic"] .home-recent-meta { white-space: normal; }
+    [data-theme="cinematic"] .home-interlude-text { letter-spacing: -0.03em; }
 }

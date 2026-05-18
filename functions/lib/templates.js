@@ -70,7 +70,7 @@ function _navLinks(menuPages) {
   const pageLink = p => ({ href: p.nav_url || `/${p.slug}/`, label: p.title });
   return [
     ...(now ? [pageLink(now)] : []),
-    { href: '/posts/', label: 'Blog' },
+    { href: '/posts/', label: 'Essays' },
     { href: '/photos/', label: 'Photos' },
     ...others.map(pageLink),
   ];

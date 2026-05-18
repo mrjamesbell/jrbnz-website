@@ -18,7 +18,7 @@ function _navLinks(menuPages) {
   const pageLink = p => ({ href: p.nav_url || `/${p.slug}/`, label: p.title });
   return [
     ...(now ? [pageLink(now)] : []),
-    { href: '/posts/', label: 'Blog' },
+    { href: '/posts/', label: 'Essays' },
     { href: '/photos/', label: 'Photos' },
     ...others.map(pageLink),
   ];
@@ -102,7 +102,7 @@ export function buildHomepage(data) {
 <div class="home-feature">
   ${featured.coverImage ? `<img src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center">` : ''}
   <div class="feature-card">
-    <p class="post-kicker">${featured.tags?.[0] ? `${esc(featured.tags[0])} · ` : ''}${esc(_fmtDate(featured.date))}</p>
+    <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featured.date))}</p>
     <h2><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
     ${(featured.subtitle || featured.excerpt) ? `<p>${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
     <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
@@ -121,29 +121,34 @@ export function buildHomepage(data) {
   </a>`
     : '';
 
-  const essayCards = stripPosts.map(p => {
+  const recentItems = stripPosts.map(p => {
     const tag = (p.tags || [])[0] || '';
     const meta = [tag, _fmtDate(p.date)].filter(Boolean).join(' · ');
-    return `<a href="/posts/${esc(p.slug)}/" class="essay-card">
-      ${p.coverImage
-        ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
-        : '<div class="essay-card-no-img"></div>'}
-      <p class="essay-card-title">${esc(p.title)}</p>
-      <p class="essay-card-meta">${esc(meta)}</p>
-    </a>`;
+    return `<li class="home-recent-row">
+      <a href="/posts/${esc(p.slug)}/" class="home-recent-item">
+        <span class="home-recent-title">${esc(p.title)}</span>
+        <span class="home-recent-meta">${esc(meta)}</span>
+      </a>
+    </li>`;
   }).join('');
 
-  const essayStrip = essays.length > 1 ? `
-<section class="more-essays home-essay-strip">
-  <p class="more-essays-label">Recently</p>
-  <div class="essay-strip">
-    ${essayCards}
-    <a href="/posts/" class="essay-card">
-      <div class="essay-card-no-img"></div>
-      <p class="essay-card-title">All essays →</p>
-      <p class="essay-card-meta">Archive</p>
-    </a>
-  </div>
+  const interlude = `
+<section class="home-interlude">
+  <p class="home-interlude-text">Theatre, memory, technology, photographs, and the odd quiet corner.</p>
+</section>`;
+
+  const recentSection = stripPosts.length ? `
+<section class="home-recent">
+  <p class="home-recent-label">Recently</p>
+  <ul class="home-recent-list">
+    ${recentItems}
+    <li class="home-recent-row">
+      <a href="/posts/" class="home-recent-item home-recent-all">
+        <span class="home-recent-title">All essays</span>
+        <span class="home-recent-meta">Archive →</span>
+      </a>
+    </li>
+  </ul>
 </section>` : '';
 
   const extraHead = `<meta name="description" content="${esc(author?.bio || 'Writing about memory, theatre, technology and life in between.')}">
@@ -182,7 +187,8 @@ ${buildSiteNav(menuPages, '/')}
     </a>
     ${thirdBlock}
   </section>
-  ${essayStrip}
+  ${interlude}
+  ${recentSection}
 </main>
 ${buildCinematicFooter(menuPages)}
 </body>
