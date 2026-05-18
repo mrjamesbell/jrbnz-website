@@ -2,7 +2,7 @@
 // Only exports functions where the HTML structure differs from the dark theme.
 // The dispatcher in [[path]].js falls back to dark.js for anything not exported here.
 
-import { esc, buildHead, buildSiteNav } from '../lib/templates.js';
+import { esc, buildHead, buildSiteNav, buildNavLinks } from '../lib/templates.js';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function _fmtDate(d) {
@@ -11,27 +11,13 @@ function _fmtDate(d) {
   return `${MONTHS[m-1]} ${day}, ${y}`;
 }
 
-function _navLinks(menuPages) {
-  const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published');
-  const now = cmsPages.find(p => p.slug === 'now');
-  const others = cmsPages.filter(p => p.slug !== 'now');
-  const pageLink = p => ({ href: p.nav_url || `/${p.slug}/`, label: p.title });
-  return [
-    ...(now ? [pageLink(now)] : []),
-    { href: '/posts/', label: 'Essays' },
-    { href: '/photos/', label: 'Photos' },
-    { href: '/notes/', label: 'Notes' },
-    ...others.map(pageLink),
-  ];
-}
-
 function buildCinematicFooter(menuPages) {
-  const navLinks = _navLinks(menuPages)
+  const navLinks = buildNavLinks(menuPages)
     .map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`)
     .join('\n      ');
   return `<footer class="cinematic-footer">
   <p class="cinematic-footer-quote">Writing about memory, theatre, technology and life in between.</p>
-  <nav class="cinematic-footer-nav">
+  <nav class="cinematic-footer-nav" aria-label="Footer">
     ${navLinks}
     <a href="/feed.xml">RSS</a>
   </nav>
@@ -58,7 +44,7 @@ ${buildCinematicFooter(menuPages)}
 export function buildPhotos(data) {
   const { menuPages, accent, snippetCss, year, theme } = data;
   const extraHead = '<meta name="description" content="Photography portfolio by James Bell — theatre and travel photography"><link rel="stylesheet" href="/photos/styles/gallery.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">';
-  return `${buildHead({ title: 'Photos — James Bell', theme, accent, snippetCss, extraHead })}
+  return `${buildHead({ title: 'Photos', theme, accent, snippetCss, extraHead })}
 ${buildSiteNav(menuPages, '/photos/')}
 <div class="ci-page-masthead">
   <h1 class="ci-page-title">Photos</h1>
@@ -161,7 +147,7 @@ export function buildHomepage(data) {
 <link rel="micropub" href="https://jrbnz.com/api/micropub">
 <link rel="me" href="https://github.com/mrjamesbell">`;
 
-  return `${buildHead({ title: 'James Bell', theme, accent, snippetCss, extraHead })}
+  return `${buildHead({ title: null, theme, accent, snippetCss, extraHead })}
 ${buildSiteNav(menuPages, '/')}
 <main class="h-card">
   <span class="p-name" hidden>${esc(author?.name || 'James Bell')}</span>
@@ -220,7 +206,7 @@ export function buildIndex(data) {
       ${img
         ? `<img class="essay-card-img" src="${esc(img)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
         : '<div class="essay-card-no-img"></div>'}
-      <p class="essay-card-title">${esc(p.title)}</p>
+      <h3 class="essay-card-title">${esc(p.title)}</h3>
       <p class="essay-card-meta">${esc(meta)}</p>
     </a>`;
   };
@@ -237,7 +223,7 @@ export function buildIndex(data) {
   <div class="tags-section">${tagChips}</div>
 </section>` : '';
 
-  return `${buildHead({ title: 'Essays — James Bell', theme, accent, snippetCss })}
+  return `${buildHead({ title: 'Essays', theme, accent, snippetCss })}
 ${buildSiteNav(menuPages, '/posts/')}
 <main>
   ${featuredCard}
@@ -269,7 +255,7 @@ export function buildPost(data) {
       const meta = [tag, p.date ? p.date.slice(0, 4) : ''].filter(Boolean).join(' · ');
       return `<a href="/posts/${esc(p.slug)}/" class="essay-card">
         ${p.coverImage ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">` : '<div class="essay-card-no-img"></div>'}
-        <p class="essay-card-title">${esc(p.title)}</p>
+        <h3 class="essay-card-title">${esc(p.title)}</h3>
         <p class="essay-card-meta">${esc(meta)}</p>
       </a>`;
     }).join('');
@@ -279,9 +265,9 @@ export function buildPost(data) {
   <p class="more-essays-label">More essays</p>
   <div class="essay-strip">
     ${essayCards}
-    <a href="/posts/" class="essay-card">
+    <a href="/posts/" class="essay-card essay-card--archive">
       <div class="essay-card-no-img"></div>
-      <p class="essay-card-title">Back to all essays →</p>
+      <h3 class="essay-card-title">All essays</h3>
       <p class="essay-card-meta">Archive</p>
     </a>
   </div>
@@ -336,7 +322,7 @@ ${buildCinematicFooter(menuPages)}
       ${p.coverImage
         ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
         : '<div class="essay-card-no-img"></div>'}
-      <p class="essay-card-title">${esc(p.title)}</p>
+      <h3 class="essay-card-title">${esc(p.title)}</h3>
       <p class="essay-card-meta">${esc(meta)}</p>
     </a>`;
   }).join('');
@@ -346,9 +332,9 @@ ${buildCinematicFooter(menuPages)}
   <p class="more-essays-label">More essays</p>
   <div class="essay-strip">
     ${essayCards}
-    <a href="/posts/" class="essay-card">
+    <a href="/posts/" class="essay-card essay-card--archive">
       <div class="essay-card-no-img"></div>
-      <p class="essay-card-title">Back to all essays →</p>
+      <h3 class="essay-card-title">All essays</h3>
       <p class="essay-card-meta">Archive</p>
     </a>
   </div>
@@ -395,7 +381,7 @@ export function buildNotes(data) {
 </article>`;
   }).join('');
 
-  return `${buildHead({ title: 'Notes — James Bell', theme, accent, snippetCss })}
+  return `${buildHead({ title: 'Notes', theme, accent, snippetCss })}
 ${buildSiteNav(menuPages, '/notes/')}
 <div class="ci-page-masthead">
   <h1 class="ci-page-title">Notes</h1>

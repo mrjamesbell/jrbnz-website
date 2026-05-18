@@ -72,7 +72,7 @@ ${buildFooter(menuPages, year)}
 
 export function buildIndex(data) {
   const { items, tagChips, menuPages, accent, snippetCss, year, theme } = data;
-  return `${buildHead({ title: 'Blog - James Bell', theme, accent, snippetCss })}
+  return `${buildHead({ title: 'Blog', theme, accent, snippetCss })}
 <div class="page-header">
   <div class="page-header-left">
     ${buildSiteNav(menuPages, '/posts/')}
@@ -116,7 +116,7 @@ ${buildFooter(menuPages, year)}
 
 export function buildPhotos(data) {
   const { menuPages, accent, snippetCss, year, theme } = data;
-  return `${buildHead({ title: 'Photos - James Bell', theme, accent, snippetCss,
+  return `${buildHead({ title: 'Photos', theme, accent, snippetCss,
     extraHead: '<meta name="description" content="Photography portfolio by James Bell — theatre and travel photography"><link rel="stylesheet" href="/photos/styles/gallery.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">' })}
 <div class="page-header">
   <div class="page-header-left">

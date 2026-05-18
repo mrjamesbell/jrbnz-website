@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-18T00:00:00Z",
+  "title": "Design System: James Bell",
+  "extensions": {
+    "colorMeta": {
+      "projection-black": {
+        "role": "neutral",
+        "displayName": "Projection Black",
+        "canonical": "oklch(5% 0.006 220)",
+        "tonalRamp": [
+          "oklch(3% 0.004 220)",
+          "oklch(6% 0.006 220)",
+          "oklch(9% 0.007 220)",
+          "oklch(14% 0.008 220)",
+          "oklch(22% 0.01 220)",
+          "oklch(35% 0.015 220)",
+          "oklch(50% 0.018 220)",
+          "oklch(70% 0.015 220)"
+        ]
+      },
+      "deep-void": {
+        "role": "neutral",
+        "displayName": "Deep Void",
+        "canonical": "oklch(3% 0.004 240)",
+        "tonalRamp": [
+          "oklch(2% 0.002 240)",
+          "oklch(4% 0.004 240)",
+          "oklch(7% 0.005 240)",
+          "oklch(12% 0.007 240)",
+          "oklch(20% 0.009 240)",
+          "oklch(32% 0.012 240)",
+          "oklch(48% 0.016 240)",
+          "oklch(65% 0.014 240)"
+        ]
+      },
+      "warm-gold": {
+        "role": "primary",
+        "displayName": "Warm Gold",
+        "canonical": "oklch(68% 0.08 70)",
+        "tonalRamp": [
+          "oklch(15% 0.015 70)",
+          "oklch(25% 0.03 70)",
+          "oklch(35% 0.045 70)",
+          "oklch(48% 0.06 70)",
+          "oklch(58% 0.072 70)",
+          "oklch(68% 0.08 70)",
+          "oklch(78% 0.065 70)",
+          "oklch(90% 0.03 70)"
+        ]
+      },
+      "linen": {
+        "role": "neutral",
+        "displayName": "Linen",
+        "canonical": "oklch(93% 0.02 75)",
+        "tonalRamp": [
+          "oklch(25% 0.015 75)",
+          "oklch(38% 0.02 75)",
+          "oklch(52% 0.025 75)",
+          "oklch(63% 0.026 75)",
+          "oklch(73% 0.026 75)",
+          "oklch(82% 0.024 75)",
+          "oklch(88% 0.022 75)",
+          "oklch(93% 0.02 75)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(16% 0.015 50)",
+        "tonalRamp": [
+          "oklch(8% 0.008 50)",
+          "oklch(16% 0.015 50)",
+          "oklch(25% 0.02 50)",
+          "oklch(36% 0.025 50)",
+          "oklch(50% 0.028 50)",
+          "oklch(65% 0.022 50)",
+          "oklch(80% 0.014 50)",
+          "oklch(92% 0.007 50)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Homepage nameplate only. Letters designed to collide; sub-1.0 leading is correct." },
+      "headline": { "displayName": "Headline", "purpose": "Full-viewport post hero titles. Monumental scale, meant to overwhelm." },
+      "title": { "displayName": "Title", "purpose": "Featured essay titles, compact hero headings. One step below headline." },
+      "body": { "displayName": "Body", "purpose": "All prose. Never below 17px. Line-height 1.82 is for reading, not scanning." },
+      "label": { "displayName": "Label / UI Chrome", "purpose": "Nav, kickers, timestamps, captions. Mono only. Never for prose." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "state-fast", "value": "0.15s ease", "purpose": "Nav link colour, hover colour shifts, link transitions." },
+      { "name": "state-standard", "value": "0.2s ease", "purpose": "Border colour, background fill, icon colour transitions." },
+      { "name": "image-lift", "value": "0.3s ease", "purpose": "Essay card image brightness transition on hover." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "960px" },
+      { "name": "mobile-md", "value": "768px" },
+      { "name": "mobile-sm", "value": "600px" },
+      { "name": "mobile-xs", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Tag Chip",
+      "kind": "chip",
+      "refersTo": "tag-chip",
+      "description": "Taxonomy label. The one place Warm Gold appears as a chromatic surface on hover.",
+      "html": "<a href=\"#\" class=\"ds-tag-chip\">#theatre</a>",
+      "css": ".ds-tag-chip { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: #b89b72; background: transparent; border: 1px solid rgba(184,155,114,0.32); border-radius: 3px; padding: 3px 10px; text-decoration: none; transition: background 0.2s, border-color 0.2s; } .ds-tag-chip:hover { background: rgba(184,155,114,0.14); border-color: rgba(184,155,114,0.55); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action. Used for all-essays navigation and post-nav at-rest state. Words lead, shape follows.",
+      "html": "<a href=\"#\" class=\"ds-btn-ghost\">All essays</a>",
+      "css": ".ds-btn-ghost { display: inline-block; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; color: rgba(255,255,255,0.85); background: transparent; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 6px; padding: 10px 22px; text-decoration: none; transition: border-color 0.2s, background 0.2s; } .ds-btn-ghost:hover { border-color: #b89b72; background: rgba(184,155,114,0.14); }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "description": "Fixed frosted-glass site header. 56px tall. Logo in mono, links in mono uppercase. No underlines.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-nav-logo\">JRBNZ</span><ul class=\"ds-nav-links\"><li><a href=\"#\" class=\"ds-nav-link\">Essays</a></li><li><a href=\"#\" class=\"ds-nav-link ds-nav-link--active\">Photos</a></li><li><a href=\"#\" class=\"ds-nav-link\">Now</a></li></ul></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 clamp(24px, 5vw, 60px); background: rgba(9,11,13,0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); } .ds-nav-logo { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; letter-spacing: 0.32em; color: rgba(255,255,255,0.85); text-decoration: none; } .ds-nav-links { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; } .ds-nav-link { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.52); text-decoration: none; transition: color 0.15s; } .ds-nav-link:hover, .ds-nav-link--active { color: rgba(255,255,255,0.85); }"
+    },
+    {
+      "name": "Essay Card",
+      "kind": "card",
+      "description": "Image-first. No container, no shadow, no background. Image + title + meta. The image IS the card.",
+      "html": "<a href=\"#\" class=\"ds-essay-card\"><div class=\"ds-essay-card-img-wrap\"><img class=\"ds-essay-card-img\" src=\"https://placehold.co/400x225/090b0d/b89b72?text=+\" alt=\"Essay cover\"></div><h3 class=\"ds-essay-card-title\">The Stage Is Never Empty</h3><p class=\"ds-essay-card-meta\">May 2026 &nbsp;&middot;&nbsp; Theatre</p></a>",
+      "css": ".ds-essay-card { display: block; text-decoration: none; border: none; } .ds-essay-card-img-wrap { overflow: hidden; aspect-ratio: 16/9; margin-bottom: 14px; } .ds-essay-card-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); display: block; transition: filter 0.3s; } .ds-essay-card:hover .ds-essay-card-img { filter: brightness(1); } .ds-essay-card-title { font-family: Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 400; line-height: 1.3; letter-spacing: -0.02em; color: rgba(255,255,255,0.85); margin: 0 0 5px; transition: color 0.15s; } .ds-essay-card:hover .ds-essay-card-title { color: #b89b72; } .ds-essay-card-meta { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.52); margin: 0; }"
+    },
+    {
+      "name": "Feature Card (Hero Overlay)",
+      "kind": "card",
+      "description": "Absolute-positioned over a full-bleed image. Frosted glass background separates text from photography.",
+      "html": "<div class=\"ds-feature-card\"><p class=\"ds-feature-kicker\">Essays</p><h2 class=\"ds-feature-title\">Why Theatre Must <br>Remain Dangerous</h2><p class=\"ds-feature-meta\">Read essay</p></div>",
+      "css": ".ds-feature-card { background: rgba(8,9,10,0.78); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 24px 24px 20px; border-radius: 0; } .ds-feature-kicker { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #b89b72; margin: 0 0 10px; } .ds-feature-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(22px, 3.2vw, 44px); font-weight: 400; line-height: 1.02; letter-spacing: -0.04em; color: rgba(255,255,255,0.85); margin: 0 0 10px; } .ds-feature-meta { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #b89b72; margin: 0; }"
+    },
+    {
+      "name": "Post Navigation",
+      "kind": "nav",
+      "description": "Prev / next navigation between posts. Ghost border at rest, Warm Gold on hover.",
+      "html": "<div class=\"ds-post-nav\"><a href=\"#\" class=\"ds-prevnext-item\"><span class=\"ds-prevnext-dir\">&larr; Previous</span><span class=\"ds-prevnext-title\">On the Architecture of Silence</span></a><a href=\"#\" class=\"ds-prevnext-item ds-prevnext-next\"><span class=\"ds-prevnext-dir\">Next &rarr;</span><span class=\"ds-prevnext-title\">What the Stage Knows</span></a></div>",
+      "css": ".ds-post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .ds-prevnext-item { display: flex; flex-direction: column; gap: 5px; padding: 16px 20px; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; text-decoration: none; transition: border-color 0.2s, background 0.2s; } .ds-prevnext-item:hover { border-color: rgba(184,155,114,0.4); background: rgba(184,155,114,0.14); } .ds-prevnext-next { align-items: flex-end; text-align: right; } .ds-prevnext-dir { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); line-height: 1; } .ds-prevnext-item:hover .ds-prevnext-dir { color: #b89b72; } .ds-prevnext-title { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.35; color: rgba(255,255,255,0.52); } .ds-prevnext-item:hover .ds-prevnext-title { color: #b89b72; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Southern Literary Journal",
+    "overview": "This is the design language of a serious publication from the bottom of the world — not a tech product, not a lifestyle blog, not an agency showcase. The canvas is deep cinematic black (#090b0d). Reading content surfaces on a warm linen interior (#f1eadf). Between them, text floats at precisely calibrated opacity: 85% for body, 52% for supporting roles, 35% for timestamps and labels.\n\nGeorgia carries the entire type burden. No display face, no grotesque pair. A single serif family at extreme scale (up to 160px on the home nameplate, line-height 0.86) and modest scale for body copy at 17–20px, line-height 1.82. The mono font appears only for UI chrome. The contrast between the two creates hierarchy without a third typeface.\n\nThe Warm Gold (#b89b72) is the single accent. Its rarity is the point. The colour strategy is committed: Projection Black holds the surface for the vast majority of every screen. Warm Gold speaks only when something matters.",
+    "keyCharacteristics": [
+      "Georgia only for prose and display; mono only for UI chrome and labels",
+      "Tight negative tracking at large scale (-0.065em at display), releasing toward 0 at body",
+      "Surface inversion: dark canvas transitions to warm linen for extended reading",
+      "Single accent, used sparingly — never decoratively",
+      "Square or near-square corners throughout",
+      "No shadows; depth through tonal layering and opacity steps"
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "Warm Gold is the only accent in the palette. If you find yourself reaching for a second colour, solve it with scale, weight, or opacity instead.", "section": "colors" },
+      { "name": "The Opacity Hierarchy Rule", "body": "Text on the dark canvas is always a transparency over Projection Black: 85% for primary, 52% for muted, 35% for subtle. This trio is the depth system.", "section": "colors" },
+      { "name": "The Georgia-Only Rule", "body": "Georgia is the only prose typeface. Never introduce a sans-serif for display, headings, or pull quotes.", "section": "typography" },
+      { "name": "The Scale-Down-Never Rule", "body": "Body copy minimum is 17px. Do not go smaller for captions or secondary content. Demote those to label scale in monospace instead.", "section": "typography" },
+      { "name": "The Tight-at-Large Rule", "body": "Tracking tightens as size increases. Never apply positive tracking to a serif at display or headline scale.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "No box-shadow on any component at rest. Depth comes from the tonal stack.", "section": "elevation" },
+      { "name": "The Blur-is-Functional Rule", "body": "backdrop-filter is permitted only where it solves a legibility problem caused by a live background. Decorative glass panels are prohibited.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Georgia for all headings, titles, display text, and prose.",
+      "Do tighten letter-spacing as text size increases: -0.065em at display, releasing toward 0 at body.",
+      "Do use the .surface-invert pattern for extended reading sections — dark canvas to linen interior is the system signature.",
+      "Do run body text at a minimum of 17px. The site's author prefers scale; err large.",
+      "Do keep Warm Gold appearing on no more than 10% of any given screen surface.",
+      "Do respect prefers-reduced-motion on all transitions.",
+      "Do treat image brightness as a palette decision: brightness(0.72–0.92) on the dark canvas.",
+      "Do use monospace only for UI chrome — nav, kickers, timestamps, captions. Never as a prose substitute."
+    ],
+    "donts": [
+      "Don't introduce a second typeface family. Georgia and the system mono are the complete set.",
+      "Don't add a second accent colour. Solve emphasis problems with scale, weight, or opacity.",
+      "Don't build generic dev portfolio patterns — dark card grids, hero metric blocks, icon + heading + text repetition.",
+      "Don't soften toward lifestyle blogger warmth: pastel tints, rounded card grids, Instagram-adjacent curation.",
+      "Don't introduce SaaS patterns: gradient CTAs, feature grids, sticky floating buttons, conversion-funnel copy.",
+      "Don't over-engineer motion: no scroll-jacking, no cursor effects, no parallax. Restraint is the statement.",
+      "Don't use border-left or border-right greater than 1px as a coloured stripe accent on any component.",
+      "Don't use background-clip: text with a gradient. Warm Gold is a solid colour.",
+      "Don't use box-shadow on components at rest.",
+      "Don't go below 17px for any prose or readable body content."
+    ]
+  }
+}
