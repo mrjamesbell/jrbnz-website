@@ -33,13 +33,17 @@ function buildCinematicFooter(menuPages) {
 export function buildPost(data) {
   const { title, slug, date, dateFormatted, tags, contentHtml, author, accent,
           menuPages, snippetCss, readTime, postUrl, extraHead,
-          year, theme, coverImage, recentPosts } = data;
+          year, theme, coverImage, coverImageAlt, recentPosts, excerpt } = data;
 
   const kicker = [dateFormatted, `${readTime} min read`, ...(tags || []).slice(0, 1)]
     .filter(Boolean).join(' · ');
 
   const heroImg = coverImage
-    ? `<img class="post-hero-img" src="${esc(coverImage)}" alt="" loading="eager">`
+    ? `<img class="post-hero-img" src="${esc(coverImage)}" alt="${esc(coverImageAlt || '')}" loading="eager">`
+    : '';
+
+  const heroDek = excerpt
+    ? `<p class="post-hero-dek">${esc(excerpt)}</p>`
     : '';
 
   const authorBox = author && author.name ? `
@@ -83,6 +87,7 @@ ${buildSiteNav(menuPages, '/posts/')}
   <div class="post-hero-content">
     <p class="post-kicker">${esc(kicker)}</p>
     <h1 class="post-hero-title p-name">${esc(title)}</h1>
+    ${heroDek}
   </div>
 </section>
 <div class="surface-invert">

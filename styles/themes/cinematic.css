@@ -88,7 +88,7 @@
     min-height: 100vh;
     position: relative;
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     overflow: hidden;
 }
 
@@ -96,7 +96,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.48) 40%, rgba(0,0,0,0.1) 100%);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.1) 100%);
     z-index: 1;
 }
 
@@ -112,7 +112,7 @@
 [data-theme="cinematic"] .post-hero-content {
     position: relative;
     z-index: 2;
-    padding: 72px clamp(32px, 8vw, 120px);
+    padding: calc(var(--nav-h) + 72px) clamp(32px, 8vw, 120px) 72px;
     max-width: 1000px;
 }
 
@@ -133,6 +133,16 @@
     font-weight: 400;
     color: var(--color-text);
     margin-bottom: 0;
+}
+
+[data-theme="cinematic"] .post-hero-dek {
+    margin-top: 28px;
+    font-family: var(--font-body);
+    font-size: clamp(16px, 1.6vw, 22px);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    color: var(--color-text-muted);
+    max-width: 560px;
 }
 
 /* ── Article body — reading surface ──────────────────────────────────────── */
@@ -157,7 +167,7 @@
 }
 
 /* Drop cap on first paragraph */
-[data-theme="cinematic"] .article-open p:first-child::first-letter {
+[data-theme="cinematic"] .article-open .post-content p:first-child::first-letter {
     float: left;
     font-size: 4.8em;
     line-height: 0.78;

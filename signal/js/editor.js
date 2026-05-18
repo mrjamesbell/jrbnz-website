@@ -220,6 +220,7 @@ export async function openEditor(slug, type = 'post') {
       body: '',
       excerpt: '',
       coverImage: null,
+      coverImageAlt: '',
       wordCount: 0
     };
     _isDirty = false;
@@ -255,7 +256,7 @@ export function closeEditor() {
   if (_isDirty && currentSlug && currentPost) {
     const slug = currentSlug;
     const apiBase = _getApiBase();
-    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
+    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, coverImageAlt: currentPost.coverImageAlt || '', include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
     fetch(`${apiBase}/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
   }
   cancelScheduled();
@@ -713,6 +714,7 @@ function _triggerSave() {
       date: currentPost.date,
       excerpt: currentPost.excerpt,
       coverImage: currentPost.coverImage,
+      coverImageAlt: currentPost.coverImageAlt || '',
       include_in_menu: currentPost.include_in_menu,
       nav_url: currentPost.nav_url || null,
       wordCount: currentPost.wordCount
@@ -763,6 +765,7 @@ function _takeSnapshot() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
+    coverImageAlt: currentPost.coverImageAlt || '',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
   };
@@ -776,6 +779,7 @@ function _revertChanges() {
   currentPost.date = _snapshot.date;
   currentPost.excerpt = _snapshot.excerpt;
   currentPost.coverImage = _snapshot.coverImage;
+  currentPost.coverImageAlt = _snapshot.coverImageAlt || '';
   currentPost.include_in_menu = _snapshot.include_in_menu;
   tags = [..._snapshot.tags];
 
@@ -805,6 +809,7 @@ function _revertChanges() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
+    coverImageAlt: currentPost.coverImageAlt || '',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
@@ -878,6 +883,7 @@ async function _runPublishFlow(isPage) {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
+    coverImageAlt: currentPost.coverImageAlt || '',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
@@ -1028,6 +1034,8 @@ function _openSettings(e) {
   document.getElementById('settings-date').value = currentPost.date || new Date().toISOString().slice(0, 10);
   document.getElementById('settings-excerpt').value = currentPost.excerpt || '';
   document.getElementById('settings-cover').value = currentPost.coverImage || '';
+  const _coverAltInput = document.getElementById('settings-cover-alt');
+  if (_coverAltInput) _coverAltInput.value = currentPost.coverImageAlt || '';
   const _coverWrap = document.getElementById('cover-preview-wrap');
   const _coverImg = document.getElementById('cover-preview-img');
   if (_coverWrap && _coverImg) {
@@ -1101,9 +1109,11 @@ async function _saveSettings() {
     const date = document.getElementById('settings-date').value;
     const excerpt = document.getElementById('settings-excerpt').value;
     const coverImage = document.getElementById('settings-cover').value.trim() || null;
+    const coverImageAlt = document.getElementById('settings-cover-alt')?.value.trim() || '';
     currentPost.date = date;
     currentPost.excerpt = excerpt;
     currentPost.coverImage = coverImage;
+    currentPost.coverImageAlt = coverImageAlt;
   } else {
     const menuCheck = document.getElementById('settings-include-menu');
     if (menuCheck) currentPost.include_in_menu = menuCheck.checked;

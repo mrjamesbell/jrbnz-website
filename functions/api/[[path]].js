@@ -134,7 +134,7 @@ function extractFirstImage(body) {
   return md ? md[1] : null;
 }
 
-function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, coverImage, author, accent, menuPages, snippetCss, allPosts, wordCount }) {
+function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, coverImage, coverImageAlt, author, accent, menuPages, snippetCss, allPosts, wordCount }) {
   const year = new Date().getFullYear();
   const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
   const postUrl = `${SITE_URL}/posts/${slug}/`;
@@ -158,7 +158,7 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, cov
   return {
     title, slug, date, dateFormatted, tags, contentHtml, author, accent,
     menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
-    authorCard, year, theme: SITE_THEME, coverImage, recentPosts,
+    authorCard, year, theme: SITE_THEME, coverImage, coverImageAlt, recentPosts, excerpt,
   };
 }
 
@@ -563,6 +563,7 @@ async function handleCreatePost(request, env) {
     status: 'draft',
     excerpt: '',
     coverImage: null,
+    coverImageAlt: '',
     wordCount: 0,
     createdAt: now,
     updatedAt: now
@@ -630,6 +631,7 @@ async function handleSaveDraft(request, env, slug) {
     tags: data.tags ?? posts[idx].tags,
     excerpt: data.excerpt ?? posts[idx].excerpt,
     coverImage: data.coverImage !== undefined ? data.coverImage : posts[idx].coverImage,
+    coverImageAlt: data.coverImageAlt !== undefined ? data.coverImageAlt : (posts[idx].coverImageAlt || ''),
     wordCount: data.wordCount ?? posts[idx].wordCount,
     updatedAt: now,
     status: isPublished ? 'published' : 'draft',
