@@ -2,7 +2,33 @@
 // Only exports functions where the HTML structure differs from the dark theme.
 // The dispatcher in [[path]].js falls back to dark.js for anything not exported here.
 
-import { esc, buildHead, buildSiteNav, buildFooter } from '../lib/templates.js';
+import { esc, buildHead, buildSiteNav } from '../lib/templates.js';
+
+function _navLinks(menuPages) {
+  const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published');
+  const now = cmsPages.find(p => p.slug === 'now');
+  const others = cmsPages.filter(p => p.slug !== 'now');
+  const pageLink = p => ({ href: p.nav_url || `/${p.slug}/`, label: p.title });
+  return [
+    ...(now ? [pageLink(now)] : []),
+    { href: '/posts/', label: 'Blog' },
+    { href: '/photos/', label: 'Photos' },
+    ...others.map(pageLink),
+  ];
+}
+
+function buildCinematicFooter(menuPages) {
+  const navLinks = _navLinks(menuPages)
+    .map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`)
+    .join('\n      ');
+  return `<footer class="cinematic-footer">
+  <p class="cinematic-footer-quote">Writing about memory, theatre, technology and life in between.</p>
+  <nav class="cinematic-footer-nav">
+    ${navLinks}
+    <a href="/feed.xml">RSS</a>
+  </nav>
+</footer>`;
+}
 
 export function buildPost(data) {
   const { title, slug, date, dateFormatted, tags, contentHtml, author, accent,
@@ -68,7 +94,7 @@ ${buildSiteNav(menuPages, '/posts/')}
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>
 </article>
-${buildFooter(menuPages, year)}
+${buildCinematicFooter(menuPages)}
 </body>
 </html>`;
 }
