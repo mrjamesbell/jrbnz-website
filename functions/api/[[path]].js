@@ -855,21 +855,15 @@ async function handlePublish(env, slug, request) {
   const idx = posts.findIndex(p => p.slug === slug);
   if (idx === -1) return json({ error: 'Not found' }, 404);
 
-  const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
-  const body = obj ? await obj.text() : '';
-  const contentHtml = mdToHtml(body);
-
   posts[idx].status = 'published';
   posts[idx].hasDraftChanges = false;
   posts[idx].updatedAt = new Date().toISOString();
   if (reqData.excerpt !== undefined) posts[idx].excerpt = reqData.excerpt;
 
-  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
-
-  const postHtml = buildPostHtml({ ...posts[idx], body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
+  // Save index JSON + delete stale cached HTML so serve Worker rebuilds lazily
   await Promise.all([
-    env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } }),
     saveIndex(env, posts),
+    env.BLOG.delete(`posts/${slug}/index.html`),
   ]);
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
