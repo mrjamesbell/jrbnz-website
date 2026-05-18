@@ -65,10 +65,26 @@ export function mdToHtml(md) {
       if (src) out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
       i++; continue;
     }
-    // Old multi-line signal:image blocks (skip)
+    // Old multi-line signal:image blocks — collect into one string then parse same as single-line
     if (line.match(/<!--\s*signal:image\b/) && !line.includes('-->')) {
-      while (i < lines.length && !lines[i].includes('-->')) i++;
-      i++; continue;
+      let block = line;
+      while (i < lines.length && !lines[i].includes('-->')) { i++; block += ' ' + lines[i]; }
+      i++;
+      const srcM = block.match(/src="([^"]*)"/);
+      const altM = block.match(/alt="([^"]*)"/);
+      const layoutM = block.match(/layout="([^"]*)"/);
+      const widthM = block.match(/width="(\d+)"/);
+      const src = mdEsc(srcM?.[1] || '');
+      const alt = mdEsc(altM?.[1] || '');
+      const layout = layoutM?.[1] || 'full';
+      const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
+      const isFloat = cls === 'leftalign' || cls === 'rightalign';
+      const w = widthM ? parseInt(widthM[1], 10) : 100;
+      const styleStr = w < 100
+        ? ` style="max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}"`
+        : '';
+      if (src) out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
+      continue;
     }
 
     if (line.startsWith('```')) {

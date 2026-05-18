@@ -25,7 +25,8 @@
     --nav-h:                 auto;
 }
 
-/* ── Surface invert — light panel within the dark theme ── */
+/* ── Light reading panel: content section and explicit surface-invert ── */
+[data-theme="dark"] .content-section,
 [data-theme="dark"] .surface-invert {
     --color-bg:              oklch(94% 0.008 75);
     --color-text:            oklch(18% 0.01 50);

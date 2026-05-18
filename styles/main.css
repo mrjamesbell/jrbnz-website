@@ -173,6 +173,8 @@ a:focus-visible {
 /* Content section */
 .content-section {
     padding: 40px var(--gutter) 100px;
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 .content-section p {
