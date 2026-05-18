@@ -192,12 +192,13 @@ ${buildCinematicFooter(menuPages)}
 export function buildIndex(data) {
   const { posts, tagChips, menuPages, accent, snippetCss, year, theme } = data;
   const essays = (posts || []).filter(p => !(p.tags || []).includes('note'));
+  const notes  = (posts || []).filter(p =>  (p.tags || []).includes('note'));
 
   const featured = essays[0];
   const rest = essays.slice(1);
 
   const featuredCard = featured ? `
-<section class="ci-featured">
+<section class="ci-featured" id="ci-featured" data-tags="${esc((featured.tags || []).join(','))}">
   ${featured.coverImage ? `<img class="ci-featured-img" src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
   <div class="ci-featured-overlay">
     <div class="ci-featured-inner">
@@ -209,17 +210,20 @@ export function buildIndex(data) {
   </div>
 </section>` : '';
 
-  const postCards = rest.map(p => {
+  const _postCard = (p, extraClass = '') => {
     const tag = (p.tags || [])[0] || '';
     const meta = [tag, _fmtDate(p.date)].filter(Boolean).join(' · ');
-    return `<a href="/posts/${esc(p.slug)}/" class="essay-card post-list-item" data-tags="${esc((p.tags || []).join(','))}">
+    return `<a href="/posts/${esc(p.slug)}/" class="essay-card post-list-item${extraClass ? ' ' + extraClass : ''}" data-tags="${esc((p.tags || []).join(','))}">
       ${p.coverImage
         ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="${esc(p.coverImageAlt || '')}" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">`
         : '<div class="essay-card-no-img"></div>'}
       <p class="essay-card-title">${esc(p.title)}</p>
       <p class="essay-card-meta">${esc(meta)}</p>
     </a>`;
-  }).join('');
+  };
+
+  const postCards = rest.map(p => _postCard(p)).join('');
+  const noteCards = notes.map(p => _postCard(p, 'note-post')).join('');
 
   const tagsSection = tagChips ? `
 <section class="ci-tags">
@@ -234,9 +238,9 @@ export function buildIndex(data) {
 ${buildSiteNav(menuPages, '/posts/')}
 <main>
   ${featuredCard}
-  ${rest.length ? `<section class="more-essays ci-index-all">
+  ${(rest.length || notes.length) ? `<section class="more-essays ci-index-all">
   <p class="more-essays-label">All essays</p>
-  <div class="essay-strip">${postCards}</div>
+  <div class="essay-strip">${postCards}${noteCards}</div>
 </section>` : ''}
   ${tagsSection}
 </main>
