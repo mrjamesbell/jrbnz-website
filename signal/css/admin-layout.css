@@ -1179,8 +1179,52 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top center;
+  object-position: center center;
   display: block;
+}
+
+.cover-focus-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+}
+
+.cover-focus-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.cover-focus-btn {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.cover-focus-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.cover-focus-btn.active {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+  border-color: rgba(255,255,255,0.5);
 }
 
 /* ════════════════════════════════════════════

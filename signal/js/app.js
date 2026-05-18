@@ -155,7 +155,10 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     const url = e.target.value.trim();
     const wrap = document.getElementById('cover-preview-wrap');
     const img = document.getElementById('cover-preview-img');
-    if (wrap && img) { wrap.style.display = url ? '' : 'none'; if (url) img.src = url; }
+    if (wrap && img) {
+      wrap.style.display = url ? '' : 'none';
+      if (url) img.src = url;
+    }
   });
   document.getElementById('btn-headshot-url').addEventListener('click', () => {
     const row = document.getElementById('headshot-url-row');

@@ -221,6 +221,7 @@ export async function openEditor(slug, type = 'post') {
       excerpt: '',
       coverImage: null,
       coverImageAlt: '',
+      coverImageFocus: 'center',
       wordCount: 0
     };
     _isDirty = false;
@@ -256,7 +257,7 @@ export function closeEditor() {
   if (_isDirty && currentSlug && currentPost) {
     const slug = currentSlug;
     const apiBase = _getApiBase();
-    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, coverImageAlt: currentPost.coverImageAlt || '', include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
+    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center', include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
     fetch(`${apiBase}/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
   }
   cancelScheduled();
@@ -335,6 +336,9 @@ function _populateEditor() {
   document.getElementById('settings-delete').onclick = _confirmDelete;
   document.getElementById('settings-slug').oninput = _onSlugInput;
   document.getElementById('settings-excerpt').oninput = _onExcerptInput;
+  document.querySelectorAll('.cover-focus-btn').forEach(btn => {
+    btn.addEventListener('click', () => _updateCoverFocusBtns(btn.dataset.focus));
+  });
 
   // Delete modal
   document.getElementById('delete-close').onclick = _closeDelete;
@@ -714,7 +718,7 @@ function _triggerSave() {
       date: currentPost.date,
       excerpt: currentPost.excerpt,
       coverImage: currentPost.coverImage,
-      coverImageAlt: currentPost.coverImageAlt || '',
+      coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
       include_in_menu: currentPost.include_in_menu,
       nav_url: currentPost.nav_url || null,
       wordCount: currentPost.wordCount
@@ -765,7 +769,7 @@ function _takeSnapshot() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    coverImageAlt: currentPost.coverImageAlt || '',
+    coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
   };
@@ -780,6 +784,7 @@ function _revertChanges() {
   currentPost.excerpt = _snapshot.excerpt;
   currentPost.coverImage = _snapshot.coverImage;
   currentPost.coverImageAlt = _snapshot.coverImageAlt || '';
+  currentPost.coverImageFocus = _snapshot.coverImageFocus || 'center';
   currentPost.include_in_menu = _snapshot.include_in_menu;
   tags = [..._snapshot.tags];
 
@@ -809,7 +814,7 @@ function _revertChanges() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    coverImageAlt: currentPost.coverImageAlt || '',
+    coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
@@ -883,7 +888,7 @@ async function _runPublishFlow(isPage) {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    coverImageAlt: currentPost.coverImageAlt || '',
+    coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
@@ -1028,6 +1033,14 @@ async function _confirmPublish() {
 
 // ── Settings modal ────────────────────────────────────────────────────────────
 
+function _updateCoverFocusBtns(focus) {
+  document.querySelectorAll('.cover-focus-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.focus === focus);
+  });
+  const img = document.getElementById('cover-preview-img');
+  if (img) img.style.objectPosition = `${focus} center`;
+}
+
 function _openSettings(e) {
   e && e.preventDefault();
   document.getElementById('settings-slug').value = currentSlug;
@@ -1042,6 +1055,7 @@ function _openSettings(e) {
     _coverWrap.style.display = currentPost.coverImage ? '' : 'none';
     if (currentPost.coverImage) _coverImg.src = currentPost.coverImage;
   }
+  _updateCoverFocusBtns(currentPost.coverImageFocus || 'center');
 
   const isPage = currentType === 'page';
   const slugHint = document.getElementById('settings-slug-hint');
@@ -1110,10 +1124,13 @@ async function _saveSettings() {
     const excerpt = document.getElementById('settings-excerpt').value;
     const coverImage = document.getElementById('settings-cover').value.trim() || null;
     const coverImageAlt = document.getElementById('settings-cover-alt')?.value.trim() || '';
+    const activeBtn = document.querySelector('.cover-focus-btn.active');
+    const coverImageFocus = activeBtn ? activeBtn.dataset.focus : 'center';
     currentPost.date = date;
     currentPost.excerpt = excerpt;
     currentPost.coverImage = coverImage;
     currentPost.coverImageAlt = coverImageAlt;
+    currentPost.coverImageFocus = coverImageFocus;
   } else {
     const menuCheck = document.getElementById('settings-include-menu');
     if (menuCheck) currentPost.include_in_menu = menuCheck.checked;

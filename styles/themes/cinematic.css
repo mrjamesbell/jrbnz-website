@@ -261,6 +261,103 @@
     margin: 0;
 }
 
+/* ── Post index — featured essay ─────────────────────────────────────────── */
+[data-theme="cinematic"] .ci-featured {
+    min-height: 72vh;
+    margin-top: var(--nav-h);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: var(--color-surface);
+}
+
+[data-theme="cinematic"] .ci-featured::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.1) 100%);
+    z-index: 1;
+}
+
+[data-theme="cinematic"] .ci-featured-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) brightness(0.55) contrast(1.2);
+}
+
+[data-theme="cinematic"] .ci-featured-overlay {
+    position: relative;
+    z-index: 2;
+    padding: clamp(36px, 6vw, 80px) clamp(28px, 5vw, 72px);
+    width: 100%;
+}
+
+[data-theme="cinematic"] .ci-featured-inner { max-width: 800px; }
+
+[data-theme="cinematic"] .ci-featured-title {
+    font-family: var(--font-body);
+    font-size: clamp(32px, 5.5vw, 80px);
+    line-height: 0.93;
+    letter-spacing: -0.05em;
+    font-weight: 400;
+    color: var(--color-text);
+    margin: 16px 0 20px;
+}
+
+[data-theme="cinematic"] .ci-featured-title a {
+    color: inherit;
+    border-bottom: none;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .ci-featured-title a:hover { color: var(--color-accent); border-bottom: none; }
+
+[data-theme="cinematic"] .ci-featured-excerpt {
+    font-family: var(--font-body);
+    font-size: clamp(15px, 1.5vw, 19px);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    max-width: 52ch;
+    margin-bottom: 24px;
+}
+
+[data-theme="cinematic"] .ci-read-link {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    border-bottom: none;
+    transition: opacity 0.15s;
+}
+
+[data-theme="cinematic"] .ci-read-link:hover { opacity: 0.72; border-bottom: none; }
+
+/* All essays grid (below featured) */
+[data-theme="cinematic"] .ci-index-all {
+    padding-top: 56px;
+}
+
+/* No-image placeholder for essay cards */
+[data-theme="cinematic"] .essay-card-no-img {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    background: var(--color-surface);
+    margin-bottom: 14px;
+    display: block;
+}
+
+/* Tag filter section */
+[data-theme="cinematic"] .ci-tags {
+    padding: 32px clamp(28px, 4vw, 56px) 48px;
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+}
+
 /* ── More essays strip ────────────────────────────────────────────────────── */
 [data-theme="cinematic"] .more-essays {
     padding: 44px clamp(28px, 4vw, 56px) 64px;
