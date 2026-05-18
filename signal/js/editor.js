@@ -1028,6 +1028,12 @@ function _openSettings(e) {
   document.getElementById('settings-date').value = currentPost.date || new Date().toISOString().slice(0, 10);
   document.getElementById('settings-excerpt').value = currentPost.excerpt || '';
   document.getElementById('settings-cover').value = currentPost.coverImage || '';
+  const _coverWrap = document.getElementById('cover-preview-wrap');
+  const _coverImg = document.getElementById('cover-preview-img');
+  if (_coverWrap && _coverImg) {
+    _coverWrap.style.display = currentPost.coverImage ? '' : 'none';
+    if (currentPost.coverImage) _coverImg.src = currentPost.coverImage;
+  }
 
   const isPage = currentType === 'page';
   const slugHint = document.getElementById('settings-slug-hint');

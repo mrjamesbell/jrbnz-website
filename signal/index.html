@@ -571,8 +571,15 @@
         <p class="field-hint">Used in post lists. Max 160 characters.</p>
       </div>
       <div id="settings-cover-row">
-        <label class="field-label" for="settings-cover">Cover image URL</label>
-        <input class="field-input" type="url" id="settings-cover" placeholder="https://…" autocomplete="off">
+        <label class="field-label" for="settings-cover">Cover image</label>
+        <div class="cover-input-row">
+          <input class="field-input" type="url" id="settings-cover" placeholder="https://…" autocomplete="off">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-cover-media">Browse R2</button>
+        </div>
+        <div class="cover-preview-wrap" id="cover-preview-wrap" style="display:none">
+          <img class="cover-preview-img" id="cover-preview-img" src="" alt="">
+        </div>
+        <p class="field-hint">Recommended: 1600×900px or wider, landscape. Used as full-viewport hero in the cinematic theme.</p>
       </div>
     </div>
     <div class="modal-footer">

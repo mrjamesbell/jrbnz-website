@@ -1153,6 +1153,33 @@ body {
 }
 
 /* ════════════════════════════════════════════
+   COVER IMAGE PICKER
+   ════════════════════════════════════════════ */
+.cover-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cover-input-row .field-input {
+  flex: 1;
+}
+
+.cover-preview-wrap {
+  margin-top: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: var(--border-cream);
+}
+
+.cover-preview-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ════════════════════════════════════════════
    HEADSHOT PICKER
    ════════════════════════════════════════════ */
 .headshot-picker {

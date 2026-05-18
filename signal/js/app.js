@@ -148,6 +148,15 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     }, { circle: true }), 0);
   });
   document.getElementById('btn-headshot-media').addEventListener('click', _openHeadshotMediaPicker);
+
+  // Cover image picker
+  document.getElementById('btn-cover-media').addEventListener('click', _openCoverMediaPicker);
+  document.getElementById('settings-cover').addEventListener('input', e => {
+    const url = e.target.value.trim();
+    const wrap = document.getElementById('cover-preview-wrap');
+    const img = document.getElementById('cover-preview-img');
+    if (wrap && img) { wrap.style.display = url ? '' : 'none'; if (url) img.src = url; }
+  });
   document.getElementById('btn-headshot-url').addEventListener('click', () => {
     const row = document.getElementById('headshot-url-row');
     row.style.display = row.style.display === 'none' ? 'flex' : 'none';
@@ -265,6 +274,91 @@ async function _openHeadshotMediaPicker() {
     close();
     document.getElementById('author-headshot').value = url;
     _updateHeadshotPreview(url);
+  };
+  if (closeBtn) closeBtn.onclick = close;
+  if (cancelBtn) cancelBtn.onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+}
+
+async function _openCoverMediaPicker() {
+  const modal = document.getElementById('media-picker-modal');
+  if (!modal) { showToast('Media picker not available', 'error'); return; }
+
+  const grid = document.getElementById('media-picker-grid');
+  const insertBtn = document.getElementById('media-picker-insert');
+  const closeBtn = document.getElementById('media-picker-close');
+  const cancelBtn = document.getElementById('media-picker-cancel');
+  const searchEl = document.getElementById('media-picker-search');
+  const infoEl = document.getElementById('picker-selected-info');
+
+  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
+  insertBtn.disabled = true;
+  insertBtn.textContent = 'Use as cover image';
+  if (infoEl) infoEl.textContent = '';
+  if (searchEl) searchEl.value = '';
+  modal.style.display = 'flex';
+
+  try {
+    const res = await fetch('/api/media?limit=48');
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.items || []);
+    if (!items.length) {
+      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
+    } else {
+      grid.innerHTML = items.map(item => {
+        const url = _escAttr(item.publicUrl || item.url || '');
+        const name = _escAttr(item.filename || '');
+        const size = _escAttr(_fmtBytes(item.size || 0));
+        return `<div class="media-item" data-url="${url}" data-key="${_escAttr(item.key)}">
+          <img src="${url}" alt="${name}" loading="lazy">
+          <div class="media-item-overlay">
+            <div class="media-item-filename">${name}</div>
+            <div class="media-item-size">${size}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  } catch {
+    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
+  }
+
+  const onGridClick = e => {
+    const item = e.target.closest('.media-item');
+    if (!item) return;
+    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
+    item.classList.add('is-selected');
+    insertBtn.disabled = false;
+    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
+  };
+  grid.addEventListener('click', onGridClick);
+
+  if (searchEl) {
+    searchEl.oninput = e => {
+      const q = e.target.value.toLowerCase();
+      grid.querySelectorAll('.media-item').forEach(item => {
+        const name = item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '';
+        item.style.display = name.includes(q) ? '' : 'none';
+      });
+    };
+  }
+
+  const close = () => {
+    modal.style.display = 'none';
+    grid.removeEventListener('click', onGridClick);
+    insertBtn.textContent = 'Insert image';
+    insertBtn.onclick = null;
+    if (closeBtn) closeBtn.onclick = null;
+    if (cancelBtn) cancelBtn.onclick = null;
+    if (searchEl) searchEl.oninput = null;
+  };
+
+  insertBtn.onclick = () => {
+    const selected = grid.querySelector('.media-item.is-selected');
+    if (!selected) return;
+    const url = selected.dataset.url;
+    close();
+    const input = document.getElementById('settings-cover');
+    if (input) { input.value = url; input.dispatchEvent(new Event('input')); }
   };
   if (closeBtn) closeBtn.onclick = close;
   if (cancelBtn) cancelBtn.onclick = close;
