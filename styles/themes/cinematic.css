@@ -305,7 +305,6 @@
 
 /* Full-width page content — wider than article column */
 [data-theme="cinematic"] .ci-page-content {
-    padding: 64px clamp(48px, 8vw, 120px) 80px;
     max-width: 960px;
     margin: 0 auto;
 }
