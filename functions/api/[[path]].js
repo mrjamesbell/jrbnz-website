@@ -370,6 +370,7 @@ export async function onRequest(context) {
   // Site rebuild, accent, site settings
   if (resource === 'site') {
     if (slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
+    if (slug === 'rebuild-indexes' && method === 'POST') return handleRebuildIndexHtml(env);
     if (slug === 'accent') {
       if (method === 'GET') return handleGetAccent(env);
       if (method === 'PUT') return handleSaveAccent(request, env);
@@ -848,7 +849,6 @@ ${body}`;
 }
 
 async function handlePublish(env, slug, request) {
-  const updateLinks = request && new URL(request.url).searchParams.get('updateLinks') === '1';
   const reqData = request ? await request.json().catch(() => ({})) : {};
 
   const posts = await getIndex(env);
@@ -866,33 +866,19 @@ async function handlePublish(env, slug, request) {
 
   const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
 
-  const sorted = posts.filter(p => p.status === 'published').sort((a, b) => new Date(a.date) - new Date(b.date));
   const postHtml = buildPostHtml({ ...posts[idx], body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
-  await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
-
-  // Rebuild adjacent posts so their prev/next links are current
-  if (updateLinks) {
-    const sidx = sorted.findIndex(p => p.slug === slug);
-    const neighbours = [sorted[sidx - 1], sorted[sidx + 1]].filter(Boolean);
-    await Promise.all(neighbours.map(async neighbour => {
-      const nObj = await env.BLOG.get(`posts/${neighbour.slug}/draft.md`);
-      const nBody = nObj ? await nObj.text() : '';
-      const nHtml = buildPostHtml({ ...neighbour, body: nBody, contentHtml: mdToHtml(nBody), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
-      await env.BLOG.put(`posts/${neighbour.slug}/index.html`, nHtml, { httpMetadata: { contentType: 'text/html' } });
-    }));
-  }
-
-  await saveIndex(env, posts);
-  const saveOps = [
-    env.BLOG.put('posts/index.html', buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage), { httpMetadata: { contentType: 'text/html' } }),
-  ];
-  if ((posts[idx].tags || []).includes('note')) {
-    const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
-    if (notesHtml) saveOps.push(env.BLOG.put('pages/notes/index.html', notesHtml, { httpMetadata: { contentType: 'text/html' } }));
-  }
-  await Promise.all(saveOps);
+  await Promise.all([
+    env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } }),
+    saveIndex(env, posts),
+  ]);
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
+}
+
+async function handleRebuildIndexHtml(env) {
+  const posts = await getIndex(env);
+  await rebuildIndexHtml(env, posts);
+  return json({ ok: true });
 }
 
 async function handleUnpublish(env, slug) {
@@ -1406,30 +1392,7 @@ async function handlePublishPage(env, slug) {
   const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent, snippetCss });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
 
-  // If page is in the nav, rebuild all posts and other pages so nav stays in sync
-  if (pages[idx].include_in_menu) {
-    const posts = await getIndex(env);
-    const publishedPosts = posts.filter(p => p.status === 'published');
-    const otherPages = pages.filter(p => p.status === 'published' && p.slug !== slug);
-    await Promise.all([
-      ...publishedPosts.map(async post => {
-        const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
-        const postBody = postObj ? await postObj.text() : '';
-        const postHtml = buildPostHtml({ ...post, body: postBody, contentHtml: mdToHtml(postBody), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
-        await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
-      }),
-      ...otherPages.map(async page => {
-        const pageObj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
-        const pageBody = pageObj ? await pageObj.text() : '';
-        const pageHtml = buildPageHtml({ ...page, contentHtml: mdToHtml(pageBody), menuPages, accent, snippetCss });
-        await env.BLOG.put(`pages/${page.slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
-      }),
-    ]);
-    const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage);
-    await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
-  }
-
-  return json({ ...pages[idx], url: `/${slug}/` });
+  return json({ ...pages[idx], url: `/${slug}/`, needsRebuild: pages[idx].include_in_menu });
 }
 
 async function handleUnpublishPage(env, slug) {

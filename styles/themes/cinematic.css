@@ -166,7 +166,7 @@
 }
 
 /* Drop cap on first paragraph */
-[data-theme="cinematic"] .article-open .post-content p:first-child::first-letter {
+[data-theme="cinematic"] .article-open .post-content p:first-of-type::first-letter {
     float: left;
     font-size: 4.8em;
     line-height: 0.78;
@@ -199,7 +199,19 @@
     color: var(--color-text);
 }
 
-/* ── Blockquote — gold left rule, 60% width, slightly larger ─────────────── */
+/* ── Blockquote — strip blog.css box/speech-mark, apply gold left rule ───── */
+[data-theme="cinematic"] .post-content blockquote {
+    background: transparent;
+    border-radius: 0;
+    font-style: normal;
+    color: var(--color-text);
+    padding: 0;
+}
+
+[data-theme="cinematic"] .post-content blockquote::before {
+    content: none;
+}
+
 [data-theme="cinematic"] .surface-invert blockquote {
     margin: 1.8em 0;
     padding: 0.1em 0 0.1em 1.4em;

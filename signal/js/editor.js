@@ -1018,6 +1018,12 @@ async function _confirmPublish() {
       }
     }
     if (currentType === 'page') invalidatePageCache(); else invalidatePostCache();
+    // Rebuild indexes/posts in the background (fire-and-forget).
+    if (currentType === 'page') {
+      if (data.needsRebuild) fetch('/api/site/rebuild', { method: 'POST' });
+    } else {
+      fetch('/api/site/rebuild-indexes', { method: 'POST' });
+    }
 
     const viewBtn = document.getElementById('btn-view-post');
     const defaultUrl = currentType === 'page' ? `/${slug}/` : `/posts/${slug}/`;
