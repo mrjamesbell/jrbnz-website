@@ -298,9 +298,17 @@
     color: var(--color-text);
 }
 
-/* Full-width page content — wider than article column */
+/* Page content — wider than article reading column */
 [data-theme="cinematic"] .ci-page-content {
+    max-width: 960px;
     margin: 0 auto;
+    padding: 48px clamp(24px, 5vw, 48px) 80px;
+}
+
+[data-theme="cinematic"] .ci-page-content .page-content {
+    max-width: none;
+    margin: 0;
+    padding: 0;
 }
 
 /* Photos page */
