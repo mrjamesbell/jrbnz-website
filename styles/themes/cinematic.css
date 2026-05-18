@@ -728,8 +728,8 @@
 }
 
 [data-theme="cinematic"] .note-body {
-    font-size: clamp(16px, 1.7vw, 19px);
-    line-height: 1.78;
+    font-size: clamp(17px, 1.8vw, 20px);
+    line-height: 1.82;
 }
 
 [data-theme="cinematic"] .notes-empty {

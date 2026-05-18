@@ -134,8 +134,8 @@
 
 /* Post content */
 .post-content {
-  font-size: clamp(16px, 1.8vw, 19px);
-  line-height: 1.75;
+  font-size: clamp(17px, 1.8vw, 20px);
+  line-height: 1.82;
 }
 
 .post-content h2,
