@@ -134,7 +134,7 @@ function extractFirstImage(body) {
   return md ? md[1] : null;
 }
 
-function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, defaultCoverImage, author, accent, menuPages, snippetCss, allPosts, wordCount }) {
+function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, defaultCoverImage, defaultCoverImageFocus, author, accent, menuPages, snippetCss, allPosts, wordCount }) {
   const year = new Date().getFullYear();
   const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
   const postUrl = `${SITE_URL}/posts/${slug}/`;
@@ -160,7 +160,7 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, sub
     menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
     authorCard, year, theme: SITE_THEME,
     coverImage: coverImage || defaultCoverImage || null,
-    coverImageAlt, coverImageFocus: coverImageFocus || 'center',
+    coverImageAlt, coverImageFocus: coverImageFocus || (coverImage ? 'center' : defaultCoverImageFocus) || 'center',
     recentPosts, excerpt, subtitle,
   };
 }
@@ -252,8 +252,8 @@ async function rebuildPostHtml(env, slug, posts) {
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-  const { author, accent, menuPages, snippetCss, defaultCoverImage } = await loadSiteContext(env);
-  const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage });
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
+  const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -269,7 +269,7 @@ async function loadSiteContext(env) {
   const accentData = accentObj ? JSON.parse(await accentObj.text()) : {};
   const menuPages = pagesObj ? JSON.parse(await pagesObj.text()) : [];
   const siteData = siteObj ? JSON.parse(await siteObj.text()) : {};
-  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null };
+  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null, defaultCoverImageFocus: siteData.defaultCoverImageFocus || 'center' };
 }
 
 async function handleGetSiteSettings(env) {
@@ -476,7 +476,7 @@ async function handleSaveAuthor(request, env) {
 }
 
 async function handleRebuildSite(env) {
-  const [posts, pages, { author, accent, menuPages, snippetCss, defaultCoverImage }] = await Promise.all([
+  const [posts, pages, { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus }] = await Promise.all([
     getIndex(env),
     getPagesIndex(env),
     loadSiteContext(env),
@@ -487,7 +487,7 @@ async function handleRebuildSite(env) {
     ...publishedPosts.map(async post => {
       const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPostHtml({ ...post, body, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage });
+      const html = buildPostHtml({ ...post, body, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
       await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
     ...publishedPages.map(async page => {
@@ -840,10 +840,10 @@ async function handlePublish(env, slug, request) {
   posts[idx].updatedAt = new Date().toISOString();
   if (reqData.excerpt !== undefined) posts[idx].excerpt = reqData.excerpt;
 
-  const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
 
   const sorted = posts.filter(p => p.status === 'published').sort((a, b) => new Date(a.date) - new Date(b.date));
-  const postHtml = buildPostHtml({ ...posts[idx], body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts });
+  const postHtml = buildPostHtml({ ...posts[idx], body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
   await env.BLOG.put(`posts/${slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
 
   // Rebuild adjacent posts so their prev/next links are current
@@ -853,7 +853,7 @@ async function handlePublish(env, slug, request) {
     await Promise.all(neighbours.map(async neighbour => {
       const nObj = await env.BLOG.get(`posts/${neighbour.slug}/draft.md`);
       const nBody = nObj ? await nObj.text() : '';
-      const nHtml = buildPostHtml({ ...neighbour, body: nBody, contentHtml: mdToHtml(nBody), author, accent, menuPages, snippetCss, allPosts: posts });
+      const nHtml = buildPostHtml({ ...neighbour, body: nBody, contentHtml: mdToHtml(nBody), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
       await env.BLOG.put(`posts/${neighbour.slug}/index.html`, nHtml, { httpMetadata: { contentType: 'text/html' } });
     }));
   }
@@ -1371,7 +1371,7 @@ async function handlePublishPage(env, slug) {
   pages[idx].updatedAt = new Date().toISOString();
   await savePagesIndex(env, pages);
 
-  const { author, accent, snippetCss } = await loadSiteContext(env);
+  const { author, accent, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
   const menuPages = pages;
   const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent, snippetCss });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
@@ -1385,7 +1385,7 @@ async function handlePublishPage(env, slug) {
       ...publishedPosts.map(async post => {
         const postObj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
         const postBody = postObj ? await postObj.text() : '';
-        const postHtml = buildPostHtml({ ...post, body: postBody, contentHtml: mdToHtml(postBody), author, accent, menuPages, snippetCss, allPosts: posts });
+        const postHtml = buildPostHtml({ ...post, body: postBody, contentHtml: mdToHtml(postBody), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
         await env.BLOG.put(`posts/${post.slug}/index.html`, postHtml, { httpMetadata: { contentType: 'text/html' } });
       }),
       ...otherPages.map(async page => {

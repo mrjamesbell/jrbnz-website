@@ -200,9 +200,17 @@
     color: var(--color-text);
 }
 
+/* ── Inline post images — no border, tighter margin ──────────────────────── */
+[data-theme="cinematic"] .post-content img,
+[data-theme="cinematic"] .page-content img {
+    border: none;
+    margin: 24px 0;
+    border-radius: 2px;
+}
+
 /* ── Wide image ───────────────────────────────────────────────────────────── */
 [data-theme="cinematic"] .img-wide {
-    margin: 64px auto;
+    margin: 32px auto;
     max-width: 900px;
     padding: 0 clamp(24px, 5vw, 48px);
 }

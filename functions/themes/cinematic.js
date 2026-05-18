@@ -94,8 +94,9 @@ ${buildCinematicFooter(menuPages)}
 
 export function buildHomepage(data) {
   const { author, recentPosts, menuPages, accent, snippetCss, theme } = data;
-  const featured = (recentPosts || [])[0];
-  const stripPosts = (recentPosts || []).slice(1, 5);
+  const essays = (recentPosts || []).filter(p => !(p.tags || []).includes('note'));
+  const featured = essays[0];
+  const stripPosts = essays.slice(1, 5);
 
   const featuredCard = featured ? `
 <div class="home-feature">
@@ -132,7 +133,7 @@ export function buildHomepage(data) {
     </a>`;
   }).join('');
 
-  const essayStrip = recentPosts && recentPosts.length > 1 ? `
+  const essayStrip = essays.length > 1 ? `
 <section class="more-essays home-essay-strip">
   <p class="more-essays-label">Recently</p>
   <div class="essay-strip">
@@ -190,10 +191,10 @@ ${buildCinematicFooter(menuPages)}
 
 export function buildIndex(data) {
   const { posts, tagChips, menuPages, accent, snippetCss, year, theme } = data;
-  const published = posts || [];
+  const essays = (posts || []).filter(p => !(p.tags || []).includes('note'));
 
-  const featured = published[0];
-  const rest = published.slice(1);
+  const featured = essays[0];
+  const rest = essays.slice(1);
 
   const featuredCard = featured ? `
 <section class="ci-featured">

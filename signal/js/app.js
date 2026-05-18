@@ -129,6 +129,9 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     const img = document.getElementById('default-cover-preview-img');
     if (wrap && img) { wrap.style.display = url ? '' : 'none'; if (url) img.src = url; }
   });
+  document.querySelectorAll('.default-cover-focus-btn').forEach(btn => {
+    btn.addEventListener('click', () => _updateDefaultCoverFocusBtns(btn.dataset.focus));
+  });
 
   // Accent colour pickers
   _initAccentPickers();
@@ -456,6 +459,14 @@ async function _openDefaultCoverMediaPicker() {
   if (closeBtn) closeBtn.onclick = close;
   if (cancelBtn) cancelBtn.onclick = close;
   modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+}
+
+function _updateDefaultCoverFocusBtns(focus) {
+  const img = document.getElementById('default-cover-preview-img');
+  document.querySelectorAll('.default-cover-focus-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.focus === focus);
+  });
+  if (img) img.style.objectPosition = `${focus} center`;
 }
 
 function _escAttr(str) {
@@ -976,6 +987,7 @@ function openSettingsView() {
       wrap.style.display = d.defaultCoverImage ? '' : 'none';
       if (d.defaultCoverImage) img.src = d.defaultCoverImage;
     }
+    _updateDefaultCoverFocusBtns(d.defaultCoverImageFocus || 'center');
   }).catch(() => {});
 }
 
@@ -985,11 +997,13 @@ async function saveAppSettings() {
   else localStorage.removeItem('signal-apikey');
 
   const defaultCoverImage = document.getElementById('site-default-cover')?.value.trim() || null;
+  const activeDefaultFocusBtn = document.querySelector('.default-cover-focus-btn.active');
+  const defaultCoverImageFocus = activeDefaultFocusBtn ? activeDefaultFocusBtn.dataset.focus : 'center';
   try {
     await fetch('/api/site/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ defaultCoverImage }),
+      body: JSON.stringify({ defaultCoverImage, defaultCoverImageFocus }),
     });
   } catch {}
 
