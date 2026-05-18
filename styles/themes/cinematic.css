@@ -1,0 +1,325 @@
+/* ── Theme: cinematic ─────────────────────────────────────────────────────────
+   Editorial dark-hero + warm reading surface. Georgia serif, monospace labels.
+   Layout styles for cinematic-specific structures are also in this file.
+   ─────────────────────────────────────────────────────────────────────────── */
+[data-theme="cinematic"] {
+    --color-bg:              #090b0d;
+    --color-surface:         rgba(255, 255, 255, 0.06);
+
+    --color-text:            rgba(255, 255, 255, 0.85);
+    --color-text-muted:      rgba(255, 255, 255, 0.52);
+    --color-text-subtle:     rgba(255, 255, 255, 0.35);
+
+    --color-border:          rgba(255, 255, 255, 0.12);
+    --color-border-strong:   rgba(255, 255, 255, 0.25);
+
+    --color-accent:          #b89b72;
+    --color-accent-muted:    color-mix(in oklch, #b89b72 14%, transparent);
+    --color-accent-fg:       #1c1c1c;
+
+    --font-body:             Georgia, 'Times New Roman', serif;
+    --font-display:          Georgia, 'Times New Roman', serif;
+    --font-mono:             ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --gutter:                clamp(24px, 5vw, 60px);
+    --col-read:              720px;
+    --nav-h:                 56px;
+}
+
+/* ── Surface invert — warm reading surface within the cinematic theme ── */
+[data-theme="cinematic"] .surface-invert {
+    --color-bg:              #f1eadf;
+    --color-text:            #2a2420;
+    --color-text-muted:      rgba(0, 0, 0, 0.55);
+    --color-text-subtle:     rgba(0, 0, 0, 0.35);
+    --color-border:          rgba(0, 0, 0, 0.12);
+    --color-border-strong:   rgba(0, 0, 0, 0.25);
+}
+
+/* ── Nav: fixed frosted glass ─────────────────────────────────────────────── */
+[data-theme="cinematic"] .site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    height: var(--nav-h);
+    background: rgba(9, 11, 13, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    padding: 0 var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+[data-theme="cinematic"] .site-nav .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.32em;
+    border-bottom: none;
+}
+
+[data-theme="cinematic"] .site-nav .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+}
+
+[data-theme="cinematic"] .site-nav .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    border-bottom: none;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .site-nav .nav-links a:hover,
+[data-theme="cinematic"] .site-nav .nav-links a.active {
+    color: var(--color-text);
+    border-bottom: none;
+}
+
+/* ── Post hero — full viewport ────────────────────────────────────────────── */
+[data-theme="cinematic"] .post-hero {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+[data-theme="cinematic"] .post-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.48) 40%, rgba(0,0,0,0.1) 100%);
+    z-index: 1;
+}
+
+[data-theme="cinematic"] .post-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) brightness(0.55) contrast(1.2);
+}
+
+[data-theme="cinematic"] .post-hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 72px clamp(32px, 8vw, 120px);
+    max-width: 1000px;
+}
+
+[data-theme="cinematic"] .post-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 24px;
+}
+
+[data-theme="cinematic"] .post-hero-title {
+    font-family: var(--font-body);
+    font-size: clamp(40px, 7vw, 108px);
+    line-height: 0.92;
+    letter-spacing: -0.06em;
+    font-weight: 400;
+    color: var(--color-text);
+    margin-bottom: 0;
+}
+
+/* ── Article body — reading surface ──────────────────────────────────────── */
+[data-theme="cinematic"] .surface-invert {
+    background: var(--color-bg);
+}
+
+[data-theme="cinematic"] .article-col {
+    max-width: var(--col-read);
+    margin: 0 auto;
+    padding: 0 clamp(24px, 5vw, 48px);
+}
+
+[data-theme="cinematic"] .article-open {
+    padding-top: 72px;
+    padding-bottom: 56px;
+}
+
+[data-theme="cinematic"] .article-section {
+    padding-bottom: 56px;
+}
+
+/* Drop cap on first paragraph */
+[data-theme="cinematic"] .article-open p:first-child::first-letter {
+    float: left;
+    font-size: 4.8em;
+    line-height: 0.78;
+    margin: 0.08em 0.12em 0 0;
+    color: var(--color-text);
+    font-weight: 400;
+}
+
+[data-theme="cinematic"] .surface-invert p {
+    font-size: clamp(17px, 1.8vw, 20px);
+    line-height: 1.82;
+    color: var(--color-text);
+    margin-bottom: 1.4em;
+}
+
+/* ── Dark quote — full-width contrast block ───────────────────────────────── */
+[data-theme="cinematic"] .dark-quote {
+    background: var(--color-bg);
+    padding: clamp(64px, 10vw, 120px) clamp(32px, 8vw, 120px);
+    margin: 0;
+}
+
+[data-theme="cinematic"] .dark-quote blockquote {
+    font-family: var(--font-body);
+    max-width: 820px;
+    font-size: clamp(28px, 4.5vw, 66px);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+    font-weight: 400;
+    color: var(--color-text);
+}
+
+/* ── Wide image ───────────────────────────────────────────────────────────── */
+[data-theme="cinematic"] .img-wide {
+    margin: 64px auto;
+    max-width: 900px;
+    padding: 0 clamp(24px, 5vw, 48px);
+}
+
+[data-theme="cinematic"] .img-wide img {
+    width: 100%;
+    filter: grayscale(1) brightness(0.78) contrast(1.1);
+}
+
+[data-theme="cinematic"] .img-wide figcaption {
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--color-text-subtle);
+}
+
+/* ── Author box — inline below article ────────────────────────────────────── */
+[data-theme="cinematic"] .author-box {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 40px clamp(24px, 5vw, 48px);
+    background: var(--color-bg);
+}
+
+[data-theme="cinematic"] .author-box-inner {
+    max-width: var(--col-read);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+[data-theme="cinematic"] .author-box-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: grayscale(1);
+    flex-shrink: 0;
+}
+
+[data-theme="cinematic"] .author-box-name {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: var(--color-text);
+}
+
+[data-theme="cinematic"] .author-box-bio {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+/* ── More essays strip ────────────────────────────────────────────────────── */
+[data-theme="cinematic"] .more-essays {
+    padding: 44px clamp(28px, 4vw, 56px) 64px;
+    background: var(--color-bg);
+}
+
+[data-theme="cinematic"] .more-essays-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 28px;
+}
+
+[data-theme="cinematic"] .essay-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+    gap: 20px;
+}
+
+[data-theme="cinematic"] .essay-card {
+    display: block;
+    border-bottom: none;
+}
+
+[data-theme="cinematic"] .essay-card-img {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    object-fit: cover;
+    filter: grayscale(1) brightness(0.72);
+    margin-bottom: 14px;
+    transition: filter 0.3s;
+    display: block;
+}
+
+[data-theme="cinematic"] .essay-card:hover .essay-card-img {
+    filter: grayscale(0.3) brightness(0.85);
+}
+
+[data-theme="cinematic"] .essay-card-title {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-bottom: 5px;
+    color: var(--color-text);
+}
+
+[data-theme="cinematic"] .essay-card:hover .essay-card-title {
+    color: var(--color-accent);
+}
+
+[data-theme="cinematic"] .essay-card-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+    [data-theme="cinematic"] .site-nav .nav-links { gap: 20px; }
+    [data-theme="cinematic"] .essay-strip { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 560px) {
+    [data-theme="cinematic"] .site-nav .nav-links { gap: 16px; }
+    [data-theme="cinematic"] .essay-strip { grid-template-columns: 1fr; }
+    [data-theme="cinematic"] .post-hero-title { letter-spacing: -0.04em; }
+}

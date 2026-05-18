@@ -123,8 +123,10 @@ function fmtDateShort(iso) {
   return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
 }
 
-const SITE_HEAD = (title, accent, snippetCss, extraHead = '') => `<!DOCTYPE html>
-<html lang="en">
+const SITE_THEME = 'dark'; // switch to 'cinematic' when ready
+
+const SITE_HEAD = (title, accent, snippetCss, extraHead = '', theme = SITE_THEME) => `<!DOCTYPE html>
+<html lang="en" data-theme="${theme}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -134,9 +136,10 @@ const SITE_HEAD = (title, accent, snippetCss, extraHead = '') => `<!DOCTYPE html
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles/main.css">
 <link rel="stylesheet" href="/styles/blog.css">
+<link rel="stylesheet" href="/styles/themes/${theme}.css">
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
-${accent ? '<style>:root{--accent-color:' + accent.replace(/<\/style>/gi, '') + ';--accent-fg:' + siteAccentFg(accent) + '}</style>' : ''}
+${accent ? '<style>:root{--color-accent:' + accent.replace(/<\/style>/gi, '') + ';--color-accent-fg:' + siteAccentFg(accent) + ';--accent-color:' + accent.replace(/<\/style>/gi, '') + ';--accent-fg:' + siteAccentFg(accent) + '}</style>' : ''}
 ${snippetCss ? '<style>' + snippetCss + '</style>' : ''}
 ${extraHead}
 </head>
@@ -423,7 +426,7 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss
   <h1 class="page-header-title">${esc(title)}</h1>
 </div>
 <section class="content-section">
-  <div class="post-content" style="max-width:85ch;margin:0 auto;padding:48px 24px 80px">${contentHtml}</div>
+  <div class="post-content page-content">${contentHtml}</div>
 </section>
 <footer class="footer">
   <div class="footer-left">

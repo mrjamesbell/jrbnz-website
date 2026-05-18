@@ -13,22 +13,22 @@
 
 .post-list-item time {
   font-size: 15px;
-  color: oklch(28% 0.01 50 / 0.72);
+  color: var(--color-text-subtle);
   white-space: nowrap;
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   padding-top: 2px;
 }
 
 .post-list-item a {
   font-size: 23px;
-  color: var(--background-color);
+  color: var(--color-text);
   line-height: 1.3;
   border-bottom: none;
   transition: color 0.15s;
 }
 
 .post-list-item a:hover {
-  color: var(--accent-color);
+  color: var(--color-accent);
 }
 
 .post-item-meta {
@@ -41,30 +41,30 @@
 
 .post-item-tags {
   font-size: 14px;
-  color: oklch(28% 0.01 50 / 0.58);
+  color: var(--color-text-subtle);
 }
 
 .post-item-excerpt {
   margin: 5px 0 0;
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.55;
-  color: oklch(28% 0.01 50 / 0.68);
+  color: var(--color-text-muted);
   max-width: 70ch;
 }
 
 .post-item-readtime {
   font-size: 13px;
-  color: oklch(28% 0.01 50 / 0.42);
+  color: var(--color-text-subtle);
   white-space: nowrap;
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
 }
 
 /* Tags */
 .post-tag {
   display: inline-block;
   font-size: 14px;
-  color: var(--accent-color);
+  color: var(--color-accent);
   border-bottom: none;
   margin-right: 4px;
 }
@@ -86,10 +86,10 @@
   gap: 12px;
   margin-bottom: 24px;
   padding: 11px 16px;
-  background: var(--background-color);
+  background: var(--color-bg);
   border-radius: 4px;
   font-size: 15px;
-  color: var(--text-color);
+  color: var(--color-text);
 }
 
 .tag-filter-bar[hidden] {
@@ -97,19 +97,19 @@
 }
 
 .tag-filter-bar strong {
-  color: var(--accent-color);
+  color: var(--color-accent);
   font-style: normal;
 }
 
 .tag-filter-clear {
   font-size: 13px;
-  color: oklch(18% 0.01 50 / 0.55);
+  color: var(--color-text-subtle);
   border-bottom: none;
   margin-left: auto;
 }
 
 .tag-filter-clear:hover {
-  color: var(--background-color);
+  color: var(--color-text);
   border-bottom: none;
 }
 
@@ -121,9 +121,9 @@
   flex-wrap: wrap;
   margin-bottom: 32px;
   padding-bottom: 20px;
-  border-bottom: 1px solid oklch(18% 0.01 50 / 0.15);
+  border-bottom: 1px solid var(--color-border);
   font-size: 15px;
-  color: oklch(22% 0.01 50);
+  color: var(--color-text-muted);
 }
 
 .post-meta .post-tags {
@@ -141,8 +141,8 @@
 .post-content h2,
 .post-content h3,
 .post-content h4 {
-  font-family: 'Lora', serif;
-  color: var(--background-color);
+  font-family: var(--font-body);
+  color: var(--color-text);
   margin-top: 1.8em;
   margin-bottom: 0.6em;
   line-height: 1.3;
@@ -154,8 +154,8 @@
 .post-content p { margin-bottom: 1.2em; font-size: inherit; }
 
 .post-content a {
-  color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
 }
 
 .post-content img {
@@ -164,7 +164,7 @@
   border-radius: 2px;
   margin: 2em 0;
   display: block;
-  border: 12px solid oklch(91% 0.01 75);
+  border: 12px solid var(--color-border-strong);
 }
 
 .post-content ul,
@@ -183,8 +183,8 @@
 .post-content blockquote {
   margin: 2.2em 0;
   padding: 24px 28px;
-  background: var(--background-color);
-  color: oklch(88% 0.008 75);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   font-style: italic;
   line-height: 1.75;
   border-radius: 3px;
@@ -192,25 +192,25 @@
 
 .post-content blockquote::before {
   content: '\201C';
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 3em;
   line-height: 0.55;
-  color: var(--accent-color);
+  color: var(--color-accent);
   display: block;
   margin-bottom: 12px;
   font-style: normal;
 }
 
 .post-content code {
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.88em;
-  background: oklch(18% 0.01 50 / 0.1);
+  background: var(--color-border);
   padding: 2px 6px;
   border-radius: 3px;
 }
 
 .post-content pre {
-  background: oklch(18% 0.01 50 / 0.08);
+  background: var(--color-surface);
   padding: 20px;
   border-radius: 6px;
   overflow-x: auto;
@@ -225,13 +225,13 @@
 
 .post-content hr {
   border: none;
-  border-top: 1px solid oklch(18% 0.01 50 / 0.2);
+  border-top: 1px solid var(--color-border);
   margin: 2em 0;
 }
 
 .youtube-embed {
   margin: 2em 0;
-  border: 12px solid oklch(91% 0.01 75);
+  border: 12px solid var(--color-border-strong);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -241,20 +241,20 @@
   display: inline-block;
   margin-top: 40px;
   padding: 10px 22px;
-  border: 1.5px solid oklch(18% 0.01 50 / 0.3);
-  border-bottom: 1.5px solid oklch(18% 0.01 50 / 0.3);
+  border: 1.5px solid var(--color-border-strong);
+  border-bottom: 1.5px solid var(--color-border-strong);
   border-radius: 6px;
   font-size: 15px;
-  color: var(--background-color);
+  color: var(--color-text);
   background: transparent;
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .all-posts-btn:hover {
-  border-color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
-  background: color-mix(in oklch, var(--accent-color) 14%, transparent);
-  color: var(--background-color);
+  border-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+  background: var(--color-accent-muted);
+  color: var(--color-text);
 }
 
 /* Extra breathing room between masthead and body copy */
@@ -262,7 +262,7 @@
   padding-top: 64px;
 }
 
-/* Post layout — 72ch main column + sidebar */
+/* Post layout — reading column + sidebar */
 .post-layout {
   display: grid;
   grid-template-columns: minmax(0, 72ch) 230px;
@@ -280,10 +280,10 @@
 
 /* Post title inside content */
 .post-title {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: clamp(32px, 4.5vw, 52px);
   font-weight: 700;
-  color: var(--background-color);
+  color: var(--color-text);
   line-height: 1.2;
   margin-bottom: 20px;
   padding-top: 8px;
@@ -329,7 +329,7 @@ img.leftalign {
   align-items: stretch;
   margin-top: 48px;
   padding-top: 32px;
-  border-top: 1px solid oklch(18% 0.01 50 / 0.15);
+  border-top: 1px solid var(--color-border);
 }
 
 .post-nav .post-nav-item {
@@ -337,19 +337,19 @@ img.leftalign {
   flex-direction: column;
   justify-content: center;
   padding: 14px 18px;
-  border: 1.5px solid oklch(18% 0.01 50 / 0.2);
-  border-bottom: 1.5px solid oklch(18% 0.01 50 / 0.2);
+  border: 1.5px solid var(--color-border);
+  border-bottom: 1.5px solid var(--color-border);
   border-radius: 6px;
-  color: var(--background-color);
+  color: var(--color-text);
   background: transparent;
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .post-nav a.post-nav-item:hover {
-  border-color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
-  background: color-mix(in oklch, var(--accent-color) 7%, transparent);
-  color: var(--background-color);
+  border-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+  background: var(--color-accent-muted);
+  color: var(--color-text);
 }
 
 .post-nav-ghost {
@@ -360,33 +360,33 @@ img.leftalign {
 .post-nav .post-nav-all {
   align-self: center;
   text-align: center;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   letter-spacing: 0.06em;
   padding: 12px 20px;
-  color: oklch(18% 0.01 50 / 0.55);
+  color: var(--color-text-subtle);
   white-space: nowrap;
 }
 
 .post-nav a.post-nav-all:hover {
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
 }
 
 .post-nav .post-nav-direction {
   display: block;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 12px;
   letter-spacing: 0.07em;
-  color: var(--accent-color);
+  color: var(--color-accent);
   margin-bottom: 5px;
 }
 
 .post-nav .post-nav-title {
   font-size: 14px;
   line-height: 1.35;
-  color: var(--background-color);
+  color: var(--color-text);
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -405,23 +405,19 @@ img.leftalign {
   gap: 28px;
 }
 
-.sidebar-block {
-  /* no border-top */
-}
-
 .sidebar-label {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 11px;
   letter-spacing: 0.12em;
-  color: oklch(28% 0.01 50 / 0.38);
+  color: var(--color-text-subtle);
   text-transform: uppercase;
   margin-bottom: 9px;
 }
 
 .sidebar-date {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 16px;
-  color: oklch(18% 0.01 50);
+  color: var(--color-text);
 }
 
 .sidebar-tags {
@@ -431,21 +427,21 @@ img.leftalign {
 }
 
 .sidebar-tag {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 14px;
   letter-spacing: 0.05em;
-  color: var(--accent-color);
-  border: 1px solid color-mix(in oklch, var(--accent-color) 32%, transparent);
-  border-bottom: 1px solid color-mix(in oklch, var(--accent-color) 32%, transparent);
+  color: var(--color-accent);
+  border: 1px solid color-mix(in oklch, var(--color-accent) 32%, transparent);
+  border-bottom: 1px solid color-mix(in oklch, var(--color-accent) 32%, transparent);
   padding: 3px 10px;
   border-radius: 3px;
   transition: background 0.2s, border-color 0.2s;
 }
 
 .sidebar-tag:hover {
-  background: color-mix(in oklch, var(--accent-color) 10%, transparent);
-  border-color: color-mix(in oklch, var(--accent-color) 55%, transparent);
-  border-bottom-color: color-mix(in oklch, var(--accent-color) 55%, transparent);
+  background: var(--color-accent-muted);
+  border-color: color-mix(in oklch, var(--color-accent) 55%, transparent);
+  border-bottom-color: color-mix(in oklch, var(--color-accent) 55%, transparent);
 }
 
 .sidebar-author {
@@ -459,16 +455,16 @@ img.leftalign {
   height: 75px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2.5px solid var(--accent-color);
+  border: 2.5px solid var(--color-accent);
   display: block;
 }
 
 .sidebar-author-name {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 700;
   font-style: italic;
-  color: oklch(18% 0.01 50);
+  color: var(--color-text);
   margin-bottom: 6px;
   line-height: 1.2;
 }
@@ -476,7 +472,7 @@ img.leftalign {
 .sidebar-author-bio {
   font-size: 13px;
   line-height: 1.6;
-  color: oklch(28% 0.01 50 / 0.68);
+  color: var(--color-text-muted);
   margin-bottom: 10px;
 }
 
@@ -487,10 +483,10 @@ img.leftalign {
 }
 
 .social-link {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 13px;
   letter-spacing: 0.07em;
-  color: var(--accent-color);
+  color: var(--color-accent);
   border-bottom: none;
   text-transform: uppercase;
   transition: opacity 0.2s;
@@ -509,7 +505,6 @@ img.leftalign {
   }
 
   .post-sidebar {
-    /* No border-top */
     padding-top: 36px;
     margin-top: 52px;
     flex-direction: row;
@@ -522,7 +517,6 @@ img.leftalign {
     flex: 1 1 180px;
   }
 
-  /* Date is already in the masthead on mobile */
   .sidebar-block--date {
     display: none;
   }
@@ -543,8 +537,8 @@ img.leftalign {
 
   .post-nav .post-nav-all {
     text-align: left;
-    border: 1.5px solid oklch(18% 0.01 50 / 0.2);
-    border-bottom: 1.5px solid oklch(18% 0.01 50 / 0.2);
+    border: 1.5px solid var(--color-border);
+    border-bottom: 1.5px solid var(--color-border);
     border-radius: 6px;
     padding: 12px 18px;
   }
@@ -570,15 +564,6 @@ img.leftalign {
   .post-item-tags {
     font-size: 13px;
   }
-
-  .footer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .footer-right {
-    align-items: flex-start;
-  }
 }
 
 @media (max-width: 560px) {
@@ -602,7 +587,7 @@ img.leftalign {
 
 /* ── Post masthead ── */
 .post-masthead {
-  background: var(--background-color);
+  background: var(--color-bg);
   padding: 24px var(--gutter) 52px;
 }
 
@@ -611,13 +596,12 @@ img.leftalign {
   margin: 0 auto;
 }
 
-
 .post-masthead-title {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(40px, 5.5vw, 72px);
   line-height: 0.96;
   letter-spacing: 0.01em;
-  color: var(--text-color);
+  color: var(--color-text);
   margin-bottom: 32px;
 }
 
@@ -629,9 +613,9 @@ img.leftalign {
 }
 
 .post-masthead-date {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 17px;
-  color: oklch(78% 0.012 75);
+  color: var(--color-text-muted);
 }
 
 .post-masthead-tags {
@@ -641,39 +625,39 @@ img.leftalign {
 }
 
 .post-masthead-tags .post-tag {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   letter-spacing: 0.06em;
-  color: var(--accent-color);
-  border: 1px solid color-mix(in oklch, var(--accent-color) 35%, transparent);
-  border-bottom: 1px solid color-mix(in oklch, var(--accent-color) 35%, transparent);
+  color: var(--color-accent);
+  border: 1px solid color-mix(in oklch, var(--color-accent) 35%, transparent);
+  border-bottom: 1px solid color-mix(in oklch, var(--color-accent) 35%, transparent);
   padding: 3px 10px;
   border-radius: 3px;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .post-masthead-tags .post-tag:hover {
-  color: var(--text-color);
-  border-color: color-mix(in oklch, var(--accent-color) 70%, transparent);
-  border-bottom-color: color-mix(in oklch, var(--accent-color) 70%, transparent);
-  background: color-mix(in oklch, var(--accent-color) 10%, transparent);
+  color: var(--color-text);
+  border-color: color-mix(in oklch, var(--color-accent) 70%, transparent);
+  border-bottom-color: color-mix(in oklch, var(--color-accent) 70%, transparent);
+  background: var(--color-accent-muted);
 }
 
 /* ── Blog index masthead ── */
 .index-masthead {
-  background: var(--background-color);
+  background: var(--color-bg);
   padding: 24px var(--gutter) 52px;
 }
 
 .index-masthead-title {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(72px, 10vw, 140px);
   line-height: 0.92;
   letter-spacing: 0.01em;
-  color: var(--text-color);
+  color: var(--color-text);
 }
 
-/* ── CMS page masthead — large right-aligned title ── */
+/* ── CMS page masthead ── */
 .page-header .site-nav {
   padding-left: 0;
   padding-right: 0;
@@ -684,7 +668,7 @@ img.leftalign {
   grid-template-columns: 1fr auto;
   align-items: start;
   padding: 0 var(--gutter);
-  background: var(--background-color);
+  background: var(--color-bg);
 }
 
 .page-header-left {
@@ -692,16 +676,23 @@ img.leftalign {
 }
 
 .page-header-title {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(96px, 13.5vw, 210px);
   line-height: 0.86;
   letter-spacing: 0.01em;
-  color: var(--text-color);
+  color: var(--color-text);
   text-align: right;
   padding-top: 8px;
   padding-left: 32px;
   max-width: 55vw;
   word-break: break-word;
+}
+
+/* ── Page content (CMS pages) ── */
+.page-content {
+  max-width: 85ch;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
 }
 
 @media (max-width: 768px) {
@@ -724,13 +715,11 @@ img.leftalign {
   }
 }
 
-/* ── Prev / next / all posts navigation ── */
-
-/* ── Tags box (index page — filter notice + chip cloud) ── */
+/* ── Tags box (index page) ── */
 .tags-box {
   margin-top: 48px;
   padding: 20px 24px;
-  border: 1px solid oklch(18% 0.01 50 / 0.12);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
 }
 
@@ -747,25 +736,25 @@ img.leftalign {
 }
 
 .tag-chip {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   letter-spacing: 0.05em;
-  color: oklch(18% 0.01 50 / 0.4);
+  color: var(--color-text-subtle);
   padding: 3px 10px;
   border-radius: 3px;
-  border: 1px solid oklch(18% 0.01 50 / 0.16);
-  border-bottom: 1px solid oklch(18% 0.01 50 / 0.16);
+  border: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   transition: color 0.15s, border-color 0.15s;
 }
 
 .tag-chip:hover {
-  color: var(--accent-color);
-  border-color: color-mix(in oklch, var(--accent-color) 40%, transparent);
-  border-bottom-color: color-mix(in oklch, var(--accent-color) 40%, transparent);
-  background: color-mix(in oklch, var(--accent-color) 12%, transparent);
+  color: var(--color-accent);
+  border-color: color-mix(in oklch, var(--color-accent) 40%, transparent);
+  border-bottom-color: color-mix(in oklch, var(--color-accent) 40%, transparent);
+  background: var(--color-accent-muted);
 }
 
-/* ── Enhanced footer ── */
+/* ── Footer ── */
 .footer {
   display: flex;
   align-items: flex-end;
@@ -774,6 +763,8 @@ img.leftalign {
   gap: 24px;
   text-align: left;
   padding: 52px var(--gutter);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .footer-left {
@@ -784,17 +775,27 @@ img.leftalign {
 
 .footer-logo,
 .footer-logo:visited {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 32px;
   letter-spacing: 0.03em;
-  color: var(--text-color);
+  color: var(--color-text);
   line-height: 1;
   border-bottom: none;
 }
 
 .footer-logo:hover {
-  color: var(--accent-color);
+  color: var(--color-accent);
   border-bottom: none;
+}
+
+.footer-fineprint {
+  font-size: 13px;
+  color: var(--color-text-subtle);
+  line-height: 1.3;
+}
+
+.footer-fineprint + .footer-fineprint {
+  margin-top: 1px;
 }
 
 .footer-right {
@@ -810,16 +811,16 @@ img.leftalign {
 }
 
 .footer-nav a {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 22px;
   letter-spacing: 0.06em;
-  color: var(--text-color);
+  color: var(--color-text);
   border-bottom: none;
   transition: color 0.2s;
 }
 
 .footer-nav a:hover {
-  color: var(--accent-color);
+  color: var(--color-accent);
   border-bottom: none;
 }
 
@@ -833,31 +834,25 @@ img.leftalign {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   letter-spacing: 0.07em;
   border-bottom: none;
+  color: var(--color-text-subtle);
   transition: color 0.2s;
+}
+
+.footer-rss:hover {
+  color: var(--color-accent);
+  border-bottom: none;
 }
 
 .footer-signal {
   display: inline-flex;
   align-items: center;
   border-bottom: none;
+  color: var(--color-accent);
   transition: color 0.2s;
-}
-
-.footer-rss {
-  color: color-mix(in oklch, var(--text-color) 55%, transparent);
-}
-
-.footer-rss:hover {
-  color: var(--accent-color);
-  border-bottom: none;
-}
-
-.footer-signal {
-  color: var(--accent-color);
 }
 
 .footer-rss-icon {
@@ -874,16 +869,30 @@ img.leftalign {
   flex-shrink: 0;
 }
 
-/* ── Post components (stats bar, threads grid) ── */
+@media (max-width: 768px) {
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
+  .footer-right {
+    align-items: flex-start;
+  }
+
+  .footer-fineprint {
+    font-size: 15px;
+  }
+}
+
+/* ── Post stats bar ── */
 .post-stats {
   display: flex;
   flex-wrap: wrap;
   gap: 24px 36px;
   margin: 32px 0;
   padding: 18px 0 16px;
-  border-top: 1px solid oklch(18% 0.01 50 / 0.18);
-  border-bottom: 1px solid oklch(18% 0.01 50 / 0.18);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .post-stat strong {
@@ -893,19 +902,20 @@ img.leftalign {
   font-weight: 400;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: var(--background-color);
+  color: var(--color-text);
 }
 
 .post-stat span {
   display: block;
   margin-top: 5px;
-  color: oklch(28% 0.01 50 / 0.55);
-  font-family: 'Bebas Neue', sans-serif;
+  color: var(--color-text-subtle);
+  font-family: var(--font-display);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
+/* ── Threads grid ── */
 .post-threads {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -915,23 +925,23 @@ img.leftalign {
 
 .post-thread {
   padding-top: 14px;
-  border-top: 2px solid var(--accent-color);
+  border-top: 2px solid var(--color-accent);
 }
 
 .post-thread h4 {
   margin: 0 0 8px;
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 18px;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--background-color);
+  color: var(--color-text);
 }
 
 .post-thread p {
   margin: 0;
   font-size: 15px !important;
   line-height: 1.6 !important;
-  color: oklch(28% 0.01 50 / 0.75);
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 600px) {
@@ -941,7 +951,6 @@ img.leftalign {
 }
 
 /* ── Timeline component ── */
-
 .tl {
   position: relative;
   margin: 32px 0;
@@ -954,7 +963,7 @@ img.leftalign {
   bottom: 0;
   left: 60px;
   width: 1px;
-  background: oklch(18% 0.01 50 / 0.18);
+  background: var(--color-border);
   content: '';
 }
 
@@ -963,7 +972,7 @@ img.leftalign {
   grid-template-columns: 48px 36px 1fr;
   min-height: 46px;
   align-items: start;
-  color: var(--accent-color);
+  color: var(--color-accent);
 }
 
 .tl-year {
@@ -972,7 +981,7 @@ img.leftalign {
   font-size: 18px;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: oklch(28% 0.01 50);
+  color: var(--color-text);
 }
 
 .tl-mark {
@@ -988,14 +997,14 @@ img.leftalign {
   height: 10px;
   border: 2px solid currentColor;
   border-radius: 50%;
-  background: var(--text-color);
+  background: var(--color-bg);
   transform: translateX(-50%);
   content: '';
 }
 
 .tl-copy {
   padding-bottom: 14px;
-  color: oklch(18% 0.01 50);
+  color: var(--color-text);
 }
 
 .tl-copy h3 {
@@ -1004,19 +1013,19 @@ img.leftalign {
   align-items: baseline;
   gap: 6px;
   margin: 0 0 3px;
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.2;
-  color: oklch(18% 0.01 50);
+  color: var(--color-text);
 }
 
 .tl-copy p {
   margin: 0;
   font-size: 12px !important;
   line-height: 1.4 !important;
-  color: oklch(28% 0.01 50 / 0.65);
-  font-family: 'Bebas Neue', sans-serif;
+  color: var(--color-text-subtle);
+  font-family: var(--font-display);
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -1033,11 +1042,11 @@ img.leftalign {
 .tl-tag {
   display: inline-block;
   padding: 2px 6px;
-  border: 1px solid oklch(18% 0.01 50 / 0.28);
-  border-bottom: 1px solid oklch(18% 0.01 50 / 0.28);
+  border: 1px solid var(--color-border-strong);
+  border-bottom: 1px solid var(--color-border-strong);
   border-radius: 999px;
-  color: oklch(28% 0.01 50 / 0.55);
-  font-family: 'Bebas Neue', sans-serif;
+  color: var(--color-text-subtle);
+  font-family: var(--font-display);
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1052,9 +1061,9 @@ img.leftalign {
 
 /* ── Post masthead reading time ── */
 .post-masthead-readtime {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 15px;
-  color: oklch(78% 0.012 75 / 0.6);
+  color: var(--color-text-subtle);
 }
 
 .post-masthead-readtime::before {
@@ -1076,14 +1085,14 @@ img.leftalign {
   flex-direction: column;
   gap: 5px;
   padding: 16px 20px;
-  border: 1px solid oklch(18% 0.01 50 / 0.14);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   transition: border-color 0.2s, background 0.2s;
 }
 
 a.prevnext-item:hover {
-  border-color: color-mix(in oklch, var(--accent-color) 40%, transparent);
-  background: color-mix(in oklch, var(--accent-color) 4%, transparent);
+  border-color: color-mix(in oklch, var(--color-accent) 40%, transparent);
+  background: var(--color-accent-muted);
 }
 
 .prevnext-item.prevnext-next {
@@ -1104,10 +1113,10 @@ a.prevnext-item:hover {
 }
 
 .prevnext-dir {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 12px;
   letter-spacing: 0.1em;
-  color: oklch(28% 0.01 50 / 0.4);
+  color: var(--color-text-subtle);
   line-height: 1;
 }
 
@@ -1116,16 +1125,16 @@ a.prevnext-item:hover {
 }
 
 .prevnext-title {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.35;
-  color: oklch(18% 0.01 50 / 0.8);
+  color: var(--color-text-muted);
   max-width: 28ch;
 }
 
 a.prevnext-item:hover .prevnext-dir,
 a.prevnext-item:hover .prevnext-title {
-  color: var(--accent-color);
+  color: var(--color-accent);
 }
 
 @media (max-width: 600px) {
@@ -1154,14 +1163,14 @@ a.prevnext-item:hover .prevnext-title {
 }
 
 .related-list li a {
-  font-family: 'Lora', serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.4;
-  color: oklch(28% 0.01 50 / 0.75);
+  color: var(--color-text-muted);
   border-bottom: none;
   transition: color 0.15s;
 }
 
 .related-list li a:hover {
-  color: var(--accent-color);
+  color: var(--color-accent);
 }

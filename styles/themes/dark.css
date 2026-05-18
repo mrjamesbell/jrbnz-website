@@ -1,0 +1,36 @@
+/* ── Theme: dark ──────────────────────────────────────────────────────────────
+   The original jrbnz.com theme. Dark warm canvas, Lora serif, amber accent.
+   ─────────────────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+    --color-bg:              oklch(18% 0.01 50);
+    --color-surface:         oklch(14% 0.008 50);
+
+    --color-text:            oklch(94% 0.008 75);
+    --color-text-muted:      oklch(78% 0.012 75);
+    --color-text-subtle:     oklch(60% 0.008 75);
+
+    --color-border:          oklch(94% 0.008 75 / 0.14);
+    --color-border-strong:   oklch(94% 0.008 75 / 0.3);
+
+    --color-accent:          oklch(68% 0.13 50);
+    --color-accent-muted:    color-mix(in oklch, oklch(68% 0.13 50) 14%, transparent);
+    --color-accent-fg:       oklch(97% 0.008 75);
+
+    --font-body:             'Lora', serif;
+    --font-display:          'Bebas Neue', sans-serif;
+    --font-mono:             ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --gutter:                clamp(24px, 5vw, 60px);
+    --col-read:              720px;
+    --nav-h:                 auto;
+}
+
+/* ── Surface invert — light panel within the dark theme ── */
+[data-theme="dark"] .surface-invert {
+    --color-bg:              oklch(94% 0.008 75);
+    --color-text:            oklch(18% 0.01 50);
+    --color-text-muted:      oklch(28% 0.01 50 / 0.68);
+    --color-text-subtle:     oklch(28% 0.01 50 / 0.42);
+    --color-border:          oklch(18% 0.01 50 / 0.14);
+    --color-border-strong:   oklch(18% 0.01 50 / 0.3);
+}

@@ -1,11 +1,42 @@
-/* Base styles and variables */
+/* ── Semantic tokens — dark theme defaults ────────────────────────────────────
+   All component CSS references only these tokens.
+   Theme files in styles/themes/ override them via [data-theme="x"].
+   See THEMING.md for how to add a new theme.
+   ─────────────────────────────────────────────────────────────────────────── */
 :root {
-    --text-color: #f0ede8;
-    --background-color: oklch(18% 0.01 50);
-    --accent-color: oklch(68% 0.13 50);
-    --link-color: var(--accent-color);
-    --hover-color: var(--accent-color);
-    --gutter: clamp(24px, 5vw, 60px);
+    /* Backgrounds */
+    --color-bg:              oklch(18% 0.01 50);
+    --color-surface:         oklch(14% 0.008 50);
+
+    /* Text */
+    --color-text:            oklch(94% 0.008 75);
+    --color-text-muted:      oklch(78% 0.012 75);
+    --color-text-subtle:     oklch(60% 0.008 75);
+
+    /* Borders */
+    --color-border:          oklch(94% 0.008 75 / 0.14);
+    --color-border-strong:   oklch(94% 0.008 75 / 0.3);
+
+    /* Accent — also overridable at runtime via inline <style> */
+    --color-accent:          oklch(68% 0.13 50);
+    --color-accent-muted:    color-mix(in oklch, oklch(68% 0.13 50) 14%, transparent);
+    --color-accent-fg:       oklch(97% 0.008 75);
+
+    /* Typography */
+    --font-body:             'Lora', serif;
+    --font-display:          'Bebas Neue', sans-serif;
+    --font-mono:             ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* Layout */
+    --gutter:                clamp(24px, 5vw, 60px);
+    --col-read:              720px;
+    --nav-h:                 auto;
+
+    /* Legacy aliases — components still using these will keep working */
+    --text-color:            var(--color-text);
+    --background-color:      var(--color-bg);
+    --accent-color:          var(--color-accent);
+    --accent-fg:             var(--color-accent-fg);
 }
 
 * {
