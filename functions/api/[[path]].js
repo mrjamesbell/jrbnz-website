@@ -20,6 +20,7 @@ function themeRenderer(name) {
     buildPage:     theme.buildPage     ?? darkTheme.buildPage,
     buildPhotos:   theme.buildPhotos   ?? darkTheme.buildPhotos,
     buildHomepage: theme.buildHomepage ?? darkTheme.buildHomepage,
+    buildNotes:    theme.buildNotes    ?? null,
   };
 }
 
@@ -223,6 +224,25 @@ function buildHomepageHtml(posts, author, accent, menuPages, snippetCss) {
   }) ?? '';
 }
 
+function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss) {
+  const renderer = themeRenderer(SITE_THEME).buildNotes;
+  if (!renderer) return '';
+  const notesWithHtml = notes.map((note, i) => ({ ...note, bodyHtml: mdToHtml(bodies[i] || '') }));
+  return renderer({ notes: notesWithHtml, menuPages, accent, snippetCss, theme: SITE_THEME });
+}
+
+async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss) {
+  const notes = (posts || [])
+    .filter(p => p.status === 'published' && (p.tags || []).includes('note'))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (!notes.length) return '';
+  const bodies = await Promise.all(notes.map(async n => {
+    const obj = await env.BLOG.get(`posts/${n.slug}/draft.md`);
+    return obj ? await obj.text() : '';
+  }));
+  return buildNotesHtml(notes, bodies, menuPages, accent, snippetCss);
+}
+
 // ── Index helpers ─────────────────────────────────────────────────────────────
 
 async function getIndex(env) {
@@ -239,9 +259,11 @@ async function rebuildIndexHtml(env, posts) {
   const { author, accent, menuPages, snippetCss } = await loadSiteContext(env);
   const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
   const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss);
+  const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
     ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
+    ...(notesHtml ? [env.BLOG.put('pages/notes/index.html', notesHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
   ]);
 }
 
@@ -497,15 +519,17 @@ async function handleRebuildSite(env) {
       await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
   ]);
-  const [indexHtml, photosHtml, homepageHtml] = [
-    buildIndexHtml(posts, accent, menuPages, snippetCss),
-    buildPhotosHtml(menuPages, accent),
-    buildHomepageHtml(posts, author, accent, menuPages, snippetCss),
-  ];
+  const [indexHtml, photosHtml, homepageHtml, notesHtml] = await Promise.all([
+    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss)),
+    Promise.resolve(buildPhotosHtml(menuPages, accent)),
+    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss)),
+    buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss),
+  ]);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
     env.BLOG.put('pages/photos/index.html', photosHtml, { httpMetadata: { contentType: 'text/html' } }),
     ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
+    ...(notesHtml ? [env.BLOG.put('pages/notes/index.html', notesHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
   ]);
   return json({ rebuilt: publishedPosts.length + publishedPages.length });
 }
@@ -859,8 +883,14 @@ async function handlePublish(env, slug, request) {
   }
 
   await saveIndex(env, posts);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss);
-  await env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } });
+  const saveOps = [
+    env.BLOG.put('posts/index.html', buildIndexHtml(posts, accent, menuPages, snippetCss), { httpMetadata: { contentType: 'text/html' } }),
+  ];
+  if ((posts[idx].tags || []).includes('note')) {
+    const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
+    if (notesHtml) saveOps.push(env.BLOG.put('pages/notes/index.html', notesHtml, { httpMetadata: { contentType: 'text/html' } }));
+  }
+  await Promise.all(saveOps);
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
 }

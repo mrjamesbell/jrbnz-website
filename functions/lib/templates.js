@@ -72,6 +72,7 @@ function _navLinks(menuPages) {
     ...(now ? [pageLink(now)] : []),
     { href: '/posts/', label: 'Essays' },
     { href: '/photos/', label: 'Photos' },
+    { href: '/notes/', label: 'Notes' },
     ...others.map(pageLink),
   ];
 }

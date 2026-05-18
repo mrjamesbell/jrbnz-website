@@ -105,7 +105,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: grayscale(1) brightness(0.55) contrast(1.2);
+    filter: grayscale(1) brightness(0.72) contrast(1.1);
 }
 
 [data-theme="cinematic"] .post-hero-content {
@@ -216,7 +216,7 @@
 
 [data-theme="cinematic"] .img-wide img {
     width: 100%;
-    filter: grayscale(1) brightness(0.78) contrast(1.1);
+    filter: grayscale(1) brightness(0.88) contrast(1.05);
 }
 
 [data-theme="cinematic"] .img-wide figcaption {
@@ -363,7 +363,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: grayscale(1) brightness(0.62) contrast(1.16);
+    filter: grayscale(1) brightness(0.75) contrast(1.08);
     display: block;
 }
 
@@ -491,7 +491,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: grayscale(1) brightness(0.55) contrast(1.2);
+    filter: grayscale(1) brightness(0.72) contrast(1.1);
 }
 
 [data-theme="cinematic"] .ci-featured-overlay {
@@ -597,14 +597,14 @@
     aspect-ratio: 16 / 9;
     width: 100%;
     object-fit: cover;
-    filter: grayscale(1) brightness(0.72);
+    filter: grayscale(1) brightness(0.82);
     margin-bottom: 14px;
     transition: filter 0.3s;
     display: block;
 }
 
 [data-theme="cinematic"] .essay-card:hover .essay-card-img {
-    filter: grayscale(0.3) brightness(0.85);
+    filter: grayscale(0.3) brightness(0.92);
 }
 
 [data-theme="cinematic"] .essay-card-title {
@@ -669,6 +669,69 @@
 [data-theme="cinematic"] .cinematic-footer-nav a:hover {
     color: var(--color-text);
     border-bottom: none;
+}
+
+/* ── Homepage full-width featured override ───────────────────────────────── */
+[data-theme="cinematic"] #home-featured {
+    min-height: 88vh;
+}
+
+/* ── Notes stream page ────────────────────────────────────────────────────── */
+[data-theme="cinematic"] .notes-stream {
+    max-width: var(--col-read);
+    margin: 0 auto;
+    padding: 64px clamp(24px, 5vw, 48px) 88px;
+}
+
+[data-theme="cinematic"] .note-entry {
+    padding: 44px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .note-entry:first-child {
+    padding-top: 0;
+}
+
+[data-theme="cinematic"] .note-entry:last-child {
+    border-bottom: none;
+}
+
+[data-theme="cinematic"] .note-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+[data-theme="cinematic"] .note-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}
+
+[data-theme="cinematic"] .note-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+}
+
+[data-theme="cinematic"] .note-body {
+    font-size: clamp(16px, 1.7vw, 19px);
+    line-height: 1.78;
+}
+
+[data-theme="cinematic"] .notes-empty {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--color-text-subtle);
+    text-transform: uppercase;
+    padding: 64px 0;
+    text-align: center;
 }
 
 /* ── Homepage interlude — atmospheric pull-quote moment ─────────────────── */

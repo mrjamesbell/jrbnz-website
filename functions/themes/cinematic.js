@@ -20,6 +20,7 @@ function _navLinks(menuPages) {
     ...(now ? [pageLink(now)] : []),
     { href: '/posts/', label: 'Essays' },
     { href: '/photos/', label: 'Photos' },
+    { href: '/notes/', label: 'Notes' },
     ...others.map(pageLink),
   ];
 }
@@ -98,16 +99,18 @@ export function buildHomepage(data) {
   const featured = essays[0];
   const stripPosts = essays.slice(1, 5);
 
-  const featuredCard = featured ? `
-<div class="home-feature">
-  ${featured.coverImage ? `<img src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center">` : ''}
-  <div class="feature-card">
-    <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featured.date))}</p>
-    <h2><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
-    ${(featured.subtitle || featured.excerpt) ? `<p>${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
-    <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
+  const homeFeatured = featured ? `
+<section class="ci-featured" id="home-featured">
+  ${featured.coverImage ? `<img class="ci-featured-img" src="${esc(featured.coverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
+  <div class="ci-featured-overlay">
+    <div class="ci-featured-inner">
+      <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featured.date))}</p>
+      <h2 class="ci-featured-title"><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
+      ${(featured.subtitle || featured.excerpt) ? `<p class="ci-featured-excerpt">${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
+      <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
+    </div>
   </div>
-</div>` : '<div class="home-feature home-feature-empty"></div>';
+</section>` : '';
 
   const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published' && p.slug !== 'now');
   const thirdPage = cmsPages[0];
@@ -161,15 +164,8 @@ export function buildHomepage(data) {
   return `${buildHead({ title: 'James Bell', theme, accent, snippetCss, extraHead })}
 ${buildSiteNav(menuPages, '/')}
 <main class="h-card">
-  <header class="home-hero">
-    <div class="home-intro">
-      <p class="home-intro-kicker">JRBNZ &nbsp;·&nbsp; Essays, photographs, notes</p>
-      <h1 class="home-intro-name u-name">${esc(author?.name || 'James Bell')}</h1>
-      <p class="home-intro-bio u-note">${esc(author?.bio || '')}</p>
-      <a href="/posts/" class="ci-read-link">Read the essays →</a>
-    </div>
-    ${featuredCard}
-  </header>
+  <span class="p-name" hidden>${esc(author?.name || 'James Bell')}</span>
+  ${homeFeatured}
   <section class="home-blocks">
     <a class="home-block" href="/posts/">
       <div>
@@ -377,6 +373,37 @@ ${buildSiteNav(menuPages, '/posts/')}
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>
 </article>
+${buildCinematicFooter(menuPages)}
+</body>
+</html>`;
+}
+
+export function buildNotes(data) {
+  const { notes, menuPages, accent, snippetCss, theme } = data;
+
+  const noteItems = (notes || []).map(note => {
+    const otherTags = (note.tags || []).filter(t => t !== 'note');
+    const tagHtml = otherTags.map(t => `<span class="note-tag">${esc(t)}</span>`).join('');
+    return `
+<article class="note-entry">
+  <div class="note-meta">
+    <time class="note-date">${esc(_fmtDate(note.date))}</time>
+    ${tagHtml}
+  </div>
+  <div class="note-body post-content">${note.bodyHtml || ''}</div>
+</article>`;
+  }).join('');
+
+  return `${buildHead({ title: 'Notes — James Bell', theme, accent, snippetCss })}
+${buildSiteNav(menuPages, '/notes/')}
+<div class="ci-page-masthead">
+  <h1 class="ci-page-title">Notes</h1>
+</div>
+<div class="surface-invert">
+  <section class="notes-stream">
+    ${noteItems || '<p class="notes-empty">No notes yet.</p>'}
+  </section>
+</div>
 ${buildCinematicFooter(menuPages)}
 </body>
 </html>`;
