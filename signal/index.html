@@ -477,6 +477,17 @@
           <div class="settings-page-section">
             <div class="settings-page-section-title">Publishing</div>
             <div class="settings-page-field">
+              <label class="field-label">Default cover image</label>
+              <p class="field-hint" style="margin-bottom:8px">Used on posts without a cover image. Select from R2.</p>
+              <div class="cover-input-row">
+                <input class="field-input" type="url" id="site-default-cover" placeholder="https://…" autocomplete="off">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-default-cover-media">Browse R2</button>
+              </div>
+              <div class="cover-preview-wrap" id="default-cover-preview-wrap" style="display:none">
+                <img class="cover-preview-img" id="default-cover-preview-img" src="" alt="">
+              </div>
+            </div>
+            <div class="settings-page-field">
               <label class="field-label">iA Writer token</label>
               <p class="field-hint" style="margin-bottom:8px">Paste into iA Writer → Settings → Micropub to publish directly.</p>
               <div style="display:flex;gap:8px">
@@ -565,10 +576,15 @@
         <label class="field-label" for="settings-date">Date</label>
         <input class="field-input" type="date" id="settings-date">
       </div>
+      <div id="settings-subtitle-row">
+        <label class="field-label" for="settings-subtitle">Subtitle</label>
+        <input class="field-input" type="text" id="settings-subtitle" placeholder="Short editorial line — appears in the hero overlay" autocomplete="off">
+        <p class="field-hint">Displayed below the title on the post hero. Leave blank for none.</p>
+      </div>
       <div id="settings-excerpt-row">
         <label class="field-label" for="settings-excerpt">Excerpt <span id="settings-excerpt-count" style="font-weight:400;text-transform:none;letter-spacing:0"></span></label>
         <textarea class="field-input" id="settings-excerpt" rows="3" maxlength="160" style="height:auto;resize:none"></textarea>
-        <p class="field-hint">Used in post lists. Max 160 characters.</p>
+        <p class="field-hint">Used for SEO meta and RSS. Max 160 characters.</p>
       </div>
       <div id="settings-cover-row">
         <label class="field-label" for="settings-cover">Cover image</label>

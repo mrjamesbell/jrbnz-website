@@ -121,6 +121,15 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
     else { inp.type = 'password'; btn.textContent = 'Show'; }
   });
 
+  // Default cover image in settings
+  document.getElementById('btn-default-cover-media')?.addEventListener('click', _openDefaultCoverMediaPicker);
+  document.getElementById('site-default-cover')?.addEventListener('input', e => {
+    const url = e.target.value.trim();
+    const wrap = document.getElementById('default-cover-preview-wrap');
+    const img = document.getElementById('default-cover-preview-img');
+    if (wrap && img) { wrap.style.display = url ? '' : 'none'; if (url) img.src = url; }
+  });
+
   // Accent colour pickers
   _initAccentPickers();
 
@@ -362,6 +371,87 @@ async function _openCoverMediaPicker() {
     close();
     const input = document.getElementById('settings-cover');
     if (input) { input.value = url; input.dispatchEvent(new Event('input')); }
+  };
+  if (closeBtn) closeBtn.onclick = close;
+  if (cancelBtn) cancelBtn.onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+}
+
+async function _openDefaultCoverMediaPicker() {
+  const modal = document.getElementById('media-picker-modal');
+  if (!modal) return;
+  const grid = document.getElementById('media-picker-grid');
+  const insertBtn = document.getElementById('media-picker-insert');
+  const closeBtn = document.getElementById('media-picker-close');
+  const cancelBtn = document.getElementById('media-picker-cancel');
+  const searchEl = document.getElementById('media-picker-search');
+  const infoEl = document.getElementById('picker-selected-info');
+
+  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
+  insertBtn.disabled = true;
+  insertBtn.textContent = 'Use as default cover';
+  if (infoEl) infoEl.textContent = '';
+  if (searchEl) searchEl.value = '';
+  modal.style.display = 'flex';
+
+  try {
+    const res = await fetch('/api/media?limit=48');
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.items || []);
+    grid.innerHTML = items.length
+      ? items.map(item => {
+          const url = _escAttr(item.publicUrl || item.url || '');
+          const name = _escAttr(item.filename || '');
+          const size = _escAttr(_fmtBytes(item.size || 0));
+          return `<div class="media-item" data-url="${url}">
+            <img src="${url}" alt="${name}" loading="lazy">
+            <div class="media-item-overlay"><div class="media-item-filename">${name}</div><div class="media-item-size">${size}</div></div>
+          </div>`;
+        }).join('')
+      : '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted)">No media uploaded yet.</div>';
+  } catch {
+    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
+  }
+
+  const onGridClick = e => {
+    const item = e.target.closest('.media-item');
+    if (!item) return;
+    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
+    item.classList.add('is-selected');
+    insertBtn.disabled = false;
+    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
+  };
+  grid.addEventListener('click', onGridClick);
+
+  if (searchEl) {
+    searchEl.oninput = e => {
+      const q = e.target.value.toLowerCase();
+      grid.querySelectorAll('.media-item').forEach(item => {
+        item.style.display = (item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '').includes(q) ? '' : 'none';
+      });
+    };
+  }
+
+  const close = () => {
+    modal.style.display = 'none';
+    grid.removeEventListener('click', onGridClick);
+    insertBtn.textContent = 'Insert image';
+    insertBtn.onclick = null;
+    if (closeBtn) closeBtn.onclick = null;
+    if (cancelBtn) cancelBtn.onclick = null;
+    if (searchEl) searchEl.oninput = null;
+  };
+
+  insertBtn.onclick = () => {
+    const selected = grid.querySelector('.media-item.is-selected');
+    if (!selected) return;
+    const url = selected.dataset.url;
+    close();
+    const inp = document.getElementById('site-default-cover');
+    const wrap = document.getElementById('default-cover-preview-wrap');
+    const img = document.getElementById('default-cover-preview-img');
+    if (inp) inp.value = url;
+    if (wrap && img) { wrap.style.display = ''; img.src = url; }
   };
   if (closeBtn) closeBtn.onclick = close;
   if (cancelBtn) cancelBtn.onclick = close;
@@ -876,12 +966,33 @@ function openSettingsView() {
   fetch('/api/micropub-token').then(r => r.ok ? r.json() : {}).then(d => {
     tokenEl.value = d.token || '';
   }).catch(() => {});
+
+  fetch('/api/site/settings').then(r => r.ok ? r.json() : {}).then(d => {
+    const inp = document.getElementById('site-default-cover');
+    const wrap = document.getElementById('default-cover-preview-wrap');
+    const img = document.getElementById('default-cover-preview-img');
+    if (inp) inp.value = d.defaultCoverImage || '';
+    if (wrap && img) {
+      wrap.style.display = d.defaultCoverImage ? '' : 'none';
+      if (d.defaultCoverImage) img.src = d.defaultCoverImage;
+    }
+  }).catch(() => {});
 }
 
 async function saveAppSettings() {
   const apiKey = document.getElementById('app-settings-apikey').value.trim();
   if (apiKey) localStorage.setItem('signal-apikey', apiKey);
   else localStorage.removeItem('signal-apikey');
+
+  const defaultCoverImage = document.getElementById('site-default-cover')?.value.trim() || null;
+  try {
+    await fetch('/api/site/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ defaultCoverImage }),
+    });
+  } catch {}
+
   showToast('Settings saved', 'success');
 }
 

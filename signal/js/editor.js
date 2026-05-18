@@ -218,6 +218,7 @@ export async function openEditor(slug, type = 'post') {
       nav_url: null,
       status: 'draft',
       body: '',
+      subtitle: '',
       excerpt: '',
       coverImage: null,
       coverImageAlt: '',
@@ -257,7 +258,7 @@ export function closeEditor() {
   if (_isDirty && currentSlug && currentPost) {
     const slug = currentSlug;
     const apiBase = _getApiBase();
-    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center', include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
+    const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, subtitle: currentPost.subtitle || '', coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center', include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
     fetch(`${apiBase}/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
   }
   cancelScheduled();
@@ -718,7 +719,7 @@ function _triggerSave() {
       date: currentPost.date,
       excerpt: currentPost.excerpt,
       coverImage: currentPost.coverImage,
-      coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
+      subtitle: currentPost.subtitle || '', coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
       include_in_menu: currentPost.include_in_menu,
       nav_url: currentPost.nav_url || null,
       wordCount: currentPost.wordCount
@@ -769,7 +770,7 @@ function _takeSnapshot() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
+    subtitle: currentPost.subtitle || '', coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
   };
@@ -782,6 +783,7 @@ function _revertChanges() {
   currentPost.tags = [..._snapshot.tags];
   currentPost.date = _snapshot.date;
   currentPost.excerpt = _snapshot.excerpt;
+  currentPost.subtitle = _snapshot.subtitle || '';
   currentPost.coverImage = _snapshot.coverImage;
   currentPost.coverImageAlt = _snapshot.coverImageAlt || '';
   currentPost.coverImageFocus = _snapshot.coverImageFocus || 'center';
@@ -814,7 +816,7 @@ function _revertChanges() {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
+    subtitle: currentPost.subtitle || '', coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
@@ -888,7 +890,7 @@ async function _runPublishFlow(isPage) {
     date: currentPost.date,
     excerpt: currentPost.excerpt,
     coverImage: currentPost.coverImage,
-    coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
+    subtitle: currentPost.subtitle || '', coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center',
     include_in_menu: currentPost.include_in_menu,
     nav_url: currentPost.nav_url || null,
     wordCount: currentPost.wordCount
@@ -1045,6 +1047,7 @@ function _openSettings(e) {
   e && e.preventDefault();
   document.getElementById('settings-slug').value = currentSlug;
   document.getElementById('settings-date').value = currentPost.date || new Date().toISOString().slice(0, 10);
+  document.getElementById('settings-subtitle').value = currentPost.subtitle || '';
   document.getElementById('settings-excerpt').value = currentPost.excerpt || '';
   document.getElementById('settings-cover').value = currentPost.coverImage || '';
   const _coverAltInput = document.getElementById('settings-cover-alt');
@@ -1064,6 +1067,8 @@ function _openSettings(e) {
   if (dateRow) dateRow.style.display = isPage ? 'none' : '';
   const excerptRow = document.getElementById('settings-excerpt-row');
   if (excerptRow) excerptRow.style.display = isPage ? 'none' : '';
+  const subtitleRow = document.getElementById('settings-subtitle-row');
+  if (subtitleRow) subtitleRow.style.display = isPage ? 'none' : '';
   const coverRow = document.getElementById('settings-cover-row');
   if (coverRow) coverRow.style.display = isPage ? 'none' : '';
   const menuRow = document.getElementById('settings-menu-row');
@@ -1121,12 +1126,14 @@ async function _saveSettings() {
 
   if (!isPage) {
     const date = document.getElementById('settings-date').value;
+    const subtitle = document.getElementById('settings-subtitle')?.value.trim() || '';
     const excerpt = document.getElementById('settings-excerpt').value;
     const coverImage = document.getElementById('settings-cover').value.trim() || null;
     const coverImageAlt = document.getElementById('settings-cover-alt')?.value.trim() || '';
     const activeBtn = document.querySelector('.cover-focus-btn.active');
     const coverImageFocus = activeBtn ? activeBtn.dataset.focus : 'center';
     currentPost.date = date;
+    currentPost.subtitle = subtitle;
     currentPost.excerpt = excerpt;
     currentPost.coverImage = coverImage;
     currentPost.coverImageAlt = coverImageAlt;

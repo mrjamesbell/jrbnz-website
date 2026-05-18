@@ -45,10 +45,48 @@ ${buildSiteNav(menuPages, `/${slug}/`)}
   <h1 class="ci-page-title">${esc(title)}</h1>
 </div>
 <div class="surface-invert">
-  <div class="article-col article-open article-section">
+  <div class="ci-page-content">
     <div class="post-content page-content">${contentHtml}</div>
   </div>
 </div>
+${buildCinematicFooter(menuPages)}
+</body>
+</html>`;
+}
+
+export function buildPhotos(data) {
+  const { menuPages, accent, snippetCss, year, theme } = data;
+  const extraHead = '<meta name="description" content="Photography portfolio by James Bell — theatre and travel photography"><link rel="stylesheet" href="/photos/styles/gallery.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">';
+  return `${buildHead({ title: 'Photos — James Bell', theme, accent, snippetCss, extraHead })}
+${buildSiteNav(menuPages, '/photos/')}
+<div class="ci-page-masthead">
+  <h1 class="ci-page-title">Photos</h1>
+</div>
+<section class="ci-photos-content">
+  <nav class="filter-nav">
+    <a href="/photos/" class="filter-back">← Photos</a>
+    <a href="/photos/?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
+    <a href="/photos/?category=travel" class="filter-link" data-category="travel">Travel</a>
+  </nav>
+  <div class="category-overview hidden" id="category-overview"></div>
+  <div class="hero-panel hidden" id="hero-panel">
+    <div class="hero-image-wrap">
+      <a class="glightbox" href="" id="hero-link" data-gallery="hero">
+        <img id="hero-image" src="" alt="" loading="lazy">
+      </a>
+    </div>
+    <div class="hero-description" id="hero-description"></div>
+  </div>
+  <div id="loading" class="loading">Loading photos...</div>
+  <div id="gallery" class="gallery"></div>
+  <div id="error" class="error" style="display:none"></div>
+  <nav class="pagination" id="pagination" style="display:none">
+    <button id="prev-btn" class="pagination-btn" disabled>← Previous</button>
+    <span id="page-info" class="page-info"></span>
+    <button id="next-btn" class="pagination-btn" disabled>Next →</button>
+  </nav>
+</section>
+<script src="/photos/scripts/gallery.js"></script>
 ${buildCinematicFooter(menuPages)}
 </body>
 </html>`;
@@ -65,7 +103,7 @@ export function buildHomepage(data) {
   <div class="feature-card">
     <p class="post-kicker">${featured.tags?.[0] ? `${esc(featured.tags[0])} · ` : ''}${esc(_fmtDate(featured.date))}</p>
     <h2><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
-    ${featured.excerpt ? `<p>${esc(featured.excerpt)}</p>` : ''}
+    ${(featured.subtitle || featured.excerpt) ? `<p>${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
     <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
   </div>
 </div>` : '<div class="home-feature home-feature-empty"></div>';
@@ -164,7 +202,7 @@ export function buildIndex(data) {
     <div class="ci-featured-inner">
       <p class="post-kicker">${featured.tags?.[0] ? `${esc(featured.tags[0])} · ` : ''}${esc(_fmtDate(featured.date))}</p>
       <h2 class="ci-featured-title"><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
-      ${featured.excerpt ? `<p class="ci-featured-excerpt">${esc(featured.excerpt)}</p>` : ''}
+      ${(featured.subtitle || featured.excerpt) ? `<p class="ci-featured-excerpt">${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
       <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
     </div>
   </div>
@@ -209,18 +247,66 @@ ${buildCinematicFooter(menuPages)}
 export function buildPost(data) {
   const { title, slug, date, dateFormatted, tags, contentHtml, author, accent,
           menuPages, snippetCss, readTime, postUrl, extraHead,
-          year, theme, coverImage, coverImageAlt, coverImageFocus, recentPosts, excerpt } = data;
+          year, theme, coverImage, coverImageAlt, coverImageFocus, recentPosts, subtitle } = data;
 
-  const kicker = [dateFormatted, `${readTime} min read`, ...(tags || []).slice(0, 1)]
+  const isNote = (tags || []).includes('note');
+  const focus = coverImageFocus || 'center';
+  const kicker = [dateFormatted, `${readTime} min read`, ...(tags || []).filter(t => t !== 'note').slice(0, 1)]
     .filter(Boolean).join(' · ');
 
-  const focus = coverImageFocus || 'center';
+  // Notes: compact dark header, no full-viewport hero
+  if (isNote) {
+    const essayCards = (recentPosts || []).map(p => {
+      const tag = (p.tags || [])[0] || '';
+      const meta = [tag, p.date ? p.date.slice(0, 4) : ''].filter(Boolean).join(' · ');
+      return `<a href="/posts/${esc(p.slug)}/" class="essay-card">
+        ${p.coverImage ? `<img class="essay-card-img" src="${esc(p.coverImage)}" alt="" style="object-position:${esc(p.coverImageFocus || 'center')} center" loading="lazy">` : '<div class="essay-card-no-img"></div>'}
+        <p class="essay-card-title">${esc(p.title)}</p>
+        <p class="essay-card-meta">${esc(meta)}</p>
+      </a>`;
+    }).join('');
+
+    const moreEssays = recentPosts && recentPosts.length ? `
+<section class="more-essays">
+  <p class="more-essays-label">More essays</p>
+  <div class="essay-strip">
+    ${essayCards}
+    <a href="/posts/" class="essay-card">
+      <div class="essay-card-no-img"></div>
+      <p class="essay-card-title">Back to all essays →</p>
+      <p class="essay-card-meta">Archive</p>
+    </a>
+  </div>
+</section>` : '';
+
+    return `${buildHead({ title, theme, accent, snippetCss, extraHead })}
+${buildSiteNav(menuPages, '/posts/')}
+<article class="h-entry">
+<div class="post-hero-compact">
+  <p class="post-kicker">${esc(kicker)}</p>
+  <h1 class="post-hero-compact-title p-name">${esc(title)}</h1>
+  ${subtitle ? `<p class="post-hero-dek">${esc(subtitle)}</p>` : ''}
+</div>
+<div class="surface-invert">
+  <div class="article-col article-open article-section">
+    <div class="post-content e-content">${contentHtml}</div>
+  </div>
+</div>
+${moreEssays}
+<a href="${esc(postUrl)}" class="u-url" hidden></a>
+</article>
+${buildCinematicFooter(menuPages)}
+</body>
+</html>`;
+  }
+
+  // Essays: full-viewport hero
   const heroImg = coverImage
     ? `<img class="post-hero-img" src="${esc(coverImage)}" alt="${esc(coverImageAlt || '')}" style="object-position:${esc(focus)} center" loading="eager">`
     : '';
 
-  const heroDek = excerpt
-    ? `<p class="post-hero-dek">${esc(excerpt)}</p>`
+  const heroDek = subtitle
+    ? `<p class="post-hero-dek">${esc(subtitle)}</p>`
     : '';
 
   const authorBox = author && author.name ? `
@@ -253,6 +339,7 @@ export function buildPost(data) {
   <div class="essay-strip">
     ${essayCards}
     <a href="/posts/" class="essay-card">
+      <div class="essay-card-no-img"></div>
       <p class="essay-card-title">Back to all essays →</p>
       <p class="essay-card-meta">Archive</p>
     </a>
