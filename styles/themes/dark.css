@@ -34,4 +34,5 @@
     --color-text-subtle:     oklch(28% 0.01 50 / 0.42);
     --color-border:          oklch(18% 0.01 50 / 0.14);
     --color-border-strong:   oklch(18% 0.01 50 / 0.3);
+    color:                   var(--color-text);
 }

@@ -138,6 +138,7 @@
 /* ── Article body — reading surface ──────────────────────────────────────── */
 [data-theme="cinematic"] .surface-invert {
     background: var(--color-bg);
+    color: var(--color-text);
 }
 
 [data-theme="cinematic"] .article-col {
