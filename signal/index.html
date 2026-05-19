@@ -89,6 +89,14 @@
       <span class="rail-item-label">Snippets</span>
     </a>
 
+    <a href="#homepage" class="rail-item" id="rail-homepage" data-route="homepage" title="Homepage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
+      <span class="rail-item-label">Homepage</span>
+    </a>
+
     <a href="#help" class="rail-item" id="rail-help" data-route="help" title="Help">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"/>
@@ -358,6 +366,114 @@
       </div>
     </div>
 
+    <!-- VIEW: Homepage editor -->
+    <div id="view-homepage" class="post-list-view" style="display:none">
+      <div class="post-list-inner">
+        <div class="post-list-header">
+          <h1 class="post-list-title">Homepage</h1>
+          <button class="btn btn-primary btn-sm" id="btn-homepage-save">Save &amp; publish</button>
+        </div>
+        <div class="settings-page-body">
+
+          <!-- Featured article -->
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Featured article</div>
+            <p class="field-hint" style="margin-bottom:16px">The large hero image and title at the top of the homepage.</p>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-featured-slug">Article</label>
+              <select class="field-select" id="hp-featured-slug">
+                <option value="">— Auto (most recent essay) —</option>
+              </select>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-featured-title">Title override</label>
+              <input class="field-input" type="text" id="hp-featured-title" placeholder="Leave blank to use the post title">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-featured-dek">Deck override</label>
+              <input class="field-input" type="text" id="hp-featured-dek" placeholder="Leave blank to use the post subtitle/excerpt">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-featured-image">Image override URL</label>
+              <input class="field-input" type="url" id="hp-featured-image" placeholder="Leave blank to use the post cover image">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-featured-cta">CTA label</label>
+              <input class="field-input" type="text" id="hp-featured-cta" placeholder="Read the essay →">
+            </div>
+          </div>
+
+          <!-- Three cards -->
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Three cards</div>
+            <p class="field-hint" style="margin-bottom:16px">Leave all three blank to use the default cards (Essays / Photographs / third nav page).</p>
+            <div id="hp-cards-container">
+              <!-- JS populates 3 card blocks here -->
+            </div>
+          </div>
+
+          <!-- Interlude -->
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Interlude</div>
+            <p class="field-hint" style="margin-bottom:16px">A full-width atmospheric moment between the cards and the archive. Can be text-only or image + text.</p>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-interlude-text">Text</label>
+              <input class="field-input" type="text" id="hp-interlude-text" placeholder="Theatre, memory, technology…">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-interlude-image">Image URL (optional)</label>
+              <div class="cover-input-row">
+                <input class="field-input" type="url" id="hp-interlude-image" placeholder="Leave blank for text-only">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-hp-interlude-media">Browse R2</button>
+              </div>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-interlude-treatment">Image treatment</label>
+              <select class="field-select" id="hp-interlude-treatment">
+                <option value="photo-muted">Muted (default)</option>
+                <option value="photo-mono">Mono</option>
+                <option value="photo-soft">Soft</option>
+                <option value="photo-colour">Colour</option>
+              </select>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-interlude-href">Link URL (optional)</label>
+              <input class="field-input" type="url" id="hp-interlude-href" placeholder="/posts/ or https://…">
+            </div>
+          </div>
+
+          <!-- Archive -->
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Archive section</div>
+            <p class="field-hint" style="margin-bottom:16px">A short list of curated older posts. Leave all three blank to auto-select recent essays.</p>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-archive-title">Section title</label>
+              <input class="field-input" type="text" id="hp-archive-title" placeholder="From the Archive">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-archive-post-0">Post 1</label>
+              <select class="field-select" id="hp-archive-post-0">
+                <option value="">— Auto —</option>
+              </select>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-archive-post-1">Post 2</label>
+              <select class="field-select" id="hp-archive-post-1">
+                <option value="">— Auto —</option>
+              </select>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="hp-archive-post-2">Post 3</label>
+              <select class="field-select" id="hp-archive-post-2">
+                <option value="">— Auto —</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <div id="view-help" class="post-list-view" style="display:none">
       <div class="post-list-inner">
         <div class="post-list-header">
@@ -380,30 +496,67 @@
               <tr><td><code>- item</code></td><td>Bullet list</td></tr>
               <tr><td><code>1. item</code></td><td>Numbered list</td></tr>
               <tr><td><code>---</code></td><td>Horizontal rule</td></tr>
-              <tr><td><code>&gt; text</code></td><td>Pull quote</td></tr>
+              <tr><td><code>&gt; text</code></td><td>Blockquote</td></tr>
             </table>
           </div>
 
           <div class="help-section">
-            <h2 class="help-heading">Pull quotes</h2>
-            <p>Start a line with <code>&gt;</code> to create a pull quote. In the cinematic theme these render as a gold left rule at 60% column width — good for setting a key sentence apart from the surrounding prose.</p>
+            <h2 class="help-heading">Quote hierarchy</h2>
+            <p>There are three ways to quote text, each with a different visual weight.</p>
+            <p><strong>Blockquote</strong> — the standard <code>&gt;</code> syntax. In the cinematic theme these render as a gold left rule at 60% column width. Good for a cited passage or a key line set apart from prose. Use for: one or two sentences, incidental to the surrounding text.</p>
             <pre class="help-code">&gt; People often talk about carrying secrets to the grave.</pre>
-            <p>You can use multiple lines:</p>
-            <pre class="help-code">&gt; First line of the quote.
-&gt; Second line continues here.</pre>
-            <p>Pull quotes work best for one or two sentences. For longer material, use a section heading instead.</p>
+            <p><strong>Pull quote</strong> — a <code>.pull-quote</code> div wrapping a blockquote. Renders in the Baskerville display font, slightly wider than the reading column, with top and bottom rules. Use for: a sentence you want the reader to stop at, editorial emphasis, one defining idea per section.</p>
+            <pre class="help-code">&lt;div class="pull-quote"&gt;
+&gt; The best productions feel inevitable in retrospect.
+&lt;/div&gt;</pre>
+            <p><strong>Quote interlude</strong> — a <code>.quote-interlude</code> div. Full-width dark section break with large Baskerville text. Use sparingly — once per long piece at most. Good for a structural pause between major sections, or a central idea that earns its own moment.</p>
+            <pre class="help-code">&lt;div class="quote-interlude"&gt;
+&gt; You cannot separate the performance from the space it inhabits.
+&lt;/div&gt;</pre>
           </div>
 
           <div class="help-section">
             <h2 class="help-heading">Inserting images</h2>
-            <p>Use the <strong>image button</strong> in the editor toolbar. You can upload a new image or pick one from the media library. Layout options:</p>
+            <p>Use the <strong>image button</strong> in the editor toolbar to upload or pick from the media library. After choosing an image you will be asked to select a <strong>layout role</strong> and <strong>treatment</strong>.</p>
+            <p><strong>Layout roles</strong></p>
+            <table class="help-table">
+              <tr><td><code>Wide</code></td><td>Breaks slightly outside the reading column. Best for landscape, atmospheric, or location images.</td></tr>
+              <tr><td><code>Break</code></td><td>Full-width cinematic pause. Best for mood images that reset the reader's attention between sections.</td></tr>
+              <tr><td><code>Small</code></td><td>Modest image within the reading column. Best for archival, documentary, or reference images.</td></tr>
+              <tr><td><code>Pair</code></td><td>Two images side by side. Insert two consecutive images both set to Pair — the site wraps them automatically.</td></tr>
+            </table>
+            <p><strong>Treatment classes</strong></p>
+            <table class="help-table">
+              <tr><td><code>Muted</code></td><td>Reduced saturation and contrast. <strong>Recommended default</strong> for most atmospheric photos.</td></tr>
+              <tr><td><code>Mono</code></td><td>Strong monochrome. Use for archival, cinematic, stark, or memory-like images.</td></tr>
+              <tr><td><code>Soft</code></td><td>Lower contrast, slightly lifted. Use for reflective, quiet, nostalgic, or landscape images.</td></tr>
+              <tr><td><code>Colour</code></td><td>Mostly untreated. Use when colour matters — not as a default.</td></tr>
+            </table>
+            <p>Common combinations: <code>Wide + Muted</code> for most unrelated-but-atmospheric photos. <code>Break + Mono</code> for a cinematic structural pause. <code>Small + Colour</code> for a documentary reference image. <code>Pair + Soft</code> for two related landscape or reflective images.</p>
+            <p>The cover image for a post is set in the post settings panel. Use a landscape image at least 1600&times;900px.</p>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Type system</h2>
+            <p>The cinematic theme uses three typefaces, each with a distinct role.</p>
             <ul class="help-list">
-              <li><strong>Full width</strong> — spans the reading column</li>
-              <li><strong>Left float</strong> — image floats left, text wraps around it</li>
-              <li><strong>Right float</strong> — image floats right, text wraps around it</li>
-              <li><strong>Centred</strong> — centred at a reduced width</li>
+              <li><strong>Baskerville (display)</strong> — used for hero titles, section headings, pull quotes, quote interludes, and the homepage featured title. Tight letter-spacing and a low line-height. This is the voice of the site.</li>
+              <li><strong>Georgia (body)</strong> — used for all running prose: article paragraphs, blockquote text, decks, post excerpts. Generous line-height for comfortable reading.</li>
+              <li><strong>System monospace</strong> — used for labels, kickers, metadata, nav items, and the Signal admin interface. Uppercase with wide letter-spacing for UI chrome.</li>
             </ul>
-            <p>You can also set a percentage width (e.g. 50%) to reduce the image size. The cover/header image for a post is set in the post settings panel — use a landscape image at least 1600&times;900px.</p>
+            <p>You do not set these in post content — they are applied automatically by the theme based on context. If you use a <code>.pull-quote</code> or <code>.quote-interlude</code> wrapper, Baskerville is applied automatically to the quote inside.</p>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Homepage</h2>
+            <p>The homepage has four curated sections. Go to the <strong>Homepage</strong> view in the rail to edit them.</p>
+            <ul class="help-list">
+              <li><strong>Featured article</strong> — a large hero at the top. Defaults to the most recent essay. You can pin a specific post and override its title, deck, image, and CTA label.</li>
+              <li><strong>Three cards</strong> — links to the major site sections (Essays, Photographs, and a third destination). You can configure title, kicker, link, and style for each. Leave all three blank for the defaults.</li>
+              <li><strong>Interlude</strong> — a full-width atmospheric moment, text-only or with a background image. Used to establish mood and editorial voice.</li>
+              <li><strong>Archive section</strong> — a short list of curated older posts. Pin up to three by slug, or leave blank to auto-select recent essays.</li>
+            </ul>
+            <p>Clicking <strong>Save &amp; publish</strong> rebuilds the homepage immediately — no full site rebuild needed.</p>
           </div>
 
           <div class="help-section">
@@ -423,25 +576,25 @@ const x = 1;
 
           <div class="help-section">
             <h2 class="help-heading">Snippets</h2>
-            <p>Snippets are reusable styled HTML blocks. Use the <strong>Insert snippet</strong> button in the editor toolbar to pick one. Current built-ins:</p>
-            <ul class="help-list">
-              <li><strong>Stats bar</strong> — a row of large numbers with labels (e.g. years, shows, cities)</li>
-              <li><strong>Two-column grid</strong> — side-by-side content blocks with headings and text</li>
-              <li><strong>Timeline</strong> — a vertical timeline with year, title, company, and optional tag/award</li>
-            </ul>
-            <p>Custom snippets can be created and managed in the <strong>Snippets</strong> view.</p>
+            <p>Snippets are reusable styled HTML blocks. Use the <strong>Insert snippet</strong> button in the editor toolbar to pick one. Custom snippets can be created in the <strong>Snippets</strong> view.</p>
           </div>
 
           <div class="help-section">
             <h2 class="help-heading">Site navigation</h2>
-            <p>The site nav is built automatically from CMS pages with <strong>Include in site navigation</strong> checked. Order is: Now → Blog → Photos → everything else.</p>
-            <p>You can set a custom <strong>Nav link URL</strong> on a page to point the nav link somewhere else — useful for external sites.</p>
+            <p>The site nav is built automatically from CMS pages with <strong>Include in site navigation</strong> checked. You can set a custom <strong>Nav link URL</strong> on a page to point the nav link somewhere else — useful for external sites.</p>
           </div>
 
           <div class="help-section">
             <h2 class="help-heading">Publishing</h2>
             <p>Hitting <strong>Publish</strong> on a post or page writes the HTML to R2 immediately — the live site updates within seconds. No deploy needed.</p>
-            <p>If you change navigation settings (adding/removing pages from the nav), use <strong>Rebuild site</strong> in the settings panel to regenerate all posts and pages with the updated nav.</p>
+            <p>If you change navigation settings (adding/removing pages from the nav), use <strong>Rebuild site</strong> in Settings to regenerate all posts and pages with the updated nav.</p>
+          </div>
+
+          <div class="help-section">
+            <h2 class="help-heading">Editorial approach</h2>
+            <p>Not every post needs a literal image. Use images that add something the text cannot — mood, texture, temporal context, visual contrast. An atmospheric photograph of a staircase can be more useful than a photograph of the person being written about.</p>
+            <p>Muted and mono treatments exist to keep images from competing with the prose. Use <code>photo-colour</code> sparingly — primarily when colour is genuinely important (a specific place, a person, an object that the article is directly about).</p>
+            <p>Pull quotes and quote interludes should be used once per piece, if at all. Their power comes from restraint. If every section has a pull quote, none of them work.</p>
           </div>
 
         </div>

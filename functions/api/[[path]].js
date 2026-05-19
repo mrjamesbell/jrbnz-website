@@ -214,13 +214,12 @@ function buildPhotosHtml(menuPages, accent) {
   });
 }
 
-function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage) {
-  const recentPosts = (posts || [])
+function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig) {
+  const allPosts = (posts || [])
     .filter(p => p.status === 'published')
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
   return themeRenderer(SITE_THEME).buildHomepage?.({
-    author, recentPosts, menuPages, accent, snippetCss, theme: SITE_THEME, defaultCoverImage,
+    author, recentPosts: allPosts, menuPages, accent, snippetCss, theme: SITE_THEME, defaultCoverImage, homepageConfig,
   }) ?? '';
 }
 
@@ -256,9 +255,9 @@ async function saveIndex(env, posts) {
 }
 
 async function rebuildIndexHtml(env, posts) {
-  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig } = await loadSiteContext(env);
   const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage);
-  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage);
+  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig);
   const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
@@ -280,18 +279,20 @@ async function rebuildPostHtml(env, slug, posts) {
 }
 
 async function loadSiteContext(env) {
-  const [authorObj, accentObj, pagesObj, siteObj, snippetCss] = await Promise.all([
+  const [authorObj, accentObj, pagesObj, siteObj, homepageObj, snippetCss] = await Promise.all([
     env.BLOG.get('settings/author.json'),
     env.BLOG.get('settings/accent.json'),
     env.BLOG.get('pages/index.json'),
     env.BLOG.get('settings/site.json'),
+    env.BLOG.get('settings/homepage.json'),
     loadSnippetCss(env),
   ]);
   const author = authorObj ? JSON.parse(await authorObj.text()) : {};
   const accentData = accentObj ? JSON.parse(await accentObj.text()) : {};
   const menuPages = pagesObj ? JSON.parse(await pagesObj.text()) : [];
   const siteData = siteObj ? JSON.parse(await siteObj.text()) : {};
-  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null, defaultCoverImageFocus: siteData.defaultCoverImageFocus || 'center' };
+  const homepageConfig = homepageObj ? JSON.parse(await homepageObj.text()) : null;
+  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null, defaultCoverImageFocus: siteData.defaultCoverImageFocus || 'center', homepageConfig };
 }
 
 async function handleGetSiteSettings(env) {
@@ -305,6 +306,24 @@ async function handleSaveSiteSettings(request, env) {
   const updated = { ...existing, ...data };
   await env.BLOG.put('settings/site.json', JSON.stringify(updated), { httpMetadata: { contentType: 'application/json' } });
   return json(updated);
+}
+
+async function handleGetHomepageConfig(env) {
+  const obj = await env.BLOG.get('settings/homepage.json');
+  return json(obj ? JSON.parse(await obj.text()) : {});
+}
+
+async function handleSaveHomepageConfig(request, env) {
+  const data = await request.json();
+  await env.BLOG.put('settings/homepage.json', JSON.stringify(data), { httpMetadata: { contentType: 'application/json' } });
+  // Rebuild homepage HTML immediately
+  const posts = await getIndex(env);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage } = await loadSiteContext(env);
+  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, data);
+  if (homepageHtml) {
+    await env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } });
+  }
+  return json({ ok: true });
 }
 
 async function getPagesIndex(env) {
@@ -385,6 +404,12 @@ export async function onRequest(context) {
       if (method === 'GET') return handleGetSiteSettings(env);
       if (method === 'PUT') return handleSaveSiteSettings(request, env);
     }
+  }
+
+  // Homepage config
+  if (resource === 'homepage-config') {
+    if (method === 'GET') return handleGetHomepageConfig(env);
+    if (method === 'PUT') return handleSaveHomepageConfig(request, env);
   }
 
   // Snippets
@@ -505,7 +530,7 @@ async function handleSaveAuthor(request, env) {
 }
 
 async function handleRebuildSite(env) {
-  const [posts, pages, { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus }] = await Promise.all([
+  const [posts, pages, { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig }] = await Promise.all([
     getIndex(env),
     getPagesIndex(env),
     loadSiteContext(env),
@@ -529,7 +554,7 @@ async function handleRebuildSite(env) {
   const [indexHtml, photosHtml, homepageHtml, notesHtml] = await Promise.all([
     Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage)),
     Promise.resolve(buildPhotosHtml(menuPages, accent)),
-    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage)),
+    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig)),
     buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss),
   ]);
   await Promise.all([

@@ -5,6 +5,7 @@ import { showToast } from './toast.js';
 import { initMedia } from './media.js';
 import { openCropModal, uploadToR2 } from './image-upload.js';
 import { initSnippetsView } from './snippets-ui.js';
+import { initHomepageView } from './homepage.js';
 import { BUILD } from './build.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
@@ -493,6 +494,7 @@ function _route(hash) {
   const mediaMatch = hash === 'media';
   const pagesMatch = hash === 'pages';
   const snippetsMatch = hash === 'snippets';
+  const homepageMatch = hash === 'homepage';
   const helpMatch = hash === 'help';
   const settingsMatch = hash === 'settings';
 
@@ -520,6 +522,11 @@ function _route(hash) {
     closeEditor();
     _showView('snippets');
     initSnippetsView();
+  } else if (homepageMatch) {
+    _setRailActive('homepage');
+    closeEditor();
+    _showView('homepage');
+    initHomepageView();
   } else if (helpMatch) {
     _setRailActive('help');
     closeEditor();
@@ -556,24 +563,28 @@ function _showView(view) {
   const pagesEl = document.getElementById('view-pages');
   const mediaEl = document.getElementById('media-view');
   const snippetsEl = document.getElementById('view-snippets');
+  const homepageEl = document.getElementById('view-homepage');
   const helpEl = document.getElementById('view-help');
   const settingsEl = document.getElementById('view-settings');
   const showList = view === 'list';
   const showPages = view === 'pages';
   const showMedia = view === 'media';
   const showSnippets = view === 'snippets';
+  const showHomepage = view === 'homepage';
   const showHelp = view === 'help';
   const showSettings = view === 'settings';
   listEl.style.display = showList ? '' : 'none';
   if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
   mediaEl.style.display = showMedia ? '' : 'none';
   if (snippetsEl) snippetsEl.style.display = showSnippets ? '' : 'none';
+  if (homepageEl) homepageEl.style.display = showHomepage ? '' : 'none';
   if (helpEl) helpEl.style.display = showHelp ? '' : 'none';
   if (settingsEl) settingsEl.style.display = showSettings ? '' : 'none';
   if (showList) _animateIn(listEl);
   if (showPages && pagesEl) _animateIn(pagesEl);
   if (showMedia) _animateIn(mediaEl);
   if (showSnippets && snippetsEl) _animateIn(snippetsEl);
+  if (showHomepage && homepageEl) _animateIn(homepageEl);
   if (showHelp && helpEl) _animateIn(helpEl);
   if (showSettings && settingsEl) _animateIn(settingsEl);
   // view-editor visibility managed by openEditor / closeEditor

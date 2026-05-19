@@ -105,6 +105,95 @@ That's it. No other files need to change.
 
 ---
 
+## Type system (cinematic theme)
+
+The cinematic theme uses three typefaces. Each is fixed — they cannot be changed in post content, only in the theme CSS.
+
+| Token | Typeface | Role |
+|---|---|---|
+| `--font-display` | `Baskerville, Georgia, 'Times New Roman', serif` | Hero titles, section headings, pull quotes, quote interludes, homepage feature title, footer quote |
+| `--font-body` | `Georgia, 'Times New Roman', serif` | All running prose: article paragraphs, blockquote text, decks, excerpts, card descriptions |
+| `--font-mono` | `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace` | Labels, kickers, metadata, nav items, dates, all UI chrome |
+
+Display contexts should have tight letter-spacing (around `-0.05em` to `-0.065em` for large titles) and a low line-height (around `0.86` to `0.92` for the largest sizes). Body text uses a generous line-height (`1.7`–`1.82`). Mono text uses uppercase with `0.16`–`0.22em` letter-spacing.
+
+---
+
+## Background colour vars (cinematic theme)
+
+In addition to the standard semantic `--color-bg` token, the cinematic theme defines three atmospheric colour vars in the `[data-theme="cinematic"]` block:
+
+| Variable | Value | Use |
+|---|---|---|
+| `--color-reading-bg` | `#eee7dc` | Warm reading surface (`.surface-invert` background) |
+| `--color-deep-bg` | `#03040a` | Deep dark (legacy; prefer `--color-deeper-bg` for new use) |
+| `--color-deeper-bg` | `#040608` | Deepest dark — used for interlude sections, footer, `.quote-interlude` |
+
+These are internal to the cinematic theme and should not be referenced from component CSS. Only reference the semantic tokens (`--color-bg`, `--color-text`, etc.) from shared components.
+
+---
+
+## Quote hierarchy (cinematic theme)
+
+There are three quote structures with increasing visual weight:
+
+| Syntax | Output | When to use |
+|---|---|---|
+| `> text` (standard blockquote) | Gold left rule, 60% column width, Georgia body text | A cited passage or key sentence incidental to the surrounding prose |
+| `<div class="pull-quote"> > text </div>` | In-flow, display font at `clamp(24px, 3.8vw, 48px)`, slightly wider than column, top/bottom rules | One sentence you want the reader to stop at; editorial emphasis; once per section at most |
+| `<div class="quote-interlude"> > text </div>` | Full-width dark section break, display font at `clamp(28px, 4.5vw, 66px)`, centred | A structural pause between major sections; once per long piece at most |
+
+The `.pull-quote` and `.quote-interlude` wrappers suppress the standard blockquote styling and apply display-font rules automatically.
+
+---
+
+## Homepage config model
+
+The homepage layout is driven by a JSON config stored at `settings/homepage.json` in R2. It is loaded by `loadSiteContext(env)` and passed to `buildHomepage()` in the active theme renderer.
+
+### Schema
+
+```json
+{
+  "featured": {
+    "slug": "optional-post-slug",
+    "titleOverride": "Optional override title",
+    "dekOverride": "Optional override subtitle/deck",
+    "imageOverride": "https://… (optional)",
+    "ctaLabel": "Read the essay →"
+  },
+  "cards": [
+    { "kicker": "Essays", "title": "Long-form pieces…", "href": "/posts/", "linkLabel": "Read essays →", "style": "" },
+    { "kicker": "Photographs", "title": "Theatre, travel…", "href": "/photos/", "linkLabel": "View photographs →", "style": "invert" },
+    { "kicker": "Now", "title": "What I'm doing now", "href": "/now/", "linkLabel": "Read →", "style": "" }
+  ],
+  "interlude": {
+    "text": "Theatre, memory, technology…",
+    "image": "https://… (optional)",
+    "treatment": "photo-muted",
+    "href": "/posts/ (optional)"
+  },
+  "archive": {
+    "title": "From the Archive",
+    "posts": ["slug-one", "slug-two", "slug-three"]
+  }
+}
+```
+
+### Fallback behaviour
+
+Every field is optional. When absent:
+- `featured`: defaults to `essays[0]` (most recent non-note post)
+- `cards`: defaults to the hardcoded Essays / Photographs / first nav-page blocks
+- `interlude`: defaults to the text-only version with the standing tagline
+- `archive`: defaults to the three most recent essays that are not the featured post
+
+### Editing
+
+Use the **Homepage** view in Signal Admin (`/signal/#homepage`). Clicking **Save & publish** calls `PUT /api/homepage-config`, which saves the config to KV and immediately rebuilds the homepage HTML. No full site rebuild is needed.
+
+---
+
 ## Image roles in the cinematic theme
 
 The cinematic theme has a two-axis image system: **layout** (how the image fits into the page) and **treatment** (how it is filtered). These are separate CSS classes that combine freely.
