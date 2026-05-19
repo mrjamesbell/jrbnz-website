@@ -86,11 +86,38 @@ export function renderImageBlock(src, alt, layout, width) {
 </div>`;
 }
 
+export function renderRoleImageBlock(src, alt, imgRole, treatment) {
+  const escSrc = _esc(src);
+  const escAlt = _esc(alt || '');
+  const badges = [imgRole, treatment].filter(Boolean);
+  const badgeHtml = badges.map(b => `<span class="image-role-badge">${_esc(b)}</span>`).join('');
+  return `<div class="image-block image-block--role" data-src="${escSrc}" data-alt="${escAlt}" data-imgrole="${_esc(imgRole)}" data-treatment="${_esc(treatment)}">
+  <div class="image-thumb-wrap">
+    <img class="image-thumb-img" src="${escSrc}" alt="${escAlt}" loading="lazy">
+    <button class="image-remove-btn" data-action="remove-image" title="Remove">✕</button>
+  </div>
+  ${escAlt ? `<div class="image-info-bar"><div class="image-alt-text">${escAlt}</div></div>` : ''}
+  ${badgeHtml ? `<div class="image-role-bar">${badgeHtml}</div>` : ''}
+</div>`;
+}
+
 export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const alt = (altText || '').replace(/"/g, '&quot;');
   const widthAttr = width && width !== 100 ? ` width="${width}"` : '';
   const block = `\n<!-- signal:image src="${publicUrl}" alt="${alt}" layout="${layout || 'full'}"${widthAttr} -->\n`;
+  textarea.value = value.slice(0, start) + block + value.slice(end);
+  textarea.selectionStart = textarea.selectionEnd = start + block.length;
+  textarea.dispatchEvent(new Event('input'));
+  textarea.focus();
+}
+
+export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole, treatment) {
+  const { selectionStart: start, selectionEnd: end, value } = textarea;
+  const alt = (altText || '').replace(/"/g, '&quot;');
+  const roleAttr = imgRole ? ` imgRole="${imgRole}"` : '';
+  const treatAttr = treatment ? ` treatment="${treatment}"` : '';
+  const block = `\n<!-- signal:image src="${publicUrl}" alt="${alt}"${roleAttr}${treatAttr} -->\n`;
   textarea.value = value.slice(0, start) + block + value.slice(end);
   textarea.selectionStart = textarea.selectionEnd = start + block.length;
   textarea.dispatchEvent(new Event('input'));
@@ -108,37 +135,61 @@ export function insertImageMarkdown(textarea, publicUrl, altText) {
 
 // ── Image options modal ───────────────────────────────────────────────────────
 
-export function openImageOptionsModal(textarea, publicUrl, altHint) {
+let _imageRolesCache = null;
+
+async function _getImageRoles() {
+  if (_imageRolesCache) return _imageRolesCache;
+  try {
+    const res = await fetch('/api/theme/image-roles');
+    _imageRolesCache = await res.json();
+  } catch {
+    _imageRolesCache = { layouts: [], treatments: [], defaults: {} };
+  }
+  return _imageRolesCache;
+}
+
+export async function openImageOptionsModal(textarea, publicUrl, altHint) {
   const modal = document.getElementById('img-options-modal');
   const previewImg = document.getElementById('img-options-preview-img');
   const altInput = document.getElementById('img-options-alt');
   const insertBtn = document.getElementById('img-options-insert');
   const closeBtn = document.getElementById('img-options-close');
   const cancelBtn = document.getElementById('img-options-cancel');
+  const layoutSelect = document.getElementById('img-options-layout');
+  const treatmentSelect = document.getElementById('img-options-treatment');
+  const pairHint = document.getElementById('img-options-pair-hint');
 
   previewImg.src = publicUrl;
   altInput.value = altHint || '';
 
-  let selectedLayout = 'full';
+  // Populate selects from theme config
+  const roles = await _getImageRoles();
 
-  modal.querySelectorAll('[data-layout]').forEach(btn => {
-    btn.classList.toggle('is-active', btn.dataset.layout === 'full');
-    btn.onclick = () => {
-      selectedLayout = btn.dataset.layout;
-      modal.querySelectorAll('[data-layout]').forEach(b => b.classList.toggle('is-active', b === btn));
-    };
-  });
+  layoutSelect.innerHTML = '<option value="">Default (inline)</option>' +
+    roles.layouts.map(r => `<option value="${_esc(r.className)}">${_esc(r.label)} — ${_esc(r.description)}</option>`).join('');
+  layoutSelect.value = roles.defaults?.layout || '';
 
-  const widthInput = document.getElementById('img-options-width');
-  widthInput.value = 100;
+  treatmentSelect.innerHTML = '<option value="">None</option>' +
+    roles.treatments.map(r => `<option value="${_esc(r.className)}">${_esc(r.label)} — ${_esc(r.description)}</option>`).join('');
+  treatmentSelect.value = roles.defaults?.treatment || '';
+
+  if (pairHint) pairHint.style.display = 'none';
+  layoutSelect.onchange = () => {
+    if (pairHint) pairHint.style.display = layoutSelect.value === 'img-pair' ? '' : 'none';
+  };
 
   modal.style.display = 'flex';
   setTimeout(() => altInput.focus(), 60);
 
   const close = () => { modal.style.display = 'none'; };
   const doInsert = () => {
-    const pct = Math.max(10, Math.min(100, parseInt(widthInput.value, 10) || 100));
-    insertSignalImage(textarea, publicUrl, altInput.value.trim(), selectedLayout, pct);
+    const imgRole = layoutSelect.value;
+    const treatment = treatmentSelect.value;
+    if (imgRole || treatment) {
+      insertSignalImageWithRole(textarea, publicUrl, altInput.value.trim(), imgRole, treatment);
+    } else {
+      insertSignalImage(textarea, publicUrl, altInput.value.trim(), 'full', 100);
+    }
     close();
   };
 

@@ -1,5 +1,5 @@
 import { extractVideoId, renderYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
-import { renderImageBlock } from './image-upload.js';
+import { renderImageBlock, renderRoleImageBlock } from './image-upload.js';
 
 let markedReady = false;
 const ytTitleCache = {};
@@ -33,17 +33,25 @@ function getMarked() {
         return renderYouTubeBlock(videoId, cached, width, align);
       }
 
-      // Detect <!-- signal:image src="..." alt="..." layout="..." width="..." -->
+      // Detect <!-- signal:image src="..." alt="..." [imgRole="..." treatment="..."] [layout="..." width="..."] -->
       if (html.includes('signal:image')) {
         const srcM = html.match(/src="([^"]*)"/);
         const altM = html.match(/alt="([^"]*)"/);
-        const layoutM = html.match(/layout="([^"]*)"/);
-        const widthM = html.match(/width="(\d+)"/);
         const src = srcM?.[1] || '';
         const alt = altM?.[1] || '';
+        if (!src) return origHtml(token);
+
+        const imgRoleM = html.match(/imgRole="([^"]*)"/);
+        const treatmentM = html.match(/treatment="([^"]*)"/);
+        if (imgRoleM || treatmentM) {
+          return renderRoleImageBlock(src, alt, imgRoleM?.[1] || '', treatmentM?.[1] || '');
+        }
+
+        const layoutM = html.match(/layout="([^"]*)"/);
+        const widthM = html.match(/width="(\d+)"/);
         const layout = layoutM?.[1] || 'full';
         const w = widthM ? parseInt(widthM[1], 10) : 100;
-        if (src) return renderImageBlock(src, alt, layout, w);
+        return renderImageBlock(src, alt, layout, w);
       }
 
       return origHtml(token);

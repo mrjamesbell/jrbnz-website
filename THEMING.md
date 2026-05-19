@@ -89,11 +89,11 @@ takes precedence via cascade order.
    the dark theme (e.g. a fixed nav needs position/height rules here).
 
 6. **Create a renderer file** at `functions/themes/mytheme.js` if the page
-   HTML structure differs from the dark theme. Export `buildPost`, `buildIndex`,
-   `buildPage`, and/or `buildHomepage`. You only need to export the functions
-   that differ — the dispatcher falls back to `dark.js` for anything not
-   exported. See `functions/themes/dark.js` for the expected function
-   signatures.
+   HTML structure differs from the dark theme. Export any of `buildPost`,
+   `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`.
+   You only need to export the functions that differ — the dispatcher falls
+   back to `dark.js` for anything not exported. See `functions/themes/dark.js`
+   for the expected function signatures.
 
 7. **Activate the theme** by changing `SITE_THEME` in
    `functions/api/[[path]].js`:
@@ -102,6 +102,94 @@ takes precedence via cascade order.
    ```
 
 That's it. No other files need to change.
+
+---
+
+## Image roles in the cinematic theme
+
+The cinematic theme has a two-axis image system: **layout** (how the image fits into the page) and **treatment** (how it is filtered). These are separate CSS classes that combine freely.
+
+### Why these exist
+
+Many article images will not depict the post subject directly. A photo may be atmospheric, emotional, textural, archival, or documentary. These classes support that without every image becoming a visual distraction. The goal is mood, pacing, and editorial texture — not illustration.
+
+Not every post needs a literal image. Use images that add something the text cannot.
+
+### Layout roles
+
+| Class | Purpose |
+|---|---|
+| `.img-wide` | Breaks slightly outside the reading column. Best for landscape, atmospheric, or location images. |
+| `.img-break` | Full-width pause between sections. Cinematic, immersive. Best for mood images that reset the reader's attention. |
+| `.img-small` | Sits comfortably within the reading column. Intentionally modest. Best for archival, documentary, personal, or reference images. |
+| `.img-pair` | Two related images side by side on desktop, stacked on mobile. Best for contrasts, sequences, before/after, or images that form a visual thought. |
+
+### Treatment roles
+
+| Class | Purpose |
+|---|---|
+| `.photo-muted` | Reduced saturation and contrast. **Recommended default** for most atmospheric photos. |
+| `.photo-mono` | Strong monochrome. Use for archival, cinematic, stark, or memory-like images. |
+| `.photo-colour` | Mostly untreated. Use when colour is important — not as a default. |
+| `.photo-soft` | Lower contrast, slightly lifted. Use for reflective, quiet, nostalgic, or landscape images. |
+
+### Combining roles
+
+Apply one layout class and one treatment class to the same `<figure>`:
+
+```html
+<figure class="img-wide photo-muted">…</figure>
+<figure class="img-break photo-mono">…</figure>
+<figure class="img-small photo-colour">…</figure>
+<figure class="img-pair photo-soft">…</figure>
+```
+
+**Recommended defaults:** `.img-wide.photo-muted` for most unrelated-but-atmospheric images. `.img-break.photo-muted` for a major atmospheric pause.
+
+Use literal or external/CC images sparingly — mostly when the article is explicitly about that person, object, place, or event. In those cases, `.photo-colour` is appropriate.
+
+### `.img-pair` usage
+
+`.img-pair` is a grid wrapper around two `<figure>` (or `<img>`) children. In Signal, insert two consecutive images both with **Pair** layout — the renderer wraps them automatically. A blank line between them breaks the pair.
+
+```
+<!-- signal:image src="url1" alt="…" imgRole="img-pair" treatment="photo-soft" -->
+<!-- signal:image src="url2" alt="…" imgRole="img-pair" treatment="photo-soft" -->
+```
+
+### Hero images
+
+Hero image filters are controlled by the `--image-filter-hero` custom property on `[data-theme="cinematic"]`. Change this one value to adjust all hero images at once. It defaults to full grayscale with a slight brightness/contrast adjustment.
+
+### Theme-level image filter vars
+
+| Variable | Default value |
+|---|---|
+| `--image-filter-hero` | `grayscale(100%) brightness(0.80) contrast(1.04)` |
+| `--image-filter-mono` | Same as hero |
+| `--image-filter-muted` | `saturate(0.55) brightness(0.92) contrast(0.97)` |
+| `--image-filter-soft` | `saturate(0.75) brightness(1.02) contrast(0.88)` |
+| `--image-filter-colour` | `brightness(0.96)` |
+
+### Where the config lives / adding a new theme
+
+Image role metadata is defined in `functions/themes/<name>.js` as a named export `imageRoles`. The Signal editor fetches this from `GET /api/theme/image-roles` (public, no auth) and uses it to populate the layout and treatment selects.
+
+To add, remove, or rename roles in a new theme: export an `imageRoles` object from the theme file with the same shape as `cinematic.js`. Signal will reflect the change automatically.
+
+```js
+export const imageRoles = {
+  layouts: [
+    { className: 'img-wide', label: 'Wide', description: '…' },
+    // …
+  ],
+  treatments: [
+    { className: 'photo-muted', label: 'Muted', description: '…', isDefault: true },
+    // …
+  ],
+  defaults: { layout: 'img-wide', treatment: 'photo-muted' },
+};
+```
 
 ---
 

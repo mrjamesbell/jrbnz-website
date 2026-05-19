@@ -2,6 +2,58 @@
 // Only exports functions where the HTML structure differs from the dark theme.
 // The dispatcher in [[path]].js falls back to dark.js for anything not exported here.
 
+// ── Image role metadata ───────────────────────────────────────────────────────
+// Consumed by GET /api/theme/image-roles so Signal knows what to offer.
+// Each role has className, label, description. Layouts and treatments combine.
+export const imageRoles = {
+  layouts: [
+    {
+      className: 'img-wide',
+      label: 'Wide',
+      description: 'Breaks slightly outside the reading column. Best for landscape, atmospheric, or location images.',
+    },
+    {
+      className: 'img-break',
+      label: 'Break',
+      description: 'Full-width visual pause between sections. Best for mood images that reset the reader\'s attention.',
+    },
+    {
+      className: 'img-small',
+      label: 'Small',
+      description: 'Modest image within the reading column. Best for archival, documentary, or reference images.',
+    },
+    {
+      className: 'img-pair',
+      label: 'Pair',
+      description: 'Two images side by side on desktop. Insert two consecutive images with this layout to form a pair.',
+    },
+  ],
+  treatments: [
+    {
+      className: 'photo-muted',
+      label: 'Muted',
+      description: 'Reduced saturation and contrast. Recommended default for atmospheric photos.',
+      isDefault: true,
+    },
+    {
+      className: 'photo-mono',
+      label: 'Mono',
+      description: 'Strong monochrome. Use for archival, cinematic, stark, or memory-like images.',
+    },
+    {
+      className: 'photo-colour',
+      label: 'Colour',
+      description: 'Mostly untreated. Use when colour is important to the image.',
+    },
+    {
+      className: 'photo-soft',
+      label: 'Soft',
+      description: 'Lower contrast, slightly lifted. Use for reflective, quiet, nostalgic, or landscape images.',
+    },
+  ],
+  defaults: { layout: 'img-wide', treatment: 'photo-muted' },
+};
+
 import { esc, buildHead, buildSiteNav, buildNavLinks } from '../lib/templates.js';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];

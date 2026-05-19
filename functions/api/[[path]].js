@@ -349,6 +349,12 @@ export async function onRequest(context) {
   if (resource === 'micropub' && slug === 'media') return handleMicropubMedia(request, env);
   if (resource === 'micropub') return handleMicropub(request, env);
 
+  // Public theme config — no auth required
+  if (resource === 'theme' && slug === 'image-roles' && method === 'GET') {
+    const theme = THEMES[SITE_THEME] ?? THEMES.dark;
+    return json(theme.imageRoles ?? { layouts: [], treatments: [], defaults: {} });
+  }
+
   // All other routes require auth
   const token = getSessionCookie(request);
   if (!token || !await verifySession(token, env.BLOG_PASSWORD)) {

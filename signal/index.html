@@ -898,7 +898,7 @@ const x = 1;
   </div>
 </div>
 
-<!-- Image options modal (alt text + layout) -->
+<!-- Image options modal (alt text + image role) -->
 <div class="modal-backdrop" id="img-options-modal" style="display:none">
   <div class="modal" style="max-width:420px">
     <div class="modal-header">
@@ -914,21 +914,18 @@ const x = 1;
         <input class="field-input" type="text" id="img-options-alt" placeholder="Describe the image…" autocomplete="off">
       </div>
       <div>
-        <label class="field-label">Layout</label>
-        <div class="img-layout-group">
-          <button class="img-layout-btn" data-layout="left">← Left</button>
-          <button class="img-layout-btn is-active" data-layout="full">Full</button>
-          <button class="img-layout-btn" data-layout="centre">Centre</button>
-          <button class="img-layout-btn" data-layout="right">Right →</button>
-        </div>
+        <label class="field-label" for="img-options-layout">Image layout</label>
+        <select class="field-select" id="img-options-layout">
+          <option value="">Default (inline)</option>
+        </select>
       </div>
       <div>
-        <label class="field-label">Size</label>
-        <div style="display:flex;align-items:center;gap:var(--space-3)">
-          <input class="field-input" type="number" id="img-options-width" min="10" max="100" step="5" value="100" style="width:90px">
-          <span style="font-size:var(--text-base);color:var(--color-cream-text-muted);font-family:var(--font-sans)">%</span>
-        </div>
+        <label class="field-label" for="img-options-treatment">Photo treatment</label>
+        <select class="field-select" id="img-options-treatment">
+          <option value="">None</option>
+        </select>
       </div>
+      <p class="img-options-hint" id="img-options-pair-hint" style="display:none">Pair: insert a second image with <strong>Pair</strong> layout immediately after this one.</p>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="img-options-cancel">Cancel</button>

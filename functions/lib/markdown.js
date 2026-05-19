@@ -24,6 +24,61 @@ export function mdToHtml(md) {
   const lines = md.split('\n');
   const out = [];
   let i = 0;
+  let _pendingPair = null; // holds first figure of an img-pair until the second arrives
+
+  function _flushPair() {
+    if (_pendingPair !== null) { out.push(_pendingPair); _pendingPair = null; }
+  }
+
+  function _renderSignalImage(raw) {
+    const srcM = raw.match(/src="([^"]*)"/);
+    const altM = raw.match(/alt="([^"]*)"/);
+    const imgRoleM = raw.match(/imgRole="([^"]*)"/);
+    const treatmentM = raw.match(/treatment="([^"]*)"/);
+    const layoutM = raw.match(/layout="([^"]*)"/);
+    const widthM = raw.match(/width="(\d+)"/);
+
+    const src = mdEsc(srcM?.[1] || '');
+    const alt = mdEsc(altM?.[1] || '');
+    if (!src) return;
+
+    const imgRole = imgRoleM?.[1] || '';
+    const treatment = treatmentM?.[1] || '';
+
+    if (imgRole || treatment) {
+      // Editorial role rendering — wrap in <figure>
+      const isPair = imgRole === 'img-pair';
+      const figClasses = isPair
+        ? (treatment || null)           // pair wrapper handles layout; figure gets treatment only
+        : [imgRole, treatment].filter(Boolean).join(' ');
+      const figHtml = figClasses
+        ? `<figure class="${figClasses}"><img src="${src}" alt="${alt}" loading="lazy"></figure>`
+        : `<figure><img src="${src}" alt="${alt}" loading="lazy"></figure>`;
+
+      if (isPair) {
+        if (_pendingPair !== null) {
+          out.push(`<div class="img-pair">${_pendingPair}${figHtml}</div>`);
+          _pendingPair = null;
+        } else {
+          _pendingPair = figHtml;
+        }
+      } else {
+        _flushPair();
+        out.push(figHtml);
+      }
+    } else {
+      // Legacy inline rendering
+      _flushPair();
+      const layout = layoutM?.[1] || 'full';
+      const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
+      const isFloat = cls === 'leftalign' || cls === 'rightalign';
+      const w = widthM ? parseInt(widthM[1], 10) : 100;
+      const styleStr = w < 100
+        ? ` style="max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}"`
+        : '';
+      out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
+    }
+  }
 
   while (i < lines.length) {
     const line = lines[i];
@@ -34,6 +89,7 @@ export function mdToHtml(md) {
     // YouTube signal block
     const ytMatch = line.match(/<!--\s*signal:youtube\s+id="([a-zA-Z0-9_-]{11})"(?:\s+width="([^"]*)")?(?:\s+align="([^"]*)")?\s*-->/);
     if (ytMatch) {
+      _flushPair();
       const ytId = ytMatch[1];
       const rawWidth = ytMatch[2] || '100';
       const ytAlign = ['left', 'center', 'right'].includes(ytMatch[3]) ? ytMatch[3] : 'center';
@@ -49,20 +105,7 @@ export function mdToHtml(md) {
 
     // Signal image block — single-line
     if (line.match(/<!--\s*signal:image\b.*?-->/)) {
-      const srcM = line.match(/src="([^"]*)"/);
-      const altM = line.match(/alt="([^"]*)"/);
-      const layoutM = line.match(/layout="([^"]*)"/);
-      const widthM = line.match(/width="(\d+)"/);
-      const src = mdEsc(srcM?.[1] || '');
-      const alt = mdEsc(altM?.[1] || '');
-      const layout = layoutM?.[1] || 'full';
-      const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
-      const isFloat = cls === 'leftalign' || cls === 'rightalign';
-      const w = widthM ? parseInt(widthM[1], 10) : 100;
-      const styleStr = w < 100
-        ? ` style="max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}"`
-        : '';
-      if (src) out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
+      _renderSignalImage(line);
       i++; continue;
     }
     // Old multi-line signal:image blocks — collect into one string then parse same as single-line
@@ -70,20 +113,7 @@ export function mdToHtml(md) {
       let block = line;
       while (i < lines.length && !lines[i].includes('-->')) { i++; block += ' ' + lines[i]; }
       i++;
-      const srcM = block.match(/src="([^"]*)"/);
-      const altM = block.match(/alt="([^"]*)"/);
-      const layoutM = block.match(/layout="([^"]*)"/);
-      const widthM = block.match(/width="(\d+)"/);
-      const src = mdEsc(srcM?.[1] || '');
-      const alt = mdEsc(altM?.[1] || '');
-      const layout = layoutM?.[1] || 'full';
-      const cls = { left: 'leftalign', right: 'rightalign', centre: 'img-centre' }[layout] || '';
-      const isFloat = cls === 'leftalign' || cls === 'rightalign';
-      const w = widthM ? parseInt(widthM[1], 10) : 100;
-      const styleStr = w < 100
-        ? ` style="max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}"`
-        : '';
-      if (src) out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
+      _renderSignalImage(block);
       continue;
     }
 
@@ -121,9 +151,9 @@ export function mdToHtml(md) {
       continue;
     }
 
-    if (line.match(/^---+$/) || line.match(/^\*\*\*+$/)) { out.push('<hr>'); i++; continue; }
+    if (line.match(/^---+$/) || line.match(/^\*\*\*+$/)) { _flushPair(); out.push('<hr>'); i++; continue; }
 
-    if (line.match(/^<[a-zA-Z]/)) {
+    if (line.match(/^<[a-zA-Z]/)) { _flushPair();
       const htmlLines = [];
       while (i < lines.length && lines[i].trim() !== '') { htmlLines.push(lines[i]); i++; }
       out.push(htmlLines.join('\n'));
@@ -138,8 +168,9 @@ export function mdToHtml(md) {
       lines[i].trim() !== '' &&
       !lines[i].match(/^(#{1,4}\s|[-*]\s|\d+\.\s|```|>|<[a-zA-Z]|---+|\*\*\*+|<!--)/)
     ) { paraLines.push(lines[i]); i++; }
-    if (paraLines.length) out.push(`<p>${paraLines.map(mdInline).join(' ')}</p>`);
+    if (paraLines.length) { _flushPair(); out.push(`<p>${paraLines.map(mdInline).join(' ')}</p>`); }
   }
 
+  _flushPair(); // flush any orphaned first pair image at end of document
   return out.join('\n');
 }
