@@ -195,12 +195,11 @@ async function _cropExistingItem(item) {
     document.getElementById('uploads-active')?.appendChild(progressEl);
 
     try {
-      const result = await uploadToR2(processedFile, key);
+      const result = await uploadToR2(processedFile);
       progressEl.remove();
       if (result) {
-        const img = item.querySelector('img');
-        if (img) img.src = `${url}?t=${Date.now()}`;
-        showToast('Image cropped and replaced', 'success');
+        document.getElementById('media-grid')?.prepend(_renderItem(result));
+        showToast('Saved as new image', 'success');
       }
     } catch {
       const status = progressEl.querySelector('.media-upload-status');
@@ -228,7 +227,7 @@ async function loadMediaItems(cursor = null) {
     if (!res.ok) throw new Error('Failed to load media');
     const data = await res.json();
     const items = Array.isArray(data) ? data : (data.items || []);
-    nextMediaCursor = Array.isArray(data) ? null : (data.cursor || null);
+    nextMediaCursor = Array.isArray(data) ? null : (data.nextCursor || null);
 
     if (!cursor) grid.innerHTML = '';
 
@@ -247,12 +246,14 @@ async function loadMediaItems(cursor = null) {
 function _renderItem(item) {
   const el = document.createElement('div');
   el.className = 'media-item';
-  el.dataset.key = item.key;
+  el.dataset.key = item.key || item.id || '';
   el.dataset.url = item.publicUrl || item.url || '';
+  const thumbUrl = item.urls?.thumb || el.dataset.url;
+  const displayName = item.displayName || item.filename || item.key?.split('/').pop() || '';
   el.innerHTML = `
-    <img src="${_esc(el.dataset.url)}" alt="${_esc(item.filename || '')}" loading="lazy">
+    <img src="${_esc(thumbUrl)}" alt="${_esc(displayName)}" loading="lazy">
     <div class="media-item-overlay">
-      <div class="media-item-filename">${_esc(item.filename || item.key?.split('/').pop() || '')}</div>
+      <div class="media-item-filename">${_esc(displayName)}</div>
       <div class="media-item-size">${_fmtBytes(item.size || 0)}</div>
       <div class="media-item-actions">
         <button class="media-item-btn" data-action="copy-url">Copy URL</button>

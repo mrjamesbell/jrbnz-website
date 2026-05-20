@@ -207,9 +207,11 @@ async function _openInterlucdeMediaPicker() {
       grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
     } else {
       grid.innerHTML = items.map(item => {
-        const url = _esc(item.publicUrl || item.url || '');
+        const url   = _esc(item.publicUrl || item.url || '');
+        const thumb = _esc(item.urls?.thumb || url);
+        const name  = _esc(item.displayName || item.filename || '');
         return `<div class="media-picker-item" data-url="${url}" style="cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;aspect-ratio:1;background:#111">
-          <img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+          <img src="${thumb}" alt="${name}" style="width:100%;height:100%;object-fit:cover;display:block">
         </div>`;
       }).join('');
       grid.querySelectorAll('.media-picker-item').forEach(item => {

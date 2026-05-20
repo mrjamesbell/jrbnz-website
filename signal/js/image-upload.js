@@ -520,10 +520,11 @@ async function _openMediaPicker(textarea) {
     } else {
       grid.innerHTML = items.map(item => {
         const url = _esc(item.publicUrl || item.url || '');
-        const name = _esc(item.filename || '');
+        const thumb = _esc(item.urls?.thumb || url);
+        const name = _esc(item.displayName || item.filename || '');
         const size = _fmtBytes(item.size || 0);
-        return `<div class="media-item" data-url="${url}" data-key="${_esc(item.key)}">
-          <img src="${url}" alt="${name}" loading="lazy">
+        return `<div class="media-item" data-url="${url}" data-key="${_esc(item.key || item.id || '')}">
+          <img src="${thumb}" alt="${name}" loading="lazy">
           <div class="media-item-overlay">
             <div class="media-item-filename">${name}</div>
             <div class="media-item-size">${size}</div>

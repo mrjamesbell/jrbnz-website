@@ -236,18 +236,7 @@ async function _openHeadshotMediaPicker() {
     if (!items.length) {
       grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
     } else {
-      grid.innerHTML = items.map(item => {
-        const url = _escAttr(item.publicUrl || item.url || '');
-        const name = _escAttr(item.filename || '');
-        const size = _escAttr(_fmtBytes(item.size || 0));
-        return `<div class="media-item" data-url="${url}" data-key="${_escAttr(item.key)}">
-          <img src="${url}" alt="${name}" loading="lazy">
-          <div class="media-item-overlay">
-            <div class="media-item-filename">${name}</div>
-            <div class="media-item-size">${size}</div>
-          </div>
-        </div>`;
-      }).join('');
+      grid.innerHTML = items.map(item => _pickerItemHtml(item)).join('');
     }
   } catch {
     grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
@@ -318,22 +307,9 @@ async function _openCoverMediaPicker() {
     const res = await fetch('/api/media?limit=48');
     const data = await res.json();
     const items = Array.isArray(data) ? data : (data.items || []);
-    if (!items.length) {
-      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
-    } else {
-      grid.innerHTML = items.map(item => {
-        const url = _escAttr(item.publicUrl || item.url || '');
-        const name = _escAttr(item.filename || '');
-        const size = _escAttr(_fmtBytes(item.size || 0));
-        return `<div class="media-item" data-url="${url}" data-key="${_escAttr(item.key)}">
-          <img src="${url}" alt="${name}" loading="lazy">
-          <div class="media-item-overlay">
-            <div class="media-item-filename">${name}</div>
-            <div class="media-item-size">${size}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
+    grid.innerHTML = items.length
+      ? items.map(item => _pickerItemHtml(item)).join('')
+      : '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
   } catch {
     grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
   }
@@ -403,15 +379,7 @@ async function _openDefaultCoverMediaPicker() {
     const data = await res.json();
     const items = Array.isArray(data) ? data : (data.items || []);
     grid.innerHTML = items.length
-      ? items.map(item => {
-          const url = _escAttr(item.publicUrl || item.url || '');
-          const name = _escAttr(item.filename || '');
-          const size = _escAttr(_fmtBytes(item.size || 0));
-          return `<div class="media-item" data-url="${url}">
-            <img src="${url}" alt="${name}" loading="lazy">
-            <div class="media-item-overlay"><div class="media-item-filename">${name}</div><div class="media-item-size">${size}</div></div>
-          </div>`;
-        }).join('')
+      ? items.map(item => _pickerItemHtml(item)).join('')
       : '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted)">No media uploaded yet.</div>';
   } catch {
     grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
@@ -1144,6 +1112,21 @@ function _initAccentPickers() {
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
+
+function _pickerItemHtml(item) {
+  const url   = _escAttr(item.publicUrl || item.url || '');
+  const thumb = _escAttr(item.urls?.thumb || url);
+  const name  = _escAttr(item.displayName || item.filename || '');
+  const size  = _escAttr(_fmtBytes(item.size || 0));
+  const key   = _escAttr(item.key || item.id || '');
+  return `<div class="media-item" data-url="${url}" data-key="${key}">
+    <img src="${thumb}" alt="${name}" loading="lazy">
+    <div class="media-item-overlay">
+      <div class="media-item-filename">${name}</div>
+      <div class="media-item-size">${size}</div>
+    </div>
+  </div>`;
+}
 
 function esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
