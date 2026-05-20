@@ -1,7 +1,7 @@
 import { mdEsc, mdInline, mdToHtml } from '../lib/markdown.js';
 import { loadSnippetCss } from '../lib/snippets.js';
 import { SITE_URL, esc, buildHead, buildSiteNav, buildFooter, buildPostMeta, buildAuthorCard } from '../lib/templates.js';
-import { slugify, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
+import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
@@ -663,7 +663,7 @@ async function handleGetMedia(env, id) {
 async function handleUploadMedia(request, env) {
   const qs       = new URL(request.url).searchParams;
   const filename  = decodeURIComponent(qs.get('filename') ?? 'upload');
-  const slugHint  = qs.get('slug') ? slugify(qs.get('slug')) : slugify(filename);
+  const slugHint  = qs.get('slug') ? slugifyMedia(qs.get('slug')) : slugifyMedia(filename);
   const imageId   = generateImageId(slugHint || 'image');
   const ct        = request.headers.get('Content-Type') || 'application/octet-stream';
 
