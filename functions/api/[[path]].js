@@ -1,6 +1,8 @@
 import { mdEsc, mdInline, mdToHtml } from '../lib/markdown.js';
 import { loadSnippetCss } from '../lib/snippets.js';
 import { SITE_URL, esc, buildHead, buildSiteNav, buildFooter, buildPostMeta, buildAuthorCard } from '../lib/templates.js';
+import { slugify, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
+import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
 
@@ -421,12 +423,14 @@ export async function onRequest(context) {
   // Media
   if (resource === 'media') {
     if (!slug) {
-      if (method === 'GET') return handleListMedia(env);
+      if (method === 'GET') return handleListMedia(env, request);
     } else if (slug === 'upload') {
       if (method === 'POST') return handleUploadMedia(request, env);
     } else if (slug === 'test') {
       if (method === 'GET') return handleMediaTest(env);
     } else {
+      if (method === 'GET')    return handleGetMedia(env, slug);
+      if (method === 'PUT')    return handleUpdateMedia(request, env, slug);
       if (method === 'DELETE') return handleDeleteMedia(env, slug);
     }
   }
@@ -612,59 +616,106 @@ async function handleMediaTest(env) {
     results.delivery_url_example = `https://imagedelivery.net/${env.CF_ACCOUNT_HASH}/test-image-id/thumb`;
   }
 
-  const allOk = Object.values(results).every(v => v.startsWith('✓'));
+  const allOk = Object.values(results).every(v => !v.startsWith('✗'));
   return new Response(JSON.stringify({ ok: allOk, results }, null, 2), {
     status: allOk ? 200 : 500,
     headers: { 'Content-Type': 'application/json' },
   });
 }
 
-async function handleListMedia(env) {
-  const [uploaded, imported] = await Promise.all([
-    env.BLOG.list({ prefix: 'media/' }),
-    env.BLOG.list({ prefix: 'posts/media/', limit: 500 }),
-  ]);
+function mediaItemResponse(env, id, meta) {
+  const urls = cfImageUrls(env.CF_ACCOUNT_HASH, id);
+  return {
+    id,
+    displayName: meta.displayName ?? id,
+    alt:         meta.alt        ?? '',
+    caption:     meta.caption    ?? '',
+    focalX:      meta.focalX     ?? 0.5,
+    focalY:      meta.focalY     ?? 0.5,
+    w:           meta.w          ?? null,
+    h:           meta.h          ?? null,
+    size:        meta.size       ?? 0,
+    uploadedAt:  meta.uploadedAt ?? null,
+    urls,
+    // Backward-compat fields used by existing Signal picker code
+    publicUrl:  urls.public,
+    url:        urls.public,
+    key:        id,
+    filename:   (meta.displayName ?? id) + '.webp',
+  };
+}
 
-  const toItem = (o, publicUrl) => ({
-    key: o.key,
-    filename: o.key.split('/').pop(),
-    publicUrl,
-    url: publicUrl,
-    size: o.size,
-    uploaded: o.uploaded,
-  });
+async function handleListMedia(env, request) {
+  const qs = new URL(request.url).searchParams;
+  const limit  = Math.min(parseInt(qs.get('limit') ?? '48'), 200);
+  const cursor = qs.get('cursor') ?? undefined;
+  const { items, nextCursor } = await listMeta(env, { limit, cursor });
+  const enriched = items.map(({ id, ...meta }) => mediaItemResponse(env, id, meta));
+  return json({ items: enriched, nextCursor });
+}
 
-  const items = [
-    ...uploaded.objects.map(o => toItem(o, `/${o.key}`)),
-    ...imported.objects.map(o => toItem(o, `/${o.key}`)),
-  ].sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
-
-  return json(items);
+async function handleGetMedia(env, id) {
+  const meta = await getMeta(env, decodeURIComponent(id));
+  if (!meta) return json({ error: 'not found' }, 404);
+  return json(mediaItemResponse(env, decodeURIComponent(id), meta));
 }
 
 async function handleUploadMedia(request, env) {
-  const url = new URL(request.url);
-  const rawFilename = url.searchParams.get('filename') || 'upload.jpg';
-  const filename = decodeURIComponent(rawFilename);
-  const ct = request.headers.get('Content-Type') || 'application/octet-stream';
+  const qs       = new URL(request.url).searchParams;
+  const filename  = decodeURIComponent(qs.get('filename') ?? 'upload');
+  const slugHint  = qs.get('slug') ? slugify(qs.get('slug')) : slugify(filename);
+  const imageId   = generateImageId(slugHint || 'image');
+  const ct        = request.headers.get('Content-Type') || 'application/octet-stream';
 
-  const rawReplaceKey = url.searchParams.get('replaceKey');
-  const replaceKey = rawReplaceKey ? decodeURIComponent(rawReplaceKey) : null;
+  const buffer = await request.arrayBuffer();
+  if (!buffer.byteLength) return json({ error: 'empty body — file not received' }, 400);
 
-  const safeName = filename.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
-  const key = replaceKey || `media/${Date.now()}-${safeName}`;
+  await uploadToCFImages(env, buffer, ct, imageId);
 
-  const body = await request.arrayBuffer();
-  if (!body.byteLength) return json({ error: 'empty body — file not received' }, 400);
+  const meta = {
+    displayName: slugHint || imageId,
+    alt:         '',
+    caption:     '',
+    focalX:      0.5,
+    focalY:      0.5,
+    w:           null,
+    h:           null,
+    size:        buffer.byteLength,
+    uploadedAt:  new Date().toISOString(),
+  };
+  await putMeta(env, imageId, meta);
 
-  const size = body.byteLength;
-  await env.BLOG.put(key, body, { httpMetadata: { contentType: ct } });
-
-  return json({ key, publicUrl: `/${key}`, filename, size });
+  return json(mediaItemResponse(env, imageId, meta), 201);
 }
 
-async function handleDeleteMedia(env, key) {
-  await env.BLOG.delete(decodeURIComponent(key));
+async function handleUpdateMedia(request, env, id) {
+  const imageId = decodeURIComponent(id);
+  const existing = await getMeta(env, imageId);
+  if (!existing) return json({ error: 'not found' }, 404);
+
+  const patch = await request.json();
+  const allowed = ['displayName', 'alt', 'caption', 'focalX', 'focalY'];
+  const updated = { ...existing };
+  for (const key of allowed) {
+    if (key in patch) updated[key] = patch[key];
+  }
+  await putMeta(env, imageId, updated);
+  return json(mediaItemResponse(env, imageId, updated));
+}
+
+async function handleDeleteMedia(env, id) {
+  const imageId = decodeURIComponent(id);
+
+  // CF Images IDs are slug-timestamp format (no slashes)
+  // Legacy R2 keys contain slashes — handle both during gradual migration
+  if (imageId.includes('/')) {
+    await env.BLOG.delete(imageId);
+  } else {
+    await Promise.all([
+      deleteCFImage(env, imageId).catch(() => {}),
+      deleteMeta(env, imageId),
+    ]);
+  }
   return json({ ok: true });
 }
 
