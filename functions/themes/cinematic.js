@@ -62,6 +62,11 @@ function _fmtDate(d) {
   const [y, m, day] = d.split('-').map(Number);
   return `${MONTHS[m-1]} ${day}, ${y}`;
 }
+function _fmtDateShort(d) {
+  if (!d) return '';
+  const [y, m] = d.split('-').map(Number);
+  return `${MONTHS[m-1]} ${y}`;
+}
 
 function buildCinematicFooter(menuPages) {
   const navLinks = buildNavLinks(menuPages)
@@ -234,28 +239,19 @@ export function buildHomepage(data) {
   }
 
   const archiveItems = archivePosts.map(p => {
-    const tag = (p.tags || [])[0] || '';
-    const meta = [tag, _fmtDate(p.date)].filter(Boolean).join(' · ');
-    return `<li class="home-recent-row">
-      <a href="/posts/${esc(p.slug)}/" class="home-recent-item">
-        <span class="home-recent-title">${esc(p.title)}</span>
-        <span class="home-recent-meta">${esc(meta)}</span>
-      </a>
-    </li>`;
+    const tag = (p.tags || []).find(t => t !== 'note') || 'Essay';
+    return `<a href="/posts/${esc(p.slug)}/" class="home-archive-item">
+        <span class="home-archive-title">${esc(p.title)}</span>
+        <span class="home-archive-meta">${esc(tag)}</span>
+      </a>`;
   }).join('');
 
   const archiveSection = archivePosts.length ? `
-<section class="home-recent">
-  <p class="home-recent-label">${esc(archiveTitle)}</p>
-  <ul class="home-recent-list">
+<section class="home-archive">
+  <div class="home-archive-label">${esc(archiveTitle)}</div>
+  <div class="home-archive-list">
     ${archiveItems}
-    <li class="home-recent-row">
-      <a href="/posts/" class="home-recent-item home-recent-all">
-        <span class="home-recent-title">All essays</span>
-        <span class="home-recent-meta">Archive →</span>
-      </a>
-    </li>
-  </ul>
+  </div>
 </section>` : '';
 
   const extraHead = `<meta name="description" content="${esc(author?.bio || 'Writing about memory, theatre, technology and life in between.')}">
@@ -352,6 +348,18 @@ export function buildPost(data) {
   const kicker = [dateFormatted, `${readTime} min read`, ...(tags || []).filter(t => t !== 'note').slice(0, 1)]
     .filter(Boolean).join(' · ');
 
+  const endingLabel = isNote ? 'Note' : 'Essay';
+  const endingTags = (tags || []).filter(t => t !== 'note').slice(0, 3);
+  const endingMetaParts = [`Published ${_fmtDateShort(date)}`, ...endingTags].filter(Boolean);
+  const articleEnding = `
+<footer class="article-ending">
+  <div>
+    <div class="article-ending-label">${esc(endingLabel)}</div>
+    <div class="article-ending-meta">${esc(endingMetaParts.join(' · '))}</div>
+  </div>
+  <a class="article-ending-back" href="/posts/">Back to Essays</a>
+</footer>`;
+
   // Notes: compact dark header, no full-viewport hero
   if (isNote) {
     const essayCards = (recentPosts || []).map(p => {
@@ -389,6 +397,7 @@ ${buildSiteNav(menuPages, '/posts/')}
   <div class="article-col article-open article-section">
     <div class="post-content e-content">${contentHtml}</div>
   </div>
+  ${articleEnding}
 </div>
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>
@@ -459,6 +468,7 @@ ${buildSiteNav(menuPages, '/posts/')}
   <div class="article-col article-open article-section">
     <div class="post-content e-content">${contentHtml}</div>
   </div>
+  ${articleEnding}
 </div>
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>

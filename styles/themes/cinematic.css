@@ -1114,3 +1114,133 @@
 [data-theme="cinematic"] .essay-card--archive:hover .essay-card-title {
     color: var(--color-accent);
 }
+
+/* ── Homepage archive — sparse editorial list ─────────────────────────────── */
+[data-theme="cinematic"] .home-archive {
+    padding: 72px clamp(28px, 5vw, 72px) 88px;
+    background: var(--color-deeper-bg);
+    color: var(--color-text);
+}
+
+[data-theme="cinematic"] .home-archive-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    margin-bottom: 40px;
+}
+
+[data-theme="cinematic"] .home-archive-list {
+    max-width: 980px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="cinematic"] .home-archive-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 30px 0;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    text-decoration: none;
+    border-bottom-style: solid;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .home-archive-item:last-child {
+    border-bottom: none;
+}
+
+[data-theme="cinematic"] .home-archive-title {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3vw, 42px);
+    line-height: 1.04;
+    letter-spacing: -0.055em;
+    font-weight: 400;
+}
+
+[data-theme="cinematic"] .home-archive-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .home-archive-item:hover .home-archive-title,
+[data-theme="cinematic"] .home-archive-item:hover .home-archive-meta {
+    color: var(--color-accent);
+}
+
+@media (max-width: 700px) {
+    [data-theme="cinematic"] .home-archive-item {
+        flex-direction: column;
+        gap: 8px;
+        padding: 24px 0;
+    }
+
+    [data-theme="cinematic"] .home-archive-meta {
+        white-space: normal;
+    }
+}
+
+/* ── Article ending — quiet fade-out before "More Essays" ─────────────────── */
+[data-theme="cinematic"] .article-ending {
+    max-width: var(--col-read);
+    margin: 80px auto 0;
+    padding: 36px clamp(24px, 5vw, 48px) 72px;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+[data-theme="cinematic"] .article-ending-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    margin-bottom: 8px;
+}
+
+[data-theme="cinematic"] .article-ending-meta {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+}
+
+[data-theme="cinematic"] .article-ending-back {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 16px;
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+[data-theme="cinematic"] .article-ending-back:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+}
+
+@media (max-width: 700px) {
+    [data-theme="cinematic"] .article-ending {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

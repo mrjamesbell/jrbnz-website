@@ -147,6 +147,21 @@ The `.pull-quote` and `.quote-interlude` wrappers suppress the standard blockquo
 
 ---
 
+## Article ending (cinematic theme)
+
+Each post ends with a quiet `.article-ending` footer rendered inside the warm reading surface (`.surface-invert`), immediately after the article body and before the "More Essays" strip.
+
+The ending shows:
+- A mono label: `Essay` or `Note` depending on post type
+- A meta line: `Published [Month Year] · [tag1] · [tag2]`
+- A `Back to Essays` link on the right
+
+This is generated automatically from the post's `date` and `tags` fields — no author action needed. It is deliberately understated: the intent is to let the article breathe rather than jump straight from the last sentence into recommendations.
+
+Stronger image exits, afterwords, or decorative closing marks are future optional styles and should not replace the default fade-out treatment.
+
+---
+
 ## Homepage config model
 
 The homepage layout is driven by a JSON config stored at `settings/homepage.json` in R2. It is loaded by `loadSiteContext(env)` and passed to `buildHomepage()` in the active theme renderer.
@@ -187,6 +202,12 @@ Every field is optional. When absent:
 - `cards`: defaults to the hardcoded Essays / Photographs / first nav-page blocks
 - `interlude`: defaults to the text-only version with the standing tagline
 - `archive`: defaults to the three most recent essays that are not the featured post
+
+### Archive section
+
+The homepage archive section (`home-archive`) uses a **sparse editorial list** treatment by default: typographic, restrained, publication-like. Each item shows a large display-font title and a small mono category label. The background is `--color-deeper-bg`, slightly darker than the page, to give it a distinct curated zone feel.
+
+Archive picks are **curated, not automatic**. The `archive.posts` array in `settings/homepage.json` should be hand-selected. The fallback (three most recent non-featured essays) is only for when no config exists. Stronger image exits or card-based archive displays are future optional styles and should not become the default.
 
 ### Editing
 
