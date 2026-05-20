@@ -4,21 +4,24 @@
 // Keeps CF Images URLs out of published content — all image srcs reference
 // jrbnz.com/img/... so the backend can be swapped without rewriting posts.
 
-export async function onRequest({ request, env, params }) {
-  const path = params.path; // e.g. "coastal-walk-1748000000/hero"
-  if (!path || !env.CF_ACCOUNT_HASH) {
-    return new Response('Not found', { status: 404 });
+export async function onRequest({ request, env }) {
+  if (!env.CF_ACCOUNT_HASH) {
+    return new Response('Image delivery not configured', { status: 503 });
   }
 
-  const upstream = `https://imagedelivery.net/${env.CF_ACCOUNT_HASH}/${path}`;
+  // Strip the leading /img/ prefix to get {imageId}/{variant}
+  const reqUrl = new URL(request.url);
+  const imgPath = reqUrl.pathname.replace(/^\/img\//, '');
 
-  // Proxy the request, forwarding Accept header so CF Images can serve AVIF/WebP
+  if (!imgPath) return new Response('Not found', { status: 404 });
+
+  const upstream = `https://imagedelivery.net/${env.CF_ACCOUNT_HASH}/${imgPath}`;
+
   const upstreamRes = await fetch(upstream, {
     headers: { Accept: request.headers.get('Accept') ?? '*/*' },
-    cf: { cacheEverything: true, cacheTtl: 31536000 }, // cache at edge for 1 year
+    cf: { cacheEverything: true, cacheTtl: 31536000 },
   });
 
-  // Pass through the response with cache headers
   const headers = new Headers(upstreamRes.headers);
   headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
