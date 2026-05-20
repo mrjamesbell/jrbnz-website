@@ -105,7 +105,7 @@ export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const alt = (altText || '').replace(/"/g, '&quot;');
   const widthAttr = width && width !== 100 ? ` width="${width}"` : '';
-  const block = `\n<!-- signal:image src="${publicUrl}" alt="${alt}" layout="${layout || 'full'}"${widthAttr} -->\n`;
+  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, 'hero')}" alt="${alt}" layout="${layout || 'full'}"${widthAttr} -->\n`;
   textarea.value = value.slice(0, start) + block + value.slice(end);
   textarea.selectionStart = textarea.selectionEnd = start + block.length;
   textarea.dispatchEvent(new Event('input'));
@@ -117,11 +117,20 @@ export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole,
   const alt = (altText || '').replace(/"/g, '&quot;');
   const roleAttr = imgRole ? ` imgRole="${imgRole}"` : '';
   const treatAttr = treatment ? ` treatment="${treatment}"` : '';
-  const block = `\n<!-- signal:image src="${publicUrl}" alt="${alt}"${roleAttr}${treatAttr} -->\n`;
+  // img-pair and img-small sit at half/quarter column width — md variant is plenty
+  const variant = (imgRole === 'img-pair' || imgRole === 'img-small') ? 'md' : 'hero';
+  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, variant)}" alt="${alt}"${roleAttr}${treatAttr} -->\n`;
   textarea.value = value.slice(0, start) + block + value.slice(end);
   textarea.selectionStart = textarea.selectionEnd = start + block.length;
   textarea.dispatchEvent(new Event('input'));
   textarea.focus();
+}
+
+// Swap the variant suffix on a proxied CF Images URL (/img/{id}/variant)
+// Non-CF URLs are returned unchanged.
+function _cfVariant(url, variant) {
+  const m = url.match(/^(\/img\/[^/]+)\//);
+  return m ? `${m[1]}/${variant}` : url;
 }
 
 export function insertImageMarkdown(textarea, publicUrl, altText) {
