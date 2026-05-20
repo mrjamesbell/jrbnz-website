@@ -424,6 +424,8 @@ export async function onRequest(context) {
       if (method === 'GET') return handleListMedia(env);
     } else if (slug === 'upload') {
       if (method === 'POST') return handleUploadMedia(request, env);
+    } else if (slug === 'test') {
+      if (method === 'GET') return handleMediaTest(env);
     } else {
       if (method === 'DELETE') return handleDeleteMedia(env, slug);
     }
@@ -567,6 +569,55 @@ async function handleRebuildSite(env) {
 }
 
 // ── Media handlers ────────────────────────────────────────────────────────────
+
+async function handleMediaTest(env) {
+  const results = {};
+
+  // Check secrets
+  results.CF_ACCOUNT_ID   = env.CF_ACCOUNT_ID   ? '✓ set' : '✗ missing';
+  results.CF_IMAGES_TOKEN = env.CF_IMAGES_TOKEN  ? '✓ set' : '✗ missing';
+  results.CF_ACCOUNT_HASH = env.CF_ACCOUNT_HASH  ? '✓ set' : '✗ missing';
+
+  // Check KV binding
+  try {
+    await env.MEDIA_KV.put('_test', 'ok', { expirationTtl: 60 });
+    const val = await env.MEDIA_KV.get('_test');
+    results.MEDIA_KV = val === 'ok' ? '✓ read/write ok' : '✗ read failed';
+  } catch (e) {
+    results.MEDIA_KV = `✗ ${e.message}`;
+  }
+
+  // Check CF Images API connectivity
+  if (env.CF_ACCOUNT_ID && env.CF_IMAGES_TOKEN) {
+    try {
+      const r = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/images/v1?per_page=1`,
+        { headers: { Authorization: `Bearer ${env.CF_IMAGES_TOKEN}` } }
+      );
+      const body = await r.json();
+      if (body.success) {
+        results.CF_Images_API = `✓ connected (${body.result.images?.length ?? 0} images visible)`;
+      } else {
+        results.CF_Images_API = `✗ API error: ${body.errors?.[0]?.message ?? 'unknown'}`;
+      }
+    } catch (e) {
+      results.CF_Images_API = `✗ fetch failed: ${e.message}`;
+    }
+  } else {
+    results.CF_Images_API = '✗ skipped (missing secrets)';
+  }
+
+  // Check delivery URL construction
+  if (env.CF_ACCOUNT_HASH) {
+    results.delivery_url_example = `https://imagedelivery.net/${env.CF_ACCOUNT_HASH}/test-image-id/thumb`;
+  }
+
+  const allOk = Object.values(results).every(v => v.startsWith('✓'));
+  return new Response(JSON.stringify({ ok: allOk, results }, null, 2), {
+    status: allOk ? 200 : 500,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 async function handleListMedia(env) {
   const [uploaded, imported] = await Promise.all([

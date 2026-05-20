@@ -6,5 +6,13 @@ compatibility_date = "2024-09-23"
 binding = "BLOG"
 bucket_name = "jrbnz-blog"
 
+[[kv_namespaces]]
+binding = "MEDIA_KV"
+id = "92755940da39428eae3ab59c0d489174"
+preview_id = "ef8bf168db9c41bca740185de7d40e7a"
+
 [vars]
 # MICROPUB_TOKEN must be set as a Cloudflare secret: wrangler pages secret put MICROPUB_TOKEN
+# CF_ACCOUNT_ID    — Cloudflare account ID for the JRBNZ account
+# CF_IMAGES_TOKEN  — API token with Cloudflare Images:Edit permission
+# CF_ACCOUNT_HASH  — delivery URL hash (from Images > Overview in dashboard)
