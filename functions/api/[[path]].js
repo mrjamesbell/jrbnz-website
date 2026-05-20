@@ -623,8 +623,17 @@ async function handleMediaTest(env) {
   });
 }
 
+function proxiedImageUrls(id) {
+  return {
+    thumb:  `/img/${id}/thumb`,
+    md:     `/img/${id}/md`,
+    hero:   `/img/${id}/hero`,
+    public: `/img/${id}/public`,
+  };
+}
+
 function mediaItemResponse(env, id, meta) {
-  const urls = cfImageUrls(env.CF_ACCOUNT_HASH, id);
+  const urls = proxiedImageUrls(id);
   return {
     id,
     displayName: meta.displayName ?? id,
