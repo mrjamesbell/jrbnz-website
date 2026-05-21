@@ -40,7 +40,7 @@
 }
 
 .fmtbar-group-label {
-  font-size: var(--text-xs);
+  font-size: 12px;
   color: var(--color-cream-text-ghost);
   font-family: var(--font-sans);
   letter-spacing: var(--tracking-wider);

@@ -26,15 +26,15 @@
 
   /* ── Colour: Text on dark chrome ── */
   --color-dark-text-primary:   #f0ede8; /* headings, post titles            */
-  --color-dark-text-secondary: #bbbbbb; /* body text in list                */
-  --color-dark-text-muted:     #555555; /* meta, dates, icons               */
-  --color-dark-text-ghost:     #333333; /* section labels, dividers         */
+  --color-dark-text-secondary: #909090; /* secondary — dates, meta, labels  */
+  --color-dark-text-muted:     #909090; /* alias for secondary              */
+  --color-dark-text-ghost:     #909090; /* alias for secondary              */
 
   /* ── Colour: Text on cream (editor — dark mode) ── */
   --color-cream-text-primary:   #e8e4dc; /* post title, body text          */
-  --color-cream-text-secondary: #b8b4aa; /* body prose                     */
-  --color-cream-text-muted:     #9a9590; /* meta row dates                 */
-  --color-cream-text-ghost:     #7a7670; /* word count, saved indicator     */
+  --color-cream-text-secondary: #909090; /* secondary — meta, captions     */
+  --color-cream-text-muted:     #909090; /* alias for secondary            */
+  --color-cream-text-ghost:     #909090; /* alias for secondary            */
 
   /* ── Colour: Cream surface borders ── */
   --color-cream-border:     #2e2b26;  /* hr, section dividers, field edges  */
