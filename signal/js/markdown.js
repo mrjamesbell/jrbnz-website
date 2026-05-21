@@ -44,7 +44,11 @@ function getMarked() {
         const imgRoleM = html.match(/imgRole="([^"]*)"/);
         const treatmentM = html.match(/treatment="([^"]*)"/);
         if (imgRoleM || treatmentM) {
-          return renderRoleImageBlock(src, alt, imgRoleM?.[1] || '', treatmentM?.[1] || '');
+          const fxM = html.match(/focalX="([^"]*)"/);
+          const fyM = html.match(/focalY="([^"]*)"/);
+          const focalX = fxM ? parseFloat(fxM[1]) : 0.5;
+          const focalY = fyM ? parseFloat(fyM[1]) : 0.5;
+          return renderRoleImageBlock(src, alt, imgRoleM?.[1] || '', treatmentM?.[1] || '', focalX, focalY);
         }
 
         const layoutM = html.match(/layout="([^"]*)"/);

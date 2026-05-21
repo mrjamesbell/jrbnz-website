@@ -17,6 +17,7 @@ export async function openMediaPicker({ insertLabel = 'Insert image', onSelect }
   if (infoEl) infoEl.textContent = '';
   if (searchEl) searchEl.value = '';
   modal.style.display = 'flex';
+  setTimeout(() => searchEl?.focus(), 80);
 
   let _items = [];
 

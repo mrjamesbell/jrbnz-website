@@ -110,6 +110,8 @@ document.addEventListener('click', e => {
     const alt = block.dataset.alt || '';
     const imgRole = block.dataset.imgrole || '';
     const treatment = block.dataset.treatment || '';
+    const focalX = parseFloat(block.dataset.focalx ?? '0.5');
+    const focalY = parseFloat(block.dataset.focaly ?? '0.5');
     const ta = _getActiveTextarea();
     if (src && currentPost && ta) {
       const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -123,7 +125,7 @@ document.addEventListener('click', e => {
       _triggerSave();
     }
     block.remove();
-    openImageOptionsModal(ta, src, alt, imgRole, treatment);
+    openImageOptionsModal(ta, src, alt, imgRole, treatment, focalX, focalY);
     return;
   }
 
@@ -388,8 +390,11 @@ function _onTitleChange() {
   _triggerSave();
 }
 
-function _onBodyChange() {
-  const textarea = _getActiveTextarea();
+function _onBodyChange(e) {
+  // Use e.target so programmatic inserts on a stale textarea reference (e.g.
+  // when view mode changed after the image button was clicked but before Insert
+  // was clicked) still read the element that was actually updated.
+  const textarea = e?.target || _getActiveTextarea();
   currentPost.body = textarea.value;
   _updateWordCount();
   _markDirty();

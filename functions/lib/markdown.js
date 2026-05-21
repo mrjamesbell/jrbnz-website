@@ -37,6 +37,8 @@ export function mdToHtml(md) {
     const treatmentM = raw.match(/treatment="([^"]*)"/);
     const layoutM = raw.match(/layout="([^"]*)"/);
     const widthM = raw.match(/width="(\d+)"/);
+    const fxM = raw.match(/focalX="([^"]*)"/);
+    const fyM = raw.match(/focalY="([^"]*)"/);
 
     const src = mdEsc(srcM?.[1] || '');
     const alt = mdEsc(altM?.[1] || '');
@@ -44,6 +46,11 @@ export function mdToHtml(md) {
 
     const imgRole = imgRoleM?.[1] || '';
     const treatment = treatmentM?.[1] || '';
+    const focalX = fxM ? parseFloat(fxM[1]) : null;
+    const focalY = fyM ? parseFloat(fyM[1]) : null;
+    const focalStyle = (focalX !== null && focalY !== null)
+      ? ` style="object-position:${Math.round(focalX * 100)}% ${Math.round(focalY * 100)}%"`
+      : '';
 
     if (imgRole || treatment) {
       // Editorial role rendering — wrap in <figure>
@@ -52,8 +59,8 @@ export function mdToHtml(md) {
         ? (treatment || null)           // pair wrapper handles layout; figure gets treatment only
         : [imgRole, treatment].filter(Boolean).join(' ');
       const figHtml = figClasses
-        ? `<figure class="${figClasses}"><img src="${src}" alt="${alt}" loading="lazy"></figure>`
-        : `<figure><img src="${src}" alt="${alt}" loading="lazy"></figure>`;
+        ? `<figure class="${figClasses}"><img src="${src}" alt="${alt}"${focalStyle} loading="lazy"></figure>`
+        : `<figure><img src="${src}" alt="${alt}"${focalStyle} loading="lazy"></figure>`;
 
       if (isPair) {
         if (_pendingPair !== null) {

@@ -87,14 +87,15 @@ export function renderImageBlock(src, alt, layout, width) {
 </div>`;
 }
 
-export function renderRoleImageBlock(src, alt, imgRole, treatment) {
+export function renderRoleImageBlock(src, alt, imgRole, treatment, focalX = 0.5, focalY = 0.5) {
   const escSrc = _esc(src);
   const escAlt = _esc(alt || '');
   const badges = [imgRole, treatment].filter(Boolean);
   const badgeHtml = badges.map(b => `<span class="image-role-badge">${_esc(b)}</span>`).join('');
-  return `<div class="image-block image-block--role" data-src="${escSrc}" data-alt="${escAlt}" data-imgrole="${_esc(imgRole)}" data-treatment="${_esc(treatment)}">
+  const focalStyle = `object-position:${Math.round(focalX * 100)}% ${Math.round(focalY * 100)}%`;
+  return `<div class="image-block image-block--role" data-src="${escSrc}" data-alt="${escAlt}" data-imgrole="${_esc(imgRole)}" data-treatment="${_esc(treatment)}" data-focalx="${focalX}" data-focaly="${focalY}">
   <div class="image-thumb-wrap">
-    <img class="image-thumb-img" src="${escSrc}" alt="${escAlt}" loading="lazy">
+    <img class="image-thumb-img" src="${escSrc}" alt="${escAlt}" style="${focalStyle}" loading="lazy">
     <button class="image-remove-btn" data-action="remove-image" title="Remove">✕</button>
   </div>
   ${escAlt ? `<div class="image-info-bar"><div class="image-alt-text">${escAlt}</div></div>` : ''}
@@ -116,14 +117,16 @@ export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
   textarea.focus();
 }
 
-export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole, treatment) {
+export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole, treatment, focalX = 0.5, focalY = 0.5) {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const alt = (altText || '').replace(/"/g, '&quot;');
   const roleAttr = imgRole ? ` imgRole="${imgRole}"` : '';
   const treatAttr = treatment ? ` treatment="${treatment}"` : '';
+  const fxAttr = ` focalX="${Math.round(focalX * 1000) / 1000}"`;
+  const fyAttr = ` focalY="${Math.round(focalY * 1000) / 1000}"`;
   // img-pair and img-small sit at half/quarter column width — md variant is plenty
   const variant = (imgRole === 'img-pair' || imgRole === 'img-small') ? 'md' : 'hero';
-  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, variant)}" alt="${alt}"${roleAttr}${treatAttr} -->\n`;
+  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, variant)}" alt="${alt}"${roleAttr}${treatAttr}${fxAttr}${fyAttr} -->\n`;
   textarea.value = value.slice(0, start) + block + value.slice(end);
   textarea.selectionStart = textarea.selectionEnd = start + block.length;
   textarea.dispatchEvent(new Event('input'));
@@ -161,18 +164,24 @@ async function _getImageRoles() {
   return _imageRolesCache;
 }
 
-export async function openImageOptionsModal(textarea, publicUrl, altHint, initialLayout = '', initialTreatment = '') {
+export async function openImageOptionsModal(textarea, publicUrl, altHint, initialLayout = '', initialTreatment = '', focalX = 0.5, focalY = 0.5) {
   const modal = document.getElementById('img-options-modal');
   const previewImg = document.getElementById('img-options-preview-img');
   const altInput = document.getElementById('img-options-alt');
   const insertBtn = document.getElementById('img-options-insert');
   const closeBtn = document.getElementById('img-options-close');
   const cancelBtn = document.getElementById('img-options-cancel');
+  const cropBtn = document.getElementById('img-options-crop');
   const layoutSelect = document.getElementById('img-options-layout');
   const treatmentSelect = document.getElementById('img-options-treatment');
   const pairHint = document.getElementById('img-options-pair-hint');
 
-  previewImg.src = publicUrl;
+  // Track mutable state so crop can update it
+  let _url = publicUrl;
+  let _focalX = focalX;
+  let _focalY = focalY;
+
+  previewImg.src = _url;
   altInput.value = altHint || '';
 
   // Populate selects from theme config
@@ -199,12 +208,45 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint, initia
     const imgRole = layoutSelect.value;
     const treatment = treatmentSelect.value;
     if (imgRole || treatment) {
-      insertSignalImageWithRole(textarea, publicUrl, altInput.value.trim(), imgRole, treatment);
+      insertSignalImageWithRole(textarea, _url, altInput.value.trim(), imgRole, treatment, _focalX, _focalY);
     } else {
-      insertSignalImage(textarea, publicUrl, altInput.value.trim(), 'full', 100);
+      insertSignalImage(textarea, _url, altInput.value.trim(), 'full', 100);
     }
     close();
   };
+
+  if (cropBtn) {
+    cropBtn.onclick = async () => {
+      close();
+      showToast('Loading image for crop…');
+      try {
+        const res = await fetch(_url, { cache: 'no-cache' });
+        if (!res.ok) throw new Error('fetch failed');
+        const blob = await res.blob();
+        const filename = _url.split('/').pop().replace(/\?.*$/, '') || 'image.jpg';
+        const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
+        openCropModal(file, async processedFile => {
+          showToast('Uploading…');
+          try {
+            const result = await uploadToR2(processedFile);
+            if (result) {
+              showToast('Cropped', 'success', 1500);
+              _url = result.publicUrl;
+              _focalX = 0.5; _focalY = 0.5;
+            }
+          } catch (e) {
+            showToast('Upload failed: ' + e.message, 'error');
+          }
+          // Re-open options modal with the (possibly updated) URL
+          openImageOptionsModal(textarea, _url, altInput.value, layoutSelect.value, treatmentSelect.value, _focalX, _focalY);
+        });
+      } catch {
+        showToast('Could not load image for cropping', 'error');
+        // Reopen so the user isn't stuck
+        openImageOptionsModal(textarea, _url, altInput.value, layoutSelect.value, treatmentSelect.value, _focalX, _focalY);
+      }
+    };
+  }
 
   closeBtn.onclick = close;
   cancelBtn.onclick = close;
@@ -474,7 +516,7 @@ export function openImageSheet(textarea) {
     close();
     openMediaPicker({
       insertLabel: 'Insert image',
-      onSelect: item => openImageOptionsModal(textarea, item.publicUrl, _altHint(item.displayName || item.filename || ''))
+      onSelect: item => openImageOptionsModal(textarea, item.publicUrl, _altHint(item.displayName || item.filename || ''), '', '', item.focalX ?? 0.5, item.focalY ?? 0.5)
     });
   };
 }
