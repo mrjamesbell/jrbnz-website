@@ -1,7 +1,7 @@
 import { scheduleSave, saveNow, initAutosave, cancelScheduled } from './autosave.js';
 import { renderMarkdown, countWords, slugify, fmtDate } from './markdown.js';
 import { extractVideoId, insertYouTubeBlock, fetchYouTubeTitle } from './youtube.js';
-import { openImageSheet } from './image-upload.js';
+import { openImageSheet, openImageOptionsModal } from './image-upload.js';
 import { showToast } from './toast.js';
 import { navigate, invalidatePostCache, invalidatePageCache, getAllTags } from './app.js';
 import { SNIPPETS, snippetInsert } from './snippets.js';
@@ -16,6 +16,7 @@ let splitDebounce = null;
 let _snapshot = null;
 let _isDirty = false;
 let _snippetPickerInited = false;
+let _quotePickerInited = false;
 
 // ── Module-level delegated handlers ───────────────────────────────────────────
 
@@ -97,6 +98,32 @@ document.addEventListener('click', e => {
       _triggerSave();
     }
     block.remove();
+    return;
+  }
+
+  // Role image edit button
+  const editRoleBtn = e.target.closest('[data-action="edit-role-image"]');
+  if (editRoleBtn) {
+    const block = editRoleBtn.closest('.image-block');
+    if (!block) return;
+    const src = block.dataset.src;
+    const alt = block.dataset.alt || '';
+    const imgRole = block.dataset.imgrole || '';
+    const treatment = block.dataset.treatment || '';
+    const ta = document.getElementById('editor-textarea');
+    if (src && currentPost && ta) {
+      const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const body = currentPost.body || '';
+      const re = new RegExp(`\\n?<!--\\s*signal:image\\s+src="${escapedSrc}"[^>]*-->\\n?`);
+      const match = body.match(re);
+      const idx = match ? body.indexOf(match[0]) : -1;
+      currentPost.body = body.replace(new RegExp(`\\n?<!--\\s*signal:image\\s+src="${escapedSrc}"[^>]*-->\\n?`, 'g'), '\n');
+      ta.value = currentPost.body;
+      if (idx >= 0) ta.selectionStart = ta.selectionEnd = idx + 1;
+      _triggerSave();
+    }
+    block.remove();
+    openImageOptionsModal(ta, src, alt, imgRole, treatment);
     return;
   }
 
@@ -320,6 +347,7 @@ function _populateEditor() {
 
   // Snippet picker
   _initSnippetPicker();
+  _initQuotePicker();
 
   _setViewMode('edit');
   _initReviewBtn();
@@ -543,6 +571,42 @@ function _initSnippetPicker() {
     if (!snippet) return;
     const textarea = _getActiveTextarea();
     _insertAtCursor(textarea, '\n' + snippetInsert(snippet) + '\n');
+    picker.hidden = true;
+  });
+
+  document.addEventListener('click', () => { picker.hidden = true; });
+}
+
+function _initQuotePicker() {
+  if (_quotePickerInited) return;
+  const btn = document.getElementById('btn-quote');
+  const picker = document.getElementById('quote-picker');
+  if (!btn || !picker) return;
+  _quotePickerInited = true;
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isHidden = picker.hidden;
+    picker.hidden = !isHidden;
+    if (isHidden) {
+      const r = btn.getBoundingClientRect();
+      picker.style.top = (r.bottom + 4) + 'px';
+      picker.style.left = r.left + 'px';
+    }
+  });
+
+  picker.addEventListener('click', e => {
+    const item = e.target.closest('.snippet-item[data-quote]');
+    if (!item) return;
+    const textarea = _getActiveTextarea();
+    const type = item.dataset.quote;
+    if (type === 'blockquote') {
+      _prefixLine(textarea, '> ');
+    } else if (type === 'pull-quote') {
+      _insertAtCursor(textarea, '\n<div class="pull-quote"><blockquote><p>Quote text here.</p></blockquote></div>\n');
+    } else if (type === 'quote-interlude') {
+      _insertAtCursor(textarea, '\n<div class="quote-interlude"><blockquote><p>Quote text here.</p></blockquote></div>\n');
+    }
     picker.hidden = true;
   });
 

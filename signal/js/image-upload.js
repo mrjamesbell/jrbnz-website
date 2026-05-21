@@ -1,4 +1,5 @@
 import { showToast } from './toast.js';
+import { openMediaPicker } from './media-picker.js';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
@@ -97,7 +98,10 @@ export function renderRoleImageBlock(src, alt, imgRole, treatment) {
     <button class="image-remove-btn" data-action="remove-image" title="Remove">✕</button>
   </div>
   ${escAlt ? `<div class="image-info-bar"><div class="image-alt-text">${escAlt}</div></div>` : ''}
-  ${badgeHtml ? `<div class="image-role-bar">${badgeHtml}</div>` : ''}
+  <div class="image-role-bar">
+    ${badgeHtml}
+    <button class="image-role-edit-btn" data-action="edit-role-image" title="Edit layout & treatment">Edit</button>
+  </div>
 </div>`;
 }
 
@@ -157,7 +161,7 @@ async function _getImageRoles() {
   return _imageRolesCache;
 }
 
-export async function openImageOptionsModal(textarea, publicUrl, altHint) {
+export async function openImageOptionsModal(textarea, publicUrl, altHint, initialLayout = '', initialTreatment = '') {
   const modal = document.getElementById('img-options-modal');
   const previewImg = document.getElementById('img-options-preview-img');
   const altInput = document.getElementById('img-options-alt');
@@ -176,11 +180,11 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint) {
 
   layoutSelect.innerHTML = '<option value="">Default (inline)</option>' +
     roles.layouts.map(r => `<option value="${_esc(r.className)}">${_esc(r.label)} — ${_esc(r.description)}</option>`).join('');
-  layoutSelect.value = roles.defaults?.layout || '';
+  layoutSelect.value = initialLayout || roles.defaults?.layout || '';
 
   treatmentSelect.innerHTML = '<option value="">None</option>' +
     roles.treatments.map(r => `<option value="${_esc(r.className)}">${_esc(r.label)} — ${_esc(r.description)}</option>`).join('');
-  treatmentSelect.value = roles.defaults?.treatment || '';
+  treatmentSelect.value = initialTreatment || roles.defaults?.treatment || '';
 
   if (pairHint) pairHint.style.display = 'none';
   layoutSelect.onchange = () => {
@@ -468,7 +472,10 @@ export function openImageSheet(textarea) {
 
   document.getElementById('img-from-media').onclick = () => {
     close();
-    _openMediaPicker(textarea);
+    openMediaPicker({
+      insertLabel: 'Insert image',
+      onSelect: item => openImageOptionsModal(textarea, item.publicUrl, _altHint(item.displayName || item.filename || ''))
+    });
   };
 }
 
@@ -500,107 +507,10 @@ function _altHint(filename) {
     .trim();
 }
 
-// ── Media picker modal ────────────────────────────────────────────────────────
-
-async function _openMediaPicker(textarea) {
-  const modal = document.getElementById('media-picker-modal');
-  if (!modal) { showToast('Media picker not available', 'error'); return; }
-
-  const grid = document.getElementById('media-picker-grid');
-  const insertBtn = document.getElementById('media-picker-insert');
-  const infoEl = document.getElementById('picker-selected-info');
-  const searchEl = document.getElementById('media-picker-search');
-  const closeBtn = document.getElementById('media-picker-close');
-  const cancelBtn = document.getElementById('media-picker-cancel');
-
-  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
-  insertBtn.disabled = true;
-  if (infoEl) infoEl.textContent = '';
-  if (searchEl) searchEl.value = '';
-  modal.style.display = 'flex';
-
-  try {
-    const res = await fetch('/api/media?limit=48');
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : (data.items || []);
-
-    if (!items.length) {
-      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
-    } else {
-      grid.innerHTML = items.map(item => {
-        const url = _esc(item.publicUrl || item.url || '');
-        const thumb = _esc(item.urls?.thumb || url);
-        const name = _esc(item.displayName || item.filename || '');
-        const size = _fmtBytes(item.size || 0);
-        return `<div class="media-item" data-url="${url}" data-key="${_esc(item.key || item.id || '')}">
-          <img src="${thumb}" alt="${name}" loading="lazy">
-          <div class="media-item-overlay">
-            <div class="media-item-filename">${name}</div>
-            <div class="media-item-size">${size}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-  } catch {
-    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
-  }
-
-  const onGridClick = e => {
-    const item = e.target.closest('.media-item');
-    if (!item) return;
-    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
-    item.classList.add('is-selected');
-    insertBtn.disabled = false;
-    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
-  };
-  grid.addEventListener('click', onGridClick);
-
-  const close = () => {
-    modal.style.display = 'none';
-    grid.removeEventListener('click', onGridClick);
-    insertBtn.onclick = null;
-    if (closeBtn) closeBtn.onclick = null;
-    if (cancelBtn) cancelBtn.onclick = null;
-    if (searchEl) searchEl.oninput = null;
-  };
-
-  insertBtn.onclick = () => {
-    const selected = grid.querySelector('.media-item.is-selected');
-    if (selected) {
-      const url = selected.dataset.url;
-      const name = selected.querySelector('.media-item-filename')?.textContent || '';
-      close();
-      openImageOptionsModal(textarea, url, _altHint(name));
-    } else {
-      close();
-    }
-  };
-
-  if (closeBtn) closeBtn.onclick = close;
-  if (cancelBtn) cancelBtn.onclick = close;
-  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
-
-  if (searchEl) {
-    searchEl.oninput = e => {
-      const q = e.target.value.toLowerCase();
-      grid.querySelectorAll('.media-item').forEach(item => {
-        const name = item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '';
-        item.style.display = name.includes(q) ? '' : 'none';
-      });
-    };
-  }
-}
-
 // ── Util ──────────────────────────────────────────────────────────────────────
 
 function _esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function _fmtBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
 function _mimeFromName(name) {

@@ -179,7 +179,8 @@
 }
 
 /* Drop cap on first paragraph */
-[data-theme="cinematic"] .article-open .post-content > p:first-of-type::first-letter {
+[data-theme="cinematic"] .article-open .post-content > p:first-of-type::first-letter,
+[data-theme="cinematic"] .ci-page-content .post-content > p:first-of-type::first-letter {
     float: left;
     font-size: 4.8em;
     line-height: 0.78;

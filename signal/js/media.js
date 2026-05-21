@@ -64,6 +64,12 @@ function _setupListeners() {
       return;
     }
 
+    const editBtn = e.target.closest('[data-action="edit"]');
+    if (editBtn) {
+      await _openEditModal(editBtn.closest('.media-item'));
+      return;
+    }
+
     const cropBtn = e.target.closest('[data-action="crop"]');
     if (cropBtn) {
       await _cropExistingItem(cropBtn.closest('.media-item'));
@@ -170,6 +176,111 @@ async function _deleteSelected() {
   }
 }
 
+// ── Edit metadata ─────────────────────────────────────────────────────────────
+
+const _itemMeta = new Map(); // key → { displayName, alt, caption, focalX, focalY }
+
+async function _openEditModal(itemEl) {
+  const key = itemEl.dataset.key;
+  if (!key) return;
+
+  const modal = document.getElementById('media-edit-modal');
+  const previewImg = document.getElementById('media-edit-preview');
+  const focalDot = document.getElementById('media-edit-focal-dot');
+  const nameInput = document.getElementById('media-edit-name');
+  const altInput = document.getElementById('media-edit-alt');
+  const captionInput = document.getElementById('media-edit-caption');
+  const saveBtn = document.getElementById('media-edit-save');
+  const cancelBtn = document.getElementById('media-edit-cancel');
+  const closeBtn = document.getElementById('media-edit-close');
+
+  // Fetch current metadata from server
+  let meta = { displayName: '', alt: '', caption: '', focalX: 0.5, focalY: 0.5 };
+  try {
+    const res = await fetch(`/api/media/${encodeURIComponent(key)}`);
+    if (res.ok) {
+      const data = await res.json();
+      meta = {
+        displayName: data.displayName || data.filename || '',
+        alt: data.alt || '',
+        caption: data.caption || '',
+        focalX: data.focalX ?? 0.5,
+        focalY: data.focalY ?? 0.5,
+      };
+      // Use md variant for the preview
+      const previewUrl = data.urls?.md || data.publicUrl || data.url || '';
+      previewImg.src = previewUrl;
+    }
+  } catch {
+    previewImg.src = itemEl.querySelector('img')?.src || '';
+  }
+
+  nameInput.value = meta.displayName;
+  altInput.value = meta.alt;
+  captionInput.value = meta.caption;
+
+  let focalX = meta.focalX;
+  let focalY = meta.focalY;
+
+  const _placeDot = () => {
+    focalDot.hidden = false;
+    focalDot.style.left = `${focalX * 100}%`;
+    focalDot.style.top = `${focalY * 100}%`;
+  };
+  _placeDot();
+
+  const onImgClick = e => {
+    const rect = previewImg.getBoundingClientRect();
+    focalX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    focalY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    _placeDot();
+  };
+  previewImg.addEventListener('click', onImgClick);
+
+  const close = () => {
+    modal.style.display = 'none';
+    previewImg.removeEventListener('click', onImgClick);
+    saveBtn.onclick = null;
+    cancelBtn.onclick = null;
+    closeBtn.onclick = null;
+    focalDot.hidden = true;
+  };
+
+  saveBtn.onclick = async () => {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+    try {
+      const res = await fetch(`/api/media/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName: nameInput.value.trim(),
+          alt: altInput.value.trim(),
+          caption: captionInput.value.trim(),
+          focalX: Math.round(focalX * 1000) / 1000,
+          focalY: Math.round(focalY * 1000) / 1000,
+        }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      // Update the filename label in the grid
+      const filenameEl = itemEl.querySelector('.media-item-filename');
+      if (filenameEl && nameInput.value.trim()) filenameEl.textContent = nameInput.value.trim();
+      showToast('Saved', 'success', 1500);
+      close();
+    } catch (e) {
+      showToast('Save failed: ' + e.message, 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+    }
+  };
+
+  cancelBtn.onclick = close;
+  closeBtn.onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
+  modal.style.display = 'flex';
+  setTimeout(() => nameInput.focus(), 60);
+}
+
 // ── Crop existing ──────────────────────────────────────────────────────────────
 
 async function _cropExistingItem(item) {
@@ -256,6 +367,7 @@ function _renderItem(item) {
       <div class="media-item-filename">${_esc(displayName)}</div>
       <div class="media-item-size">${_fmtBytes(item.size || 0)}</div>
       <div class="media-item-actions">
+        <button class="media-item-btn" data-action="edit">Edit</button>
         <button class="media-item-btn" data-action="copy-url">Copy URL</button>
         <button class="media-item-btn" data-action="crop">Crop</button>
         <button class="media-item-btn is-danger" data-action="delete">Delete</button>

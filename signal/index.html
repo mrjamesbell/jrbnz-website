@@ -237,7 +237,14 @@
         <div class="fmtbar-sep"></div>
         <button class="fmtbar-btn" data-action="bold" title="Bold (⌘B)">B</button>
         <button class="fmtbar-btn" data-action="italic" title="Italic (⌘I)">I</button>
-        <button class="fmtbar-btn" data-action="quote" title="Blockquote">"</button>
+        <div class="quote-wrap">
+          <button class="fmtbar-btn" id="btn-quote" title="Quote">" ▾</button>
+          <div class="snippet-picker" id="quote-picker" hidden>
+            <button class="snippet-item" data-quote="blockquote">Blockquote</button>
+            <button class="snippet-item" data-quote="pull-quote">Pull quote</button>
+            <button class="snippet-item" data-quote="quote-interlude">Quote interlude</button>
+          </div>
+        </div>
         <button class="fmtbar-btn" data-action="ul" title="Bullet list">• List</button>
         <button class="fmtbar-btn" data-action="link" title="Link (⌘K)">Link</button>
         <div class="fmtbar-sep"></div>
@@ -1083,6 +1090,39 @@ const x = 1;
     <div class="modal-footer">
       <button class="btn btn-secondary" id="img-options-cancel">Cancel</button>
       <button class="btn btn-teal" id="img-options-insert">Insert image</button>
+    </div>
+  </div>
+</div>
+
+<!-- Media edit modal -->
+<div class="modal-backdrop" id="media-edit-modal" style="display:none">
+  <div class="modal" style="max-width:460px;width:100%">
+    <div class="modal-header">
+      <span class="modal-title">Edit image</span>
+      <button class="modal-close" id="media-edit-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="media-edit-focal-wrap">
+        <img id="media-edit-preview" class="media-edit-preview-img" src="" alt="">
+        <div class="media-edit-focal-dot" id="media-edit-focal-dot" hidden></div>
+      </div>
+      <p class="field-hint" style="margin-top:6px;margin-bottom:16px">Click image to set focal point for cropping</p>
+      <div style="margin-bottom:14px">
+        <label class="field-label" for="media-edit-name">Display name</label>
+        <input class="field-input" type="text" id="media-edit-name" placeholder="Descriptive name…" autocomplete="off">
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="field-label" for="media-edit-alt">Alt text</label>
+        <input class="field-input" type="text" id="media-edit-alt" placeholder="Describe for screen readers…" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label" for="media-edit-caption">Caption</label>
+        <textarea class="field-input" id="media-edit-caption" rows="2" placeholder="Optional caption…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="media-edit-cancel">Cancel</button>
+      <button class="btn btn-teal" id="media-edit-save">Save</button>
     </div>
   </div>
 </div>

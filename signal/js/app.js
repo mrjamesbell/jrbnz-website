@@ -7,6 +7,7 @@ import { openCropModal, uploadToR2 } from './image-upload.js';
 import { initSnippetsView } from './snippets-ui.js';
 import { initHomepageView } from './homepage.js';
 import { BUILD } from './build.js';
+import { openMediaPicker } from './media-picker.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
 
@@ -123,7 +124,16 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
   });
 
   // Default cover image in settings
-  document.getElementById('btn-default-cover-media')?.addEventListener('click', _openDefaultCoverMediaPicker);
+  document.getElementById('btn-default-cover-media')?.addEventListener('click', () =>
+    openMediaPicker({ insertLabel: 'Use as default cover', onSelect: item => {
+      const url = item.urls?.hero || item.publicUrl;
+      const inp = document.getElementById('site-default-cover');
+      const wrap = document.getElementById('default-cover-preview-wrap');
+      const img = document.getElementById('default-cover-preview-img');
+      if (inp) inp.value = url;
+      if (wrap && img) { wrap.style.display = ''; img.src = url; }
+    }})
+  );
   document.getElementById('site-default-cover')?.addEventListener('input', e => {
     const url = e.target.value.trim();
     const wrap = document.getElementById('default-cover-preview-wrap');
@@ -160,10 +170,22 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
       }
     }, { circle: true }), 0);
   });
-  document.getElementById('btn-headshot-media').addEventListener('click', _openHeadshotMediaPicker);
+  document.getElementById('btn-headshot-media').addEventListener('click', () =>
+    openMediaPicker({ insertLabel: 'Use as headshot', onSelect: item => {
+      const url = item.urls?.hero || item.publicUrl;
+      document.getElementById('author-headshot').value = url;
+      _updateHeadshotPreview(url);
+    }})
+  );
 
   // Cover image picker
-  document.getElementById('btn-cover-media').addEventListener('click', _openCoverMediaPicker);
+  document.getElementById('btn-cover-media').addEventListener('click', () =>
+    openMediaPicker({ insertLabel: 'Use as cover image', onSelect: item => {
+      const url = item.urls?.hero || item.publicUrl;
+      const input = document.getElementById('settings-cover');
+      if (input) { input.value = url; input.dispatchEvent(new Event('input')); }
+    }})
+  );
   document.getElementById('settings-cover').addEventListener('input', e => {
     const url = e.target.value.trim();
     const wrap = document.getElementById('cover-preview-wrap');
@@ -211,224 +233,6 @@ function _updateHeadshotPreview(url) {
   }
 }
 
-async function _openHeadshotMediaPicker() {
-  const modal = document.getElementById('media-picker-modal');
-  if (!modal) { showToast('Media picker not available', 'error'); return; }
-
-  const grid = document.getElementById('media-picker-grid');
-  const insertBtn = document.getElementById('media-picker-insert');
-  const closeBtn = document.getElementById('media-picker-close');
-  const cancelBtn = document.getElementById('media-picker-cancel');
-  const searchEl = document.getElementById('media-picker-search');
-  const infoEl = document.getElementById('picker-selected-info');
-
-  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
-  insertBtn.disabled = true;
-  insertBtn.textContent = 'Use as headshot';
-  if (infoEl) infoEl.textContent = '';
-  if (searchEl) searchEl.value = '';
-  modal.style.display = 'flex';
-
-  try {
-    const res = await fetch('/api/media?limit=48');
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : (data.items || []);
-    if (!items.length) {
-      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
-    } else {
-      grid.innerHTML = items.map(item => _pickerItemHtml(item)).join('');
-    }
-  } catch {
-    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
-  }
-
-  const onGridClick = e => {
-    const item = e.target.closest('.media-item');
-    if (!item) return;
-    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
-    item.classList.add('is-selected');
-    insertBtn.disabled = false;
-    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
-  };
-  grid.addEventListener('click', onGridClick);
-
-  if (searchEl) {
-    searchEl.oninput = e => {
-      const q = e.target.value.toLowerCase();
-      grid.querySelectorAll('.media-item').forEach(item => {
-        const name = item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '';
-        item.style.display = name.includes(q) ? '' : 'none';
-      });
-    };
-  }
-
-  const close = () => {
-    modal.style.display = 'none';
-    grid.removeEventListener('click', onGridClick);
-    insertBtn.textContent = 'Insert image';
-    insertBtn.onclick = null;
-    if (closeBtn) closeBtn.onclick = null;
-    if (cancelBtn) cancelBtn.onclick = null;
-    if (searchEl) searchEl.oninput = null;
-  };
-
-  insertBtn.onclick = () => {
-    const selected = grid.querySelector('.media-item.is-selected');
-    if (!selected) return;
-    const url = selected.dataset.url;
-    close();
-    document.getElementById('author-headshot').value = url;
-    _updateHeadshotPreview(url);
-  };
-  if (closeBtn) closeBtn.onclick = close;
-  if (cancelBtn) cancelBtn.onclick = close;
-  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
-}
-
-async function _openCoverMediaPicker() {
-  const modal = document.getElementById('media-picker-modal');
-  if (!modal) { showToast('Media picker not available', 'error'); return; }
-
-  const grid = document.getElementById('media-picker-grid');
-  const insertBtn = document.getElementById('media-picker-insert');
-  const closeBtn = document.getElementById('media-picker-close');
-  const cancelBtn = document.getElementById('media-picker-cancel');
-  const searchEl = document.getElementById('media-picker-search');
-  const infoEl = document.getElementById('picker-selected-info');
-
-  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
-  insertBtn.disabled = true;
-  insertBtn.textContent = 'Use as cover image';
-  if (infoEl) infoEl.textContent = '';
-  if (searchEl) searchEl.value = '';
-  modal.style.display = 'flex';
-
-  try {
-    const res = await fetch('/api/media?limit=48');
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : (data.items || []);
-    grid.innerHTML = items.length
-      ? items.map(item => _pickerItemHtml(item)).join('')
-      : '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
-  } catch {
-    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
-  }
-
-  const onGridClick = e => {
-    const item = e.target.closest('.media-item');
-    if (!item) return;
-    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
-    item.classList.add('is-selected');
-    insertBtn.disabled = false;
-    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
-  };
-  grid.addEventListener('click', onGridClick);
-
-  if (searchEl) {
-    searchEl.oninput = e => {
-      const q = e.target.value.toLowerCase();
-      grid.querySelectorAll('.media-item').forEach(item => {
-        const name = item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '';
-        item.style.display = name.includes(q) ? '' : 'none';
-      });
-    };
-  }
-
-  const close = () => {
-    modal.style.display = 'none';
-    grid.removeEventListener('click', onGridClick);
-    insertBtn.textContent = 'Insert image';
-    insertBtn.onclick = null;
-    if (closeBtn) closeBtn.onclick = null;
-    if (cancelBtn) cancelBtn.onclick = null;
-    if (searchEl) searchEl.oninput = null;
-  };
-
-  insertBtn.onclick = () => {
-    const selected = grid.querySelector('.media-item.is-selected');
-    if (!selected) return;
-    const url = selected.dataset.url;
-    close();
-    const input = document.getElementById('settings-cover');
-    if (input) { input.value = url; input.dispatchEvent(new Event('input')); }
-  };
-  if (closeBtn) closeBtn.onclick = close;
-  if (cancelBtn) cancelBtn.onclick = close;
-  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
-}
-
-async function _openDefaultCoverMediaPicker() {
-  const modal = document.getElementById('media-picker-modal');
-  if (!modal) return;
-  const grid = document.getElementById('media-picker-grid');
-  const insertBtn = document.getElementById('media-picker-insert');
-  const closeBtn = document.getElementById('media-picker-close');
-  const cancelBtn = document.getElementById('media-picker-cancel');
-  const searchEl = document.getElementById('media-picker-search');
-  const infoEl = document.getElementById('picker-selected-info');
-
-  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
-  insertBtn.disabled = true;
-  insertBtn.textContent = 'Use as default cover';
-  if (infoEl) infoEl.textContent = '';
-  if (searchEl) searchEl.value = '';
-  modal.style.display = 'flex';
-
-  try {
-    const res = await fetch('/api/media?limit=48');
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : (data.items || []);
-    grid.innerHTML = items.length
-      ? items.map(item => _pickerItemHtml(item)).join('')
-      : '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted)">No media uploaded yet.</div>';
-  } catch {
-    grid.innerHTML = '<div style="padding:20px;color:var(--color-danger);font-size:13px">Failed to load media</div>';
-  }
-
-  const onGridClick = e => {
-    const item = e.target.closest('.media-item');
-    if (!item) return;
-    grid.querySelectorAll('.media-item.is-selected').forEach(el => el.classList.remove('is-selected'));
-    item.classList.add('is-selected');
-    insertBtn.disabled = false;
-    if (infoEl) infoEl.textContent = item.querySelector('.media-item-filename')?.textContent || '';
-  };
-  grid.addEventListener('click', onGridClick);
-
-  if (searchEl) {
-    searchEl.oninput = e => {
-      const q = e.target.value.toLowerCase();
-      grid.querySelectorAll('.media-item').forEach(item => {
-        item.style.display = (item.querySelector('.media-item-filename')?.textContent.toLowerCase() || '').includes(q) ? '' : 'none';
-      });
-    };
-  }
-
-  const close = () => {
-    modal.style.display = 'none';
-    grid.removeEventListener('click', onGridClick);
-    insertBtn.textContent = 'Insert image';
-    insertBtn.onclick = null;
-    if (closeBtn) closeBtn.onclick = null;
-    if (cancelBtn) cancelBtn.onclick = null;
-    if (searchEl) searchEl.oninput = null;
-  };
-
-  insertBtn.onclick = () => {
-    const selected = grid.querySelector('.media-item.is-selected');
-    if (!selected) return;
-    const url = selected.dataset.url;
-    close();
-    const inp = document.getElementById('site-default-cover');
-    const wrap = document.getElementById('default-cover-preview-wrap');
-    const img = document.getElementById('default-cover-preview-img');
-    if (inp) inp.value = url;
-    if (wrap && img) { wrap.style.display = ''; img.src = url; }
-  };
-  if (closeBtn) closeBtn.onclick = close;
-  if (cancelBtn) cancelBtn.onclick = close;
-  modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
-}
 
 function _updateDefaultCoverFocusBtns(focus) {
   const img = document.getElementById('default-cover-preview-img');
@@ -436,16 +240,6 @@ function _updateDefaultCoverFocusBtns(focus) {
     btn.classList.toggle('active', btn.dataset.focus === focus);
   });
   if (img) img.style.objectPosition = `${focus} center`;
-}
-
-function _escAttr(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function _fmtBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -1112,21 +906,6 @@ function _initAccentPickers() {
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
-
-function _pickerItemHtml(item) {
-  const url   = _escAttr(item.publicUrl || item.url || '');
-  const thumb = _escAttr(item.urls?.thumb || url);
-  const name  = _escAttr(item.displayName || item.filename || '');
-  const size  = _escAttr(_fmtBytes(item.size || 0));
-  const key   = _escAttr(item.key || item.id || '');
-  return `<div class="media-item" data-url="${url}" data-key="${key}">
-    <img src="${thumb}" alt="${name}" loading="lazy">
-    <div class="media-item-overlay">
-      <div class="media-item-filename">${name}</div>
-      <div class="media-item-size">${size}</div>
-    </div>
-  </div>`;
-}
 
 function esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

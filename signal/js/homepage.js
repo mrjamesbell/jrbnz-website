@@ -1,4 +1,5 @@
 import { showToast } from './toast.js';
+import { openMediaPicker } from './media-picker.js';
 
 let _initialized = false;
 let _allPosts = [];
@@ -8,7 +9,13 @@ export async function initHomepageView() {
     _initialized = true;
     _buildCardBlocks();
     document.getElementById('btn-homepage-save')?.addEventListener('click', _save);
-    document.getElementById('btn-hp-interlude-media')?.addEventListener('click', _openInterlucdeMediaPicker);
+    document.getElementById('btn-hp-interlude-media')?.addEventListener('click', () =>
+      openMediaPicker({ insertLabel: 'Use as interlude image', onSelect: item => {
+        const url = item.urls?.hero || item.publicUrl;
+        const inp = document.getElementById('hp-interlude-image');
+        if (inp) inp.value = url;
+      }})
+    );
   }
   await _load();
 }
@@ -175,77 +182,6 @@ async function _save() {
   } finally {
     if (btn) btn.disabled = false;
   }
-}
-
-// ── Interlude image picker ────────────────────────────────────────────────────
-
-async function _openInterlucdeMediaPicker() {
-  const modal = document.getElementById('media-picker-modal');
-  if (!modal) { showToast('Media picker not available', 'error'); return; }
-
-  const grid = document.getElementById('media-picker-grid');
-  const insertBtn = document.getElementById('media-picker-insert');
-  const closeBtn = document.getElementById('media-picker-close');
-  const cancelBtn = document.getElementById('media-picker-cancel');
-  const searchEl = document.getElementById('media-picker-search');
-  const infoEl = document.getElementById('picker-selected-info');
-
-  grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">Loading…</div>';
-  insertBtn.disabled = true;
-  insertBtn.textContent = 'Use as interlude image';
-  if (infoEl) infoEl.textContent = '';
-  if (searchEl) searchEl.value = '';
-  modal.style.display = 'flex';
-
-  let selected = null;
-
-  try {
-    const res = await fetch('/api/media');
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : (data.items || []);
-    if (!items.length) {
-      grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted);font-family:var(--font-sans)">No media uploaded yet.</div>';
-    } else {
-      grid.innerHTML = items.map(item => {
-        const url   = _esc(item.publicUrl || item.url || '');
-        const thumb = _esc(item.urls?.thumb || url);
-        const name  = _esc(item.displayName || item.filename || '');
-        return `<div class="media-picker-item" data-url="${url}" style="cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;aspect-ratio:1;background:#111">
-          <img src="${thumb}" alt="${name}" style="width:100%;height:100%;object-fit:cover;display:block">
-        </div>`;
-      }).join('');
-      grid.querySelectorAll('.media-picker-item').forEach(item => {
-        item.addEventListener('click', () => {
-          grid.querySelectorAll('.media-picker-item').forEach(i => i.style.borderColor = 'transparent');
-          item.style.borderColor = 'var(--color-accent)';
-          selected = item.dataset.url;
-          insertBtn.disabled = false;
-          if (infoEl) infoEl.textContent = selected.split('/').pop();
-        });
-      });
-    }
-  } catch {
-    grid.innerHTML = '<div style="padding:20px;font-size:13px;color:var(--color-cream-text-muted)">Failed to load media.</div>';
-  }
-
-  const onInsert = () => {
-    if (selected) {
-      const inp = document.getElementById('hp-interlude-image');
-      if (inp) inp.value = selected;
-    }
-    cleanup();
-  };
-
-  const cleanup = () => {
-    modal.style.display = 'none';
-    insertBtn.removeEventListener('click', onInsert);
-    closeBtn?.removeEventListener('click', cleanup);
-    cancelBtn?.removeEventListener('click', cleanup);
-  };
-
-  insertBtn.addEventListener('click', onInsert);
-  closeBtn?.addEventListener('click', cleanup);
-  cancelBtn?.addEventListener('click', cleanup);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
