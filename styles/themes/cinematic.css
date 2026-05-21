@@ -274,7 +274,8 @@
 }
 
 [data-theme="cinematic"] .quote-interlude blockquote,
-[data-theme="cinematic"] .quote-interlude p {
+[data-theme="cinematic"] .quote-interlude p,
+[data-theme="cinematic"] .quote-interlude blockquote p {
     font-family: var(--font-display);
     font-size: 40px;
     line-height: 1.06;
