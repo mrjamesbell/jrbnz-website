@@ -401,17 +401,23 @@ async function _fetchPosts() {
 function renderList(posts) {
   const draftsEl = document.getElementById('drafts-list');
   const publishedEl = document.getElementById('published-list');
+  const notesEl = document.getElementById('notes-list');
   if (!draftsEl || !publishedEl) return;
 
+  const isNote = p => (p.tags || []).includes('note');
   const drafts = posts
     .filter(p => p.status !== 'published' || p.hasDraftChanges)
     .sort((a, b) => new Date(b.updatedAt || b.date) - new Date(a.updatedAt || a.date));
   const published = posts
-    .filter(p => p.status === 'published' && !p.hasDraftChanges)
+    .filter(p => p.status === 'published' && !p.hasDraftChanges && !isNote(p))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const notes = posts
+    .filter(p => p.status === 'published' && !p.hasDraftChanges && isNote(p))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   draftsEl.innerHTML = drafts.map(listItem).join('');
   publishedEl.innerHTML = published.map(listItem).join('');
+  if (notesEl) notesEl.innerHTML = notes.map(listItem).join('');
 
   document.querySelectorAll('.post-list-item').forEach(el => {
     el.addEventListener('click', e => {
