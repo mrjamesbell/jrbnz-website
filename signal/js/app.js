@@ -377,6 +377,17 @@ function getAllTags() {
 async function loadPosts() {
   await _fetchPosts();
   renderList(allPosts);
+  const search = document.getElementById('post-list-search');
+  if (search && !search._bound) {
+    search._bound = true;
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      renderList(q ? allPosts.filter(p =>
+        (p.title || '').toLowerCase().includes(q) ||
+        (p.excerpt || '').toLowerCase().includes(q)
+      ) : allPosts);
+    });
+  }
 }
 
 async function _fetchPosts() {
@@ -436,16 +447,17 @@ function listItem(p) {
     ? relativeTime(p.updatedAt || p.date)
     : fmtDateShort(p.date);
   const statusClass = isDraft ? 'is-draft' : hasEdits ? 'is-draft' : 'is-published';
-  const statusLabel = isDraft ? 'draft' : hasEdits ? 'published · edits' : 'published';
+  const statusLabel = isDraft ? 'Draft' : hasEdits ? 'Edits' : 'Published';
+  const excerpt = p.excerpt || tags || '';
 
   return `<div class="post-list-item" data-slug="${esc(p.slug)}">
     <div class="post-list-item-body">
-      <div class="post-list-title">${(isDraft || hasEdits) ? '<span class="draft-pip"></span>' : ''}${esc(p.title || 'Untitled')}</div>
-      <div class="post-list-meta">
-        <span>${esc(dateStr)}</span>
-        ${tags ? `<span class="post-list-tags">${esc(tags)}</span>` : ''}
-        ${wc ? `<span class="post-list-wordcount">${esc(wc)}</span>` : ''}
-      </div>
+      <div class="post-list-title">${esc(p.title || 'Untitled')}</div>
+      ${excerpt ? `<div class="post-list-excerpt">${esc(excerpt)}</div>` : ''}
+    </div>
+    <div class="post-list-item-right">
+      <div>${esc(dateStr)}</div>
+      ${wc ? `<div>${esc(wc)}</div>` : ''}
     </div>
     <span class="post-list-status ${statusClass}">${statusLabel}</span>
     <button class="post-list-delete" data-slug="${esc(p.slug)}" title="Delete post" tabindex="-1">×</button>
