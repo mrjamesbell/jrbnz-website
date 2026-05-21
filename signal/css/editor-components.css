@@ -102,7 +102,7 @@
   position: fixed;
   z-index: 200;
   min-width: 160px;
-  background: var(--color-surface);
+  background: var(--color-cream-dark);
   border: var(--border-cream);
   border-radius: var(--radius-md);
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);

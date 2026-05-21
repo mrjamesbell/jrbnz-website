@@ -110,7 +110,7 @@ document.addEventListener('click', e => {
     const alt = block.dataset.alt || '';
     const imgRole = block.dataset.imgrole || '';
     const treatment = block.dataset.treatment || '';
-    const ta = document.getElementById('editor-textarea');
+    const ta = _getActiveTextarea();
     if (src && currentPost && ta) {
       const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const body = currentPost.body || '';

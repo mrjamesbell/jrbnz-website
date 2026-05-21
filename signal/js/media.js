@@ -59,7 +59,8 @@ function _setupListeners() {
     const copyBtn = e.target.closest('[data-action="copy-url"]');
     if (copyBtn) {
       const item = copyBtn.closest('.media-item');
-      await navigator.clipboard.writeText(item.dataset.url).catch(() => {});
+      const fullUrl = `https://jrbnz.com${item.dataset.url}`;
+      await navigator.clipboard.writeText(fullUrl).catch(() => {});
       showToast('URL copied', 'success');
       return;
     }
@@ -222,6 +223,8 @@ async function _openEditModal(itemEl) {
   let focalX = meta.focalX;
   let focalY = meta.focalY;
 
+  const focalWrap = previewImg.closest('.media-edit-focal-wrap');
+
   const _placeDot = () => {
     focalDot.hidden = false;
     focalDot.style.left = `${focalX * 100}%`;
@@ -229,17 +232,19 @@ async function _openEditModal(itemEl) {
   };
   _placeDot();
 
-  const onImgClick = e => {
+  const onFocalClick = e => {
     const rect = previewImg.getBoundingClientRect();
     focalX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     focalY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
     _placeDot();
   };
-  previewImg.addEventListener('click', onImgClick);
+  focalWrap.addEventListener('click', onFocalClick);
 
   const close = () => {
     modal.style.display = 'none';
-    previewImg.removeEventListener('click', onImgClick);
+    focalWrap.removeEventListener('click', onFocalClick);
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save';
     saveBtn.onclick = null;
     cancelBtn.onclick = null;
     closeBtn.onclick = null;
