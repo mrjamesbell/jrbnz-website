@@ -1464,6 +1464,7 @@ body {
 .media-edit-focal-wrap {
   position: relative;
   width: 100%;
+  min-height: 120px;
   background: var(--color-ink);
   border-radius: var(--radius-md);
   overflow: hidden;

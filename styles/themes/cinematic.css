@@ -318,9 +318,12 @@
 
 /* ── Image layout roles ───────────────────────────────────────────────────── */
 
-/* .img-break — cinematic full-width pause between sections */
+/* .img-break — cinematic full-viewport-width pause, bleeds past the reading column */
 [data-theme="cinematic"] .img-break {
-    margin: 48px calc(-1 * clamp(24px, 5vw, 48px));
+    margin-top: 48px;
+    margin-bottom: 48px;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
 }
 
 [data-theme="cinematic"] .img-break img {
@@ -1056,7 +1059,10 @@
     }
 
     [data-theme="cinematic"] .img-break {
-        margin: 32px calc(-1 * clamp(24px, 5vw, 48px));
+        margin-top: 32px;
+        margin-bottom: 32px;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
     }
 
     [data-theme="cinematic"] .img-break img {

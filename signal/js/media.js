@@ -195,6 +195,9 @@ async function _openEditModal(itemEl) {
   const cancelBtn = document.getElementById('media-edit-cancel');
   const closeBtn = document.getElementById('media-edit-close');
 
+  // Show thumbnail immediately so the focal wrap has height before the fetch
+  previewImg.src = itemEl.querySelector('img')?.src || '';
+
   // Fetch current metadata from server
   let meta = { displayName: '', alt: '', caption: '', focalX: 0.5, focalY: 0.5 };
   try {
@@ -210,10 +213,10 @@ async function _openEditModal(itemEl) {
       };
       // Use md variant for the preview
       const previewUrl = data.urls?.md || data.publicUrl || data.url || '';
-      previewImg.src = previewUrl;
+      if (previewUrl) previewImg.src = previewUrl;
     }
   } catch {
-    previewImg.src = itemEl.querySelector('img')?.src || '';
+    // keep thumbnail src set above
   }
 
   nameInput.value = meta.displayName;
