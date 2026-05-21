@@ -338,7 +338,7 @@
 
 [data-theme="cinematic"] .img-break img {
     width: 100%;
-    height: clamp(240px, 38vw, 520px);
+    height: clamp(360px, 56.25vw, 100vh);
     object-fit: cover;
     display: block;
 }
@@ -1076,7 +1076,7 @@
     }
 
     [data-theme="cinematic"] .img-break img {
-        height: clamp(180px, 55vw, 320px);
+        height: clamp(240px, 56.25vw, 100vh);
     }
 }
 
