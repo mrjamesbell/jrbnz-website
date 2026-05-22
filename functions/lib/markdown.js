@@ -40,9 +40,14 @@ export function mdToHtml(md) {
     const fxM = raw.match(/focalX="([^"]*)"/);
     const fyM = raw.match(/focalY="([^"]*)"/);
 
-    const src = mdEsc(srcM?.[1] || '');
+    const rawSrc = srcM?.[1] || '';
+    const src = mdEsc(rawSrc);
     const alt = mdEsc(altM?.[1] || '');
     if (!src) return;
+
+    // Emit srcset for CF Images URLs (/img/{id}/{variant})
+    const cfMatch = rawSrc.match(/^\/img\/([^/]+)\//);
+    const srcsetAttr = cfMatch ? ` srcset="/img/${cfMatch[1]}/md 900w, /img/${cfMatch[1]}/hero 1600w"` : '';
 
     const imgRole = imgRoleM?.[1] || '';
     const treatment = treatmentM?.[1] || '';
@@ -59,8 +64,8 @@ export function mdToHtml(md) {
         ? (treatment || null)           // pair wrapper handles layout; figure gets treatment only
         : [imgRole, treatment].filter(Boolean).join(' ');
       const figHtml = figClasses
-        ? `<figure class="${figClasses}"><img src="${src}" alt="${alt}"${focalStyle} loading="lazy"></figure>`
-        : `<figure><img src="${src}" alt="${alt}"${focalStyle} loading="lazy"></figure>`;
+        ? `<figure class="${figClasses}"><img src="${src}"${srcsetAttr} alt="${alt}"${focalStyle} loading="lazy"></figure>`
+        : `<figure><img src="${src}"${srcsetAttr} alt="${alt}"${focalStyle} loading="lazy"></figure>`;
 
       if (isPair) {
         if (_pendingPair !== null) {
@@ -83,7 +88,7 @@ export function mdToHtml(md) {
       const styleStr = w < 100
         ? ` style="max-width:${w}%${isFloat ? '' : ';display:block;margin-left:auto;margin-right:auto'}"`
         : '';
-      out.push(`<img src="${src}" alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
+      out.push(`<img src="${src}"${srcsetAttr} alt="${alt}"${cls ? ` class="${cls}"` : ''}${styleStr} loading="lazy">`);
     }
   }
 
