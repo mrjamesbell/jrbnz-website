@@ -54,7 +54,7 @@ export const imageRoles = {
   defaults: { layout: 'img-wide', treatment: 'photo-muted' },
 };
 
-import { esc, buildHead, buildSiteNav, buildNavLinks } from '../lib/templates.js';
+import { esc, buildHead, buildSiteNav, buildFooter } from '../lib/templates.js';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function _fmtDate(d) {
@@ -68,18 +68,6 @@ function _fmtDateShort(d) {
   return `${MONTHS[m-1]} ${y}`;
 }
 
-function buildCinematicFooter(menuPages) {
-  const navLinks = buildNavLinks(menuPages)
-    .map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`)
-    .join('\n      ');
-  return `<footer class="cinematic-footer">
-  <p class="cinematic-footer-quote">Writing about memory, theatre, technology and life in between.</p>
-  <nav class="cinematic-footer-nav" aria-label="Footer">
-    ${navLinks}
-    <a href="/feed.xml">RSS</a>
-  </nav>
-</footer>`;
-}
 
 export function buildPage(data) {
   const { title, slug, contentHtml, menuPages, accent, snippetCss, year, theme } = data;
@@ -93,7 +81,7 @@ ${buildSiteNav(menuPages, `/${slug}/`)}
     <div class="post-content page-content">${contentHtml}</div>
   </div>
 </div>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body>
 </html>`;
 }
@@ -131,13 +119,13 @@ ${buildSiteNav(menuPages, '/photos/')}
   </nav>
 </section>
 <script src="/photos/scripts/gallery.js"></script>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body>
 </html>`;
 }
 
 export function buildHomepage(data) {
-  const { author, recentPosts, menuPages, accent, snippetCss, theme, defaultCoverImage, homepageConfig } = data;
+  const { author, recentPosts, menuPages, accent, snippetCss, theme, defaultCoverImage, homepageConfig, year } = data;
   const cfg = homepageConfig || {};
   const essays = (recentPosts || []).filter(p => !(p.tags || []).includes('note'));
 
@@ -272,7 +260,7 @@ ${buildSiteNav(menuPages, '/')}
   ${interlude}
   ${archiveSection}
 </main>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body>
 </html>`;
 }
@@ -334,7 +322,7 @@ ${buildSiteNav(menuPages, '/posts/')}
   ${tagsSection}
 </main>
 <script src="/scripts/blog.js"></script>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body></html>`;
 }
 
@@ -402,7 +390,7 @@ ${buildSiteNav(menuPages, '/posts/')}
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>
 </article>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body>
 </html>`;
   }
@@ -473,13 +461,13 @@ ${buildSiteNav(menuPages, '/posts/')}
 ${moreEssays}
 <a href="${esc(postUrl)}" class="u-url" hidden></a>
 </article>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body>
 </html>`;
 }
 
 export function buildNotes(data) {
-  const { notes, menuPages, accent, snippetCss, theme } = data;
+  const { notes, menuPages, accent, snippetCss, theme, year } = data;
 
   const noteItems = (notes || []).map(note => {
     const otherTags = (note.tags || []).filter(t => t !== 'note');
@@ -504,7 +492,7 @@ ${buildSiteNav(menuPages, '/notes/')}
     ${noteItems || '<p class="notes-empty">No notes yet.</p>'}
   </section>
 </div>
-${buildCinematicFooter(menuPages)}
+${buildFooter(menuPages, year)}
 </body>
 </html>`;
 }
