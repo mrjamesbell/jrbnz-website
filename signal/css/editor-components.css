@@ -895,10 +895,10 @@
    ════════════════════════════════════════════ */
 .img-options-preview {
   position: relative;
-  background: var(--color-cream-dark);
+  background: #111;
   border-radius: var(--radius-md);
   border: var(--border-cream);
-  height: 200px;
+  height: 280px;
   overflow: hidden;
   cursor: crosshair;
 }
@@ -906,7 +906,7 @@
 .img-options-preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   pointer-events: none;
 }

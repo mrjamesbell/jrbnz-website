@@ -351,10 +351,10 @@
     color: var(--color-text-subtle);
 }
 
-/* .img-small — modest, within the reading column */
+/* .img-small — modest, within the reading column, left-aligned */
 [data-theme="cinematic"] .img-small {
     max-width: 400px;
-    margin: 28px auto;
+    margin: 28px 0;
 }
 
 [data-theme="cinematic"] .img-small img {

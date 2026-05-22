@@ -401,6 +401,12 @@ function _onBodyChange(e) {
   _triggerSave();
   if (viewMode === 'split') _updateSplitPreview();
   if (viewMode === 'edit') _autoResizeTextarea();
+  if (viewMode === 'read') _updateReadPreview();
+}
+
+function _updateReadPreview() {
+  const preview = document.getElementById('read-preview');
+  if (preview) preview.innerHTML = renderMarkdown(currentPost.body || '');
 }
 
 function _onPaste(e) {

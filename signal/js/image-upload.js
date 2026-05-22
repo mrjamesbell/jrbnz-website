@@ -184,24 +184,45 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint, initia
   let _focalX = typeof focalX === 'number' ? focalX : 0.5;
   let _focalY = typeof focalY === 'number' ? focalY : 0.5;
 
+  // Returns the image's displayed rect (px, relative to previewWrap) accounting
+  // for object-fit: contain letterboxing.
+  const _imgDisplayRect = () => {
+    const cW = previewWrap.clientWidth;
+    const cH = previewWrap.clientHeight;
+    const nW = previewImg.naturalWidth || cW;
+    const nH = previewImg.naturalHeight || cH;
+    const cA = cW / cH;
+    const iA = nW / nH;
+    let w, h, x, y;
+    if (iA > cA) { w = cW; h = cW / iA; x = 0; y = (cH - h) / 2; }
+    else          { h = cH; w = cH * iA; x = (cW - w) / 2; y = 0; }
+    return { x, y, w, h, cW, cH };
+  };
+
   const _updateFp = () => {
-    if (fpIndicator) {
-      fpIndicator.style.left = `${Math.round(_focalX * 100)}%`;
-      fpIndicator.style.top = `${Math.round(_focalY * 100)}%`;
-    }
+    if (!fpIndicator || !previewWrap) return;
+    const r = _imgDisplayRect();
+    fpIndicator.style.left = `${(r.x + _focalX * r.w) / r.cW * 100}%`;
+    fpIndicator.style.top  = `${(r.y + _focalY * r.h) / r.cH * 100}%`;
   };
 
   previewImg.src = _url;
   altInput.value = altHint || '';
   if (captionInput) captionInput.value = initialCaption || '';
-  _updateFp();
 
-  // Focal point: click anywhere on the preview to reposition
+  // Update indicator once image has loaded (natural dimensions needed)
+  previewImg.onload = _updateFp;
+  if (previewImg.complete && previewImg.naturalWidth) _updateFp();
+
+  // Focal point: click on the preview image area to reposition
   if (previewWrap) {
     previewWrap.onclick = e => {
-      const rect = previewWrap.getBoundingClientRect();
-      _focalX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      _focalY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      const r = _imgDisplayRect();
+      const x = e.offsetX;  // relative to previewWrap (img has pointer-events:none)
+      const y = e.offsetY;
+      if (x < r.x || x > r.x + r.w || y < r.y || y > r.y + r.h) return;
+      _focalX = Math.max(0, Math.min(1, (x - r.x) / r.w));
+      _focalY = Math.max(0, Math.min(1, (y - r.y) / r.h));
       _updateFp();
     };
   }
