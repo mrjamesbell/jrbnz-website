@@ -11,9 +11,11 @@
 // Outputs:
 //   scripts/migration-map.json  — {r2Key: cfImageId} map; used for resumability + content rewriting
 
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, basename } from 'path';
+import { tmpdir } from 'os';
+import { execSync } from 'child_process';
 
 const ACCOUNT_ID   = 'ef77e5b604895bd4cb27640853c06fbb';
 const ACCOUNT_HASH = 'qK6m4Cv3p759GGOOm_9U_w';
@@ -69,8 +71,8 @@ async function r2List(prefix) {
     const data = await res.json();
     if (!data.success) throw new Error(`R2 list failed: ${JSON.stringify(data.errors)}`);
 
-    for (const obj of data.result?.objects ?? []) items.push(obj.key);
-    cursor = data.result?.truncated ? data.result.cursor : null;
+    for (const obj of data.result ?? []) items.push(obj.key);
+    cursor = data.result_info?.is_truncated ? data.result_info.cursor : null;
   } while (cursor);
   return items;
 }
@@ -155,17 +157,15 @@ async function r2GetText(key) {
 }
 
 async function r2PutText(key, text, contentType) {
-  const res = await fetch(`${CF_BASE}/r2/buckets/${BUCKET}/objects/${encodeURIComponent(key)}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${R2_TOKEN}`,
-      'Content-Type': contentType,
-    },
-    body: text,
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`R2 put failed for ${key}: ${err}`);
+  const tmp = join(tmpdir(), `jrbnz-migrate-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  await writeFile(tmp, text, 'utf8');
+  try {
+    execSync(
+      `CLOUDFLARE_API_TOKEN="${R2_TOKEN}" CLOUDFLARE_ACCOUNT_ID="${ACCOUNT_ID}" npx wrangler r2 object put "${BUCKET}/${key}" --file "${tmp}" --content-type "${contentType}" --remote`,
+      { stdio: 'pipe' }
+    );
+  } finally {
+    await unlink(tmp).catch(() => {});
   }
 }
 
