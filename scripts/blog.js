@@ -7,7 +7,7 @@
     if (bar) bar.hidden = false;
     if (label) label.textContent = '#' + tag;
 
-    // Show matching grid items (including hidden note-posts), hide non-matching
+    // Show matching essay cards, hide non-matching
     document.querySelectorAll('.post-list-item').forEach(function (el) {
         var tags = (el.dataset.tags || '').split(',').map(function (t) { return t.trim(); });
         el.style.display = tags.includes(tag) ? 'block' : 'none';

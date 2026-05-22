@@ -312,12 +312,11 @@ export function buildIndex(data) {
   };
 
   const postCards = rest.map(p => _postCard(p)).join('');
-  const noteCards = notes.map(p => _postCard(p, 'note-post')).join('');
 
   const tagsSection = tagChips ? `
 <section class="ci-tags">
   <div class="tag-filter-bar" id="tag-filter-bar" hidden>
-    Posts tagged <strong id="tag-filter-label"></strong>
+    Essays tagged <strong id="tag-filter-label"></strong>
     <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
   </div>
   <div class="tags-section">${tagChips}</div>
@@ -327,11 +326,11 @@ export function buildIndex(data) {
 ${buildSiteNav(menuPages, '/posts/')}
 <main>
   ${featuredCard}
-  ${(rest.length || notes.length) ? `<section class="more-essays ci-index-all">
-  <p class="more-essays-label">All essays</p>
-  <div class="essay-strip">${postCards}${noteCards}</div>
-</section>` : ''}
   ${tagsSection}
+  ${rest.length ? `<section class="more-essays ci-index-all">
+  <p class="more-essays-label">All essays</p>
+  <div class="essay-strip">${postCards}</div>
+</section>` : ''}
 </main>
 <script src="/scripts/blog.js"></script>
 ${buildCinematicFooter(menuPages)}

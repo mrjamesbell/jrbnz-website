@@ -193,7 +193,8 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage)
   </li>`;
   }).join('');
 
-  const allTags = [...new Set(published.flatMap(p => p.tags || []))].sort();
+  const essays = published.filter(p => !(p.tags || []).includes('note'));
+  const allTags = [...new Set(essays.flatMap(p => (p.tags || []).filter(t => t !== 'note')))].sort();
   const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
