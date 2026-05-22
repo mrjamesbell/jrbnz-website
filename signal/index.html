@@ -1119,23 +1119,29 @@ const x = 1;
 
 <!-- Image options modal (alt text + image role) -->
 <div class="modal-backdrop" id="img-options-modal" style="display:none">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:480px">
     <div class="modal-header">
       <span class="modal-title">Insert image</span>
       <button class="modal-close" id="img-options-close">×</button>
     </div>
     <div class="modal-body">
-      <div class="img-options-preview">
+      <div class="img-options-preview" id="img-options-preview-wrap">
         <img id="img-options-preview-img" src="" alt="">
+        <div class="fp-indicator" id="fp-indicator"></div>
       </div>
+      <p class="img-options-fp-hint">Click image to set focal point</p>
       <div>
         <label class="field-label" for="img-options-alt">Alt text</label>
         <input class="field-input" type="text" id="img-options-alt" placeholder="Describe the image…" autocomplete="off">
       </div>
       <div>
+        <label class="field-label" for="img-options-caption">Caption</label>
+        <input class="field-input" type="text" id="img-options-caption" placeholder="Optional caption…" autocomplete="off">
+      </div>
+      <div>
         <label class="field-label" for="img-options-layout">Image layout</label>
         <select class="field-select" id="img-options-layout">
-          <option value="">Default (inline)</option>
+          <option value="">Inline (column width)</option>
         </select>
       </div>
       <div>

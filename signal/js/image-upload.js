@@ -117,16 +117,17 @@ export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
   textarea.focus();
 }
 
-export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole, treatment, focalX = 0.5, focalY = 0.5) {
+export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole, treatment, focalX = 0.5, focalY = 0.5, caption = '') {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const alt = (altText || '').replace(/"/g, '&quot;');
   const roleAttr = imgRole ? ` imgRole="${imgRole}"` : '';
   const treatAttr = treatment ? ` treatment="${treatment}"` : '';
   const fxAttr = ` focalX="${Math.round(focalX * 1000) / 1000}"`;
   const fyAttr = ` focalY="${Math.round(focalY * 1000) / 1000}"`;
+  const captionAttr = caption ? ` caption="${caption.replace(/"/g, '&quot;')}"` : '';
   // img-pair and img-small sit at half/quarter column width — md variant is plenty
   const variant = (imgRole === 'img-pair' || imgRole === 'img-small') ? 'md' : 'hero';
-  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, variant)}" alt="${alt}"${roleAttr}${treatAttr}${fxAttr}${fyAttr} -->\n`;
+  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, variant)}" alt="${alt}"${roleAttr}${treatAttr}${fxAttr}${fyAttr}${captionAttr} -->\n`;
   textarea.value = value.slice(0, start) + block + value.slice(end);
   textarea.selectionStart = textarea.selectionEnd = start + block.length;
   textarea.dispatchEvent(new Event('input'));
@@ -164,10 +165,13 @@ async function _getImageRoles() {
   return _imageRolesCache;
 }
 
-export async function openImageOptionsModal(textarea, publicUrl, altHint, initialLayout = '', initialTreatment = '', focalX = 0.5, focalY = 0.5) {
+export async function openImageOptionsModal(textarea, publicUrl, altHint, initialLayout = '', initialTreatment = '', focalX = 0.5, focalY = 0.5, initialCaption = '') {
   const modal = document.getElementById('img-options-modal');
+  const previewWrap = document.getElementById('img-options-preview-wrap');
   const previewImg = document.getElementById('img-options-preview-img');
+  const fpIndicator = document.getElementById('fp-indicator');
   const altInput = document.getElementById('img-options-alt');
+  const captionInput = document.getElementById('img-options-caption');
   const insertBtn = document.getElementById('img-options-insert');
   const closeBtn = document.getElementById('img-options-close');
   const cancelBtn = document.getElementById('img-options-cancel');
@@ -176,18 +180,36 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint, initia
   const treatmentSelect = document.getElementById('img-options-treatment');
   const pairHint = document.getElementById('img-options-pair-hint');
 
-  // Track mutable state so crop can update it
   let _url = publicUrl;
-  let _focalX = focalX;
-  let _focalY = focalY;
+  let _focalX = typeof focalX === 'number' ? focalX : 0.5;
+  let _focalY = typeof focalY === 'number' ? focalY : 0.5;
+
+  const _updateFp = () => {
+    if (fpIndicator) {
+      fpIndicator.style.left = `${Math.round(_focalX * 100)}%`;
+      fpIndicator.style.top = `${Math.round(_focalY * 100)}%`;
+    }
+  };
 
   previewImg.src = _url;
   altInput.value = altHint || '';
+  if (captionInput) captionInput.value = initialCaption || '';
+  _updateFp();
+
+  // Focal point: click anywhere on the preview to reposition
+  if (previewWrap) {
+    previewWrap.onclick = e => {
+      const rect = previewWrap.getBoundingClientRect();
+      _focalX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      _focalY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+      _updateFp();
+    };
+  }
 
   // Populate selects from theme config
   const roles = await _getImageRoles();
 
-  layoutSelect.innerHTML = '<option value="">Default (inline)</option>' +
+  layoutSelect.innerHTML = '<option value="">Inline (column width)</option>' +
     roles.layouts.map(r => `<option value="${_esc(r.className)}">${_esc(r.label)} — ${_esc(r.description)}</option>`).join('');
   layoutSelect.value = initialLayout || roles.defaults?.layout || '';
 
@@ -205,13 +227,14 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint, initia
 
   const close = () => { modal.style.display = 'none'; };
   const doInsert = () => {
-    const imgRole = layoutSelect.value;
-    const treatment = treatmentSelect.value;
-    if (imgRole || treatment) {
-      insertSignalImageWithRole(textarea, _url, altInput.value.trim(), imgRole, treatment, _focalX, _focalY);
-    } else {
-      insertSignalImage(textarea, _url, altInput.value.trim(), 'full', 100);
-    }
+    insertSignalImageWithRole(
+      textarea, _url,
+      altInput.value.trim(),
+      layoutSelect.value,
+      treatmentSelect.value,
+      _focalX, _focalY,
+      captionInput ? captionInput.value.trim() : ''
+    );
     close();
   };
 
@@ -237,13 +260,11 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint, initia
           } catch (e) {
             showToast('Upload failed: ' + e.message, 'error');
           }
-          // Re-open options modal with the (possibly updated) URL
-          openImageOptionsModal(textarea, _url, altInput.value, layoutSelect.value, treatmentSelect.value, _focalX, _focalY);
+          openImageOptionsModal(textarea, _url, altInput.value, layoutSelect.value, treatmentSelect.value, _focalX, _focalY, captionInput?.value || '');
         });
       } catch {
         showToast('Could not load image for cropping', 'error');
-        // Reopen so the user isn't stuck
-        openImageOptionsModal(textarea, _url, altInput.value, layoutSelect.value, treatmentSelect.value, _focalX, _focalY);
+        openImageOptionsModal(textarea, _url, altInput.value, layoutSelect.value, treatmentSelect.value, _focalX, _focalY, captionInput?.value || '');
       }
     };
   }
@@ -255,8 +276,7 @@ export async function openImageOptionsModal(textarea, publicUrl, altHint, initia
     if (e.key === 'Enter') { e.preventDefault(); doInsert(); }
     if (e.key === 'Escape') close();
   };
-  // Delay backdrop-click registration so any residual click/touch from the
-  // preceding crop modal doesn't immediately dismiss this modal.
+  // Delay backdrop-click so any residual touch from the crop modal doesn't dismiss this one
   setTimeout(() => {
     modal.addEventListener('click', e => { if (e.target === modal) close(); }, { once: true });
   }, 400);
@@ -516,7 +536,7 @@ export function openImageSheet(textarea) {
     close();
     openMediaPicker({
       insertLabel: 'Insert image',
-      onSelect: item => openImageOptionsModal(textarea, item.publicUrl, _altHint(item.displayName || item.filename || ''), '', '', item.focalX ?? 0.5, item.focalY ?? 0.5)
+      onSelect: item => openImageOptionsModal(textarea, item.publicUrl, _altHint(item.displayName || item.filename || ''), '', '', item.focalX ?? 0.5, item.focalY ?? 0.5, item.caption || '')
     });
   };
 }

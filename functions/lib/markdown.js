@@ -57,15 +57,20 @@ export function mdToHtml(md) {
       ? ` style="object-position:${Math.round(focalX * 100)}% ${Math.round(focalY * 100)}%"`
       : '';
 
-    if (imgRole || treatment) {
+    const captionM = raw.match(/caption="([^"]*)"/);
+    const caption = captionM?.[1] ? mdEsc(captionM[1]) : '';
+
+    if (imgRole || treatment || caption) {
       // Editorial role rendering — wrap in <figure>
       const isPair = imgRole === 'img-pair';
       const figClasses = isPair
         ? (treatment || null)           // pair wrapper handles layout; figure gets treatment only
         : [imgRole, treatment].filter(Boolean).join(' ');
+      const imgTag = `<img src="${src}"${srcsetAttr} alt="${alt}"${focalStyle} loading="lazy">`;
+      const figContent = caption ? `${imgTag}<figcaption>${caption}</figcaption>` : imgTag;
       const figHtml = figClasses
-        ? `<figure class="${figClasses}"><img src="${src}"${srcsetAttr} alt="${alt}"${focalStyle} loading="lazy"></figure>`
-        : `<figure><img src="${src}"${srcsetAttr} alt="${alt}"${focalStyle} loading="lazy"></figure>`;
+        ? `<figure class="${figClasses}">${figContent}</figure>`
+        : `<figure>${figContent}</figure>`;
 
       if (isPair) {
         if (_pendingPair !== null) {
