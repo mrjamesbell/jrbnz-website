@@ -246,20 +246,15 @@
 
     <!-- VIEW 3: Media (shown at /signal/media) -->
     <div id="media-view" class="media-view" style="display:none">
-      <div class="media-inner">
-        <div class="media-header">
-          <h1 class="media-heading">Media</h1>
-          <div class="media-header-actions">
-            <span class="media-storage-info" id="storage-info"></span>
-            <button class="btn-select-media" id="btn-select">Select</button>
-            <button class="btn-upload-media" id="btn-upload">+ Upload</button>
-          </div>
-        </div>
-        <div class="media-dropzone" id="media-dropzone">
-          <div class="media-dropzone-inner">
-            <div class="dropzone-icon-lg">↑</div>
-            <div class="dropzone-label">Drop images here or click to upload</div>
-            <div class="dropzone-sub">JPEG, PNG, WebP, GIF — max 20 MB each</div>
+
+      <!-- SCREEN: Library -->
+      <div class="media-screen media-screen--active" id="media-screen-library">
+        <div class="media-topbar">
+          <span class="media-topbar-title">Media Library</span>
+          <div class="media-topbar-right">
+            <input class="media-search" type="search" id="media-search" placeholder="Search images…">
+            <button class="media-btn-ghost media-btn-sm" id="btn-select">Select</button>
+            <button class="media-btn-primary media-btn-sm" id="btn-upload">↑ Upload</button>
           </div>
         </div>
         <div class="media-uploads-active" id="uploads-active"></div>
@@ -275,6 +270,134 @@
           <button class="btn-load-more" id="btn-load-more">Load more</button>
         </div>
       </div>
+
+      <!-- SCREEN: Upload -->
+      <div class="media-screen" id="media-screen-upload">
+        <div class="media-topbar">
+          <button class="media-back-btn" id="media-upload-back">← Library</button>
+          <span class="media-topbar-title">Upload Image</span>
+        </div>
+        <div class="media-upload-content">
+          <!-- Step: drop zone -->
+          <div class="media-upload-step media-upload-step--active" id="media-upload-drop">
+            <div class="media-dropzone" id="media-dropzone">
+              <div class="media-dropzone-inner">
+                <div class="dropzone-icon-lg">↑</div>
+                <div class="dropzone-label">Drop images here or click to choose</div>
+                <div class="dropzone-sub">JPG · PNG · HEIC · WebP — max 20 MB each</div>
+              </div>
+            </div>
+          </div>
+          <!-- Step: metadata form -->
+          <div class="media-upload-step" id="media-upload-form">
+            <div class="media-upload-preview-row">
+              <div class="media-upload-left">
+                <div class="media-upload-img-wrap">
+                  <img id="media-upload-preview-img" src="" alt="">
+                </div>
+                <div class="media-upload-file-info" id="media-upload-file-info"></div>
+              </div>
+              <div class="media-upload-form-fields">
+                <div class="media-field">
+                  <label class="media-field-label">Display name</label>
+                  <input class="media-field-input" type="text" id="media-upload-name" autocomplete="off">
+                  <div class="media-field-hint">Timestamp appended automatically.</div>
+                </div>
+                <div class="media-field">
+                  <label class="media-field-label">Alt text</label>
+                  <textarea class="media-field-input" id="media-upload-alt" rows="3" placeholder="Describe the image for screen readers and SEO…"></textarea>
+                </div>
+                <div class="media-field">
+                  <label class="media-field-label">Caption <span class="media-field-optional">optional</span></label>
+                  <input class="media-field-input" type="text" id="media-upload-caption" placeholder="Shown below the image in posts if set">
+                </div>
+                <div class="media-upload-form-actions">
+                  <button class="media-btn-ghost media-btn-sm" id="media-upload-form-back">← Back</button>
+                  <button class="media-btn-primary" id="media-upload-submit">Upload →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Step: progress -->
+          <div class="media-upload-step" id="media-upload-progress">
+            <div class="media-upload-progress-inner">
+              <div class="media-upload-progress-icon">↑</div>
+              <div class="media-upload-progress-title">Uploading to Cloudflare Images…</div>
+              <div class="media-upload-progress-sub" id="media-upload-progress-sub"></div>
+              <div class="media-progress-bar-wrap">
+                <div class="media-progress-bar" id="media-progress-bar"></div>
+              </div>
+              <div class="media-upload-progress-label" id="media-upload-progress-label">0%</div>
+            </div>
+          </div>
+          <!-- Step: done -->
+          <div class="media-upload-step" id="media-upload-done">
+            <div class="media-upload-success">
+              <div class="media-upload-success-icon">✓</div>
+              <div class="media-upload-success-title" id="media-upload-done-title">Uploaded successfully</div>
+              <div class="media-upload-success-sub" id="media-upload-done-sub"></div>
+              <div class="media-upload-success-btns">
+                <button class="media-btn-ghost" id="media-upload-done-library">Back to Library</button>
+                <button class="media-btn-ghost" id="media-upload-done-edit">Edit / set focal point</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN: Edit image -->
+      <div class="media-screen" id="media-screen-edit">
+        <div class="media-topbar">
+          <button class="media-back-btn" id="media-edit-back">← Library</button>
+          <span class="media-topbar-title" id="media-edit-title">Edit image</span>
+          <div class="media-topbar-right">
+            <button class="media-btn-ghost media-btn-sm" id="media-edit-crop-btn">Crop →</button>
+            <button class="media-btn-danger media-btn-sm" id="media-edit-delete-btn">Delete</button>
+          </div>
+        </div>
+        <div class="media-edit-layout">
+          <div class="media-edit-preview-pane">
+            <div class="media-edit-focal-wrap" id="media-edit-focal-wrap">
+              <img id="media-edit-preview" class="media-edit-preview-img-full" src="" alt="">
+              <div class="media-edit-focal-dot" id="media-edit-focal-dot" hidden></div>
+            </div>
+            <div class="media-edit-focal-hint">Click image to set focal point</div>
+          </div>
+          <div class="media-edit-sidebar">
+            <div class="media-sidebar-section">
+              <div class="media-sidebar-section-title">Metadata</div>
+              <div class="media-field">
+                <label class="media-field-label" for="media-edit-name">Display name</label>
+                <input class="media-field-input" type="text" id="media-edit-name" autocomplete="off">
+                <div class="media-field-hint">Slug only — URL never changes after upload</div>
+              </div>
+              <div class="media-field">
+                <label class="media-field-label" for="media-edit-alt">Alt text</label>
+                <textarea class="media-field-input" id="media-edit-alt" rows="3" placeholder="Describe for screen readers…"></textarea>
+              </div>
+              <div class="media-field">
+                <label class="media-field-label" for="media-edit-caption">Caption</label>
+                <input class="media-field-input" type="text" id="media-edit-caption" placeholder="Optional — shown below image in posts">
+              </div>
+              <button class="media-btn-primary media-btn-sm" id="media-edit-save" style="align-self:flex-end">Save metadata</button>
+            </div>
+            <div class="media-sidebar-section">
+              <div class="media-sidebar-section-title">Focal point</div>
+              <div class="media-field-hint" style="margin-bottom:4px">Click the image to place the focal point. Keeps the important part in frame when the image crops to fit smaller sizes.</div>
+              <div class="media-focal-coords" id="media-focal-coords"></div>
+            </div>
+            <div class="media-sidebar-section">
+              <div class="media-sidebar-section-title">Variants</div>
+              <div class="media-variant-list" id="media-edit-variants"></div>
+            </div>
+            <div class="media-sidebar-section">
+              <div class="media-sidebar-section-title">File info</div>
+              <div class="media-file-meta-grid" id="media-edit-file-meta"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- VIEW 4: Snippets (shown at /signal/snippets) -->
@@ -1032,38 +1155,6 @@ const x = 1;
 </div>
 
 <!-- Media edit modal -->
-<div class="modal-backdrop" id="media-edit-modal" style="display:none">
-  <div class="modal" style="max-width:460px;width:100%">
-    <div class="modal-header">
-      <span class="modal-title">Edit image</span>
-      <button class="modal-close" id="media-edit-close">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="media-edit-focal-wrap">
-        <img id="media-edit-preview" class="media-edit-preview-img" src="" alt="">
-        <div class="media-edit-focal-dot" id="media-edit-focal-dot" hidden></div>
-      </div>
-      <p class="field-hint" style="margin-top:6px;margin-bottom:16px">Click image to set focal point for cropping</p>
-      <div style="margin-bottom:14px">
-        <label class="field-label" for="media-edit-name">Display name</label>
-        <input class="field-input" type="text" id="media-edit-name" placeholder="Descriptive name…" autocomplete="off">
-      </div>
-      <div style="margin-bottom:14px">
-        <label class="field-label" for="media-edit-alt">Alt text</label>
-        <input class="field-input" type="text" id="media-edit-alt" placeholder="Describe for screen readers…" autocomplete="off">
-      </div>
-      <div>
-        <label class="field-label" for="media-edit-caption">Caption</label>
-        <textarea class="field-input" id="media-edit-caption" rows="2" placeholder="Optional caption…" style="resize:vertical"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="media-edit-cancel">Cancel</button>
-      <button class="btn btn-teal" id="media-edit-save">Save</button>
-    </div>
-  </div>
-</div>
-
 <!-- Media picker modal -->
 <div class="modal-backdrop" id="media-picker-modal" style="display:none">
   <div class="modal modal-wide" style="display:flex;flex-direction:column;max-height:90vh">
