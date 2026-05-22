@@ -828,8 +828,45 @@
 }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
-[data-theme="cinematic"] .footer {
+[data-theme="cinematic"] .cinematic-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    padding: 56px var(--gutter);
     background: var(--color-deeper-bg);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="cinematic"] .cinematic-footer-quote {
+    font-family: var(--font-display);
+    font-size: clamp(18px, 2.5vw, 26px);
+    line-height: 1.35;
+    letter-spacing: -0.03em;
+    color: var(--color-text-muted);
+    max-width: 44ch;
+}
+
+[data-theme="cinematic"] .cinematic-footer-nav {
+    display: flex;
+    gap: 28px;
+    justify-content: flex-end;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+[data-theme="cinematic"] .cinematic-footer-nav a {
+    color: var(--color-text-muted);
+    border-bottom: none;
+    transition: color 0.15s;
+}
+
+[data-theme="cinematic"] .cinematic-footer-nav a:hover {
+    color: var(--color-text);
+    border-bottom: none;
 }
 
 /* ── Homepage full-width featured override ───────────────────────────────── */
@@ -1048,7 +1085,9 @@
 @media (max-width: 960px) {
     [data-theme="cinematic"] .site-nav .nav-links { gap: 20px; }
     [data-theme="cinematic"] .essay-strip { grid-template-columns: 1fr 1fr; }
-[data-theme="cinematic"] .home-hero { grid-template-columns: 1fr; }
+    [data-theme="cinematic"] .cinematic-footer { grid-template-columns: 1fr; padding: 40px var(--gutter); }
+    [data-theme="cinematic"] .cinematic-footer-nav { justify-content: flex-start; }
+    [data-theme="cinematic"] .home-hero { grid-template-columns: 1fr; }
     [data-theme="cinematic"] .home-feature { min-height: 60vw; }
     [data-theme="cinematic"] .home-blocks { grid-template-columns: 1fr; }
     [data-theme="cinematic"] .home-block { min-height: auto; border-right: none; border-bottom: 1px solid var(--color-border); }
