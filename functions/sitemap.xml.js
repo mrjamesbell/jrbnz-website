@@ -9,6 +9,13 @@ function url(loc, lastmod) {
 }
 
 export async function onRequestGet({ env }) {
+  const cached = await env.BLOG.get('sitemap.xml');
+  if (cached) {
+    return new Response(await cached.text(), {
+      headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' },
+    });
+  }
+
   const [postsObj, pagesObj] = await Promise.all([
     env.BLOG.get('posts/index.json'),
     env.BLOG.get('pages/index.json'),

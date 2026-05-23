@@ -266,6 +266,8 @@ async function rebuildIndexHtml(env, posts) {
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
     ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
     ...(notesHtml ? [env.BLOG.put('pages/notes/index.html', notesHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
+    rebuildFeed(env, posts),
+    rebuildSitemap(env, posts),
   ]);
 }
 
@@ -279,6 +281,78 @@ async function rebuildPostHtml(env, slug, posts) {
   const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
   const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
+}
+
+async function rebuildFeed(env, posts) {
+  const published = posts
+    .filter(p => p.status === 'published')
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 20);
+
+  const bodies = await Promise.all(
+    published.map(p => env.BLOG.get(`posts/${p.slug}/draft.md`).then(o => o ? o.text() : ''))
+  );
+
+  const _esc = str => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  const _rfc822 = d => new Date(d).toUTCString();
+  const lastBuildDate = published.length ? _rfc822(published[0].date) : _rfc822(new Date());
+
+  const items = published.map((p, i) => {
+    const url = `${SITE_URL}/posts/${p.slug}/`;
+    const tags = (p.tags || []).map(t => `    <category>${_esc(t)}</category>`).join('\n');
+    const contentHtml = bodies[i] ? mdToHtml(bodies[i]) : '';
+    return `  <item>
+    <title>${_esc(p.title)}</title>
+    <link>${url}</link>
+    <guid isPermaLink="true">${url}</guid>
+    <pubDate>${_rfc822(p.date)}</pubDate>
+${tags}
+    <description>${p.excerpt ? `<![CDATA[${p.excerpt}]]>` : ''}</description>
+    <content:encoded>${contentHtml ? `<![CDATA[${contentHtml}]]>` : ''}</content:encoded>
+  </item>`;
+  }).join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>James Bell</title>
+    <link>${SITE_URL}</link>
+    <description>Writing by James Bell — Tāmaki Makaurau, Aotearoa</description>
+    <language>en-nz</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>
+${items}
+  </channel>
+</rss>`;
+
+  await env.BLOG.put('feed.xml', xml, { httpMetadata: { contentType: 'application/rss+xml; charset=utf-8' } });
+}
+
+async function rebuildSitemap(env, posts) {
+  const pagesObj = await env.BLOG.get('pages/index.json');
+  const pages = pagesObj ? await pagesObj.json() : [];
+
+  const publishedPosts = posts
+    .filter(p => p.status === 'published')
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const publishedPages = pages.filter(p => p.status === 'published' && !p.nav_url);
+
+  const _url = (loc, lastmod) =>
+    `  <url>\n    <loc>${loc}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ''}\n  </url>`;
+  const _d = iso => iso ? iso.slice(0, 10) : '';
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${[
+    _url(`${SITE_URL}/`),
+    _url(`${SITE_URL}/posts/`),
+    _url(`${SITE_URL}/photos/`),
+    ...publishedPosts.map(p => _url(`${SITE_URL}/posts/${p.slug}/`, _d(p.date))),
+    ...publishedPages.map(p => _url(`${SITE_URL}/${p.slug}/`, _d(p.date || p.updatedAt))),
+  ].join('\n')}
+</urlset>`;
+
+  await env.BLOG.put('sitemap.xml', xml, { httpMetadata: { contentType: 'application/xml; charset=utf-8' } });
 }
 
 async function loadSiteContext(env) {
@@ -569,6 +643,8 @@ async function handleRebuildSite(env) {
     env.BLOG.put('pages/photos/index.html', photosHtml, { httpMetadata: { contentType: 'text/html' } }),
     ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
     ...(notesHtml ? [env.BLOG.put('pages/notes/index.html', notesHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
+    rebuildFeed(env, posts),
+    rebuildSitemap(env, posts),
   ]);
   return json({ rebuilt: publishedPosts.length + publishedPages.length });
 }
@@ -1003,10 +1079,10 @@ async function handlePublish(env, slug, request) {
   posts[idx].updatedAt = new Date().toISOString();
   if (reqData.excerpt !== undefined) posts[idx].excerpt = reqData.excerpt;
 
-  // Save index JSON + delete stale cached HTML so serve Worker rebuilds lazily
   await Promise.all([
     saveIndex(env, posts),
-    env.BLOG.delete(`posts/${slug}/index.html`),
+    rebuildPostHtml(env, slug, posts),
+    rebuildIndexHtml(env, posts),
   ]);
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });

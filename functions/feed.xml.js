@@ -18,6 +18,13 @@ function fmtRfc822(dateStr) {
 }
 
 export async function onRequestGet({ env }) {
+  const cached = await env.BLOG.get('feed.xml');
+  if (cached) {
+    return new Response(await cached.text(), {
+      headers: { 'content-type': 'application/rss+xml; charset=utf-8', 'cache-control': 'public, max-age=300' },
+    });
+  }
+
   const obj = await env.BLOG.get('posts/index.json');
   if (!obj) {
     return new Response('<?xml version="1.0"?><rss version="2.0"><channel></channel></rss>', {
