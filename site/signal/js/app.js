@@ -116,6 +116,7 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
   document.getElementById('app-settings-save').addEventListener('click', saveAppSettings);
   document.getElementById('btn-app-logout').addEventListener('click', logout);
   document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
+  document.getElementById('btn-deploy-site').addEventListener('click', deploySite);
   document.getElementById('btn-show-apikey').addEventListener('click', () => {
     const inp = document.getElementById('app-settings-apikey');
     const btn = document.getElementById('btn-show-apikey');
@@ -741,6 +742,22 @@ async function rebuildSite() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Rebuild site';
+  }
+}
+
+async function deploySite() {
+  const btn = document.getElementById('btn-deploy-site');
+  btn.disabled = true;
+  btn.textContent = 'Deploying…';
+  try {
+    const res = await fetch('/api/site/deploy', { method: 'POST' });
+    if (!res.ok) throw new Error(await res.text());
+    showToast('Deploy triggered — changes live in ~60s', 'success');
+  } catch (e) {
+    showToast('Deploy failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Deploy';
   }
 }
 

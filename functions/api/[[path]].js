@@ -451,6 +451,11 @@ export async function onRequest(context) {
     return json(theme.imageRoles ?? { layouts: [], treatments: [], defaults: {} });
   }
 
+  // Internal build export — token auth, no session required
+  if (resource === 'internal' && slug === 'export' && method === 'GET') {
+    return handleExport(request, env);
+  }
+
   // All other routes require auth
   const token = getSessionCookie(request);
   if (!token || !await verifySession(token, env.BLOG_PASSWORD)) {
@@ -473,6 +478,7 @@ export async function onRequest(context) {
   if (resource === 'site') {
     if (slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
     if (slug === 'rebuild-indexes' && method === 'POST') return handleRebuildIndexHtml(env);
+    if (slug === 'deploy' && method === 'POST') return handleDeploy(env);
     if (slug === 'accent') {
       if (method === 'GET') return handleGetAccent(env);
       if (method === 'PUT') return handleSaveAccent(request, env);
@@ -647,6 +653,53 @@ async function handleRebuildSite(env) {
     rebuildSitemap(env, posts),
   ]);
   return json({ rebuilt: publishedPosts.length + publishedPages.length });
+}
+
+async function handleDeploy(env) {
+  if (!env.CF_PAGES_HOOK_URL) return json({ error: 'CF_PAGES_HOOK_URL not configured' }, 503);
+  const res = await fetch(env.CF_PAGES_HOOK_URL, { method: 'POST' });
+  if (!res.ok) return json({ error: `Deploy hook failed: ${res.status}` }, 502);
+  return json({ triggered: true });
+}
+
+async function handleExport(request, env) {
+  const { searchParams } = new URL(request.url);
+  const token = searchParams.get('token');
+  if (!token || !env.CF_BUILD_SECRET || token !== env.CF_BUILD_SECRET) {
+    return json({ error: 'Unauthorized' }, 401);
+  }
+
+  const [postsObj, pagesObj] = await Promise.all([
+    env.BLOG.get('posts/index.json'),
+    env.BLOG.get('pages/index.json'),
+  ]);
+  const posts = postsObj ? await postsObj.json() : [];
+  const pages = pagesObj ? await pagesObj.json() : [];
+
+  const publishedPosts = posts.filter(p => p.status === 'published');
+  const publishedPages = pages.filter(p => p.status === 'published' && !p.nav_url);
+
+  // Fetch all R2 HTML in parallel; map R2 key → dist path
+  const fetches = [
+    { key: 'posts/index.html',        dist: 'posts/index.html' },
+    { key: 'pages/homepage/index.html', dist: 'index.html' },
+    { key: 'pages/notes/index.html',  dist: 'notes/index.html' },
+    { key: 'feed.xml',                dist: 'feed.xml' },
+    { key: 'sitemap.xml',             dist: 'sitemap.xml' },
+    ...publishedPosts.map(p => ({ key: `posts/${p.slug}/index.html`, dist: `posts/${p.slug}/index.html` })),
+    ...publishedPages.map(p => ({ key: `pages/${p.slug}/index.html`, dist: `${p.slug}/index.html` })),
+  ];
+
+  const results = await Promise.all(
+    fetches.map(async ({ key, dist }) => {
+      const obj = await env.BLOG.get(key);
+      if (!obj) return null;
+      return [dist, await obj.text()];
+    })
+  );
+
+  const map = Object.fromEntries(results.filter(Boolean));
+  return Response.json(map);
 }
 
 // ── Media handlers ────────────────────────────────────────────────────────────
