@@ -42,9 +42,10 @@ Each theme lives in `styles/themes/<name>.css`. A theme file contains:
 3. Any layout styles specific to that theme's HTML structure (e.g. the
    cinematic fixed nav, hero section, more-essays strip).
 
-The active theme name is set by `SITE_THEME` in
-`functions/api/[[path]].js`. The Worker writes `data-theme="<name>"` onto the
-`<html>` element and loads `/styles/themes/<name>.css`.
+The active theme name is stored in `settings/site.json` in R2 (key `theme`).
+`loadSiteContext()` reads it on every render. The Worker writes `data-theme="<name>"` onto
+the `<html>` element and loads `/styles/themes/<name>.css`. The active theme can be
+changed from the **Settings → Appearance → Theme** picker in Signal — no code change needed.
 
 ### The `.surface-invert` pattern
 
@@ -72,34 +73,37 @@ takes precedence via cascade order.
 
 ## Adding a new theme
 
-1. **Copy an existing theme file** as a starting point:
+1. **Copy an existing theme CSS** as a starting point:
    ```
-   cp styles/themes/dark.css styles/themes/mytheme.css
+   cp site/styles/themes/cinematic.css site/styles/themes/mytheme.css
    ```
 
-2. **Rename the selectors** — replace `[data-theme="dark"]` with
+2. **Rename the selectors** — replace `[data-theme="cinematic"]` with
    `[data-theme="mytheme"]` throughout the file.
 
 3. **Update the token values** to match your design.
 
-4. **Add a `.surface-invert` block** if your theme has inverted surface
+4. **Add a `.surface-invert` block** if your theme uses inverted surface
    sections. Set the tokens to whatever the inverted palette should be.
 
-5. **Add theme-specific layout styles** if your HTML structure differs from
-   the dark theme (e.g. a fixed nav needs position/height rules here).
+5. **Add theme-specific layout styles** for any HTML structure your renderer
+   introduces (e.g. nav positioning, hero grid, homepage cards).
 
 6. **Create a renderer file** at `functions/themes/mytheme.js` if the page
    HTML structure differs from the dark theme. Export any of `buildPost`,
    `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`.
    You only need to export the functions that differ — the dispatcher falls
-   back to `dark.js` for anything not exported. See `functions/themes/dark.js`
-   for the expected function signatures.
+   back to `dark.js` for anything not exported.
+   See [Renderer JS reference](#renderer-js-reference) for full function signatures and data models.
 
-7. **Activate the theme** by changing `SITE_THEME` in
-   `functions/api/[[path]].js`:
+7. **Register the theme** — two lines in `functions/api/[[path]].js`:
    ```js
-   const SITE_THEME = 'mytheme';
+   import * as myTheme from '../themes/mytheme.js';           // at the top with other imports
+   const THEMES = { dark: darkTheme, cinematic: cinematicTheme, mytheme: myTheme };  // add entry
    ```
+
+8. **Activate in Signal** — go to **Settings → Appearance → Theme**, select the new theme, click Save.
+   Then **Rebuild site** and **Deploy** to apply it to the live site.
 
 That's it. No other files need to change.
 
@@ -308,32 +312,268 @@ export const imageRoles = {
 ```
 site/
   styles/
-    main.css            Token names + dark defaults, reset, base typography
-    blog.css            Shared components — token references only, no raw values
+    main.css                Token names + dark defaults, reset, base typography
+    blog.css                Shared components — token references only, no raw values
     themes/
-      dark.css          Dark theme token values + dark layout styles
-      cinematic.css     Cinematic theme token values + cinematic layout styles
+      dark.css              Dark theme token values + dark layout styles
+      cinematic.css         Cinematic theme token values + cinematic layout styles
+      brash-editorial.css   Brash editorial theme (warm paper, big serif, coloured blocks)
   scripts/
-    blog.js             Client-side tag filtering (essays page)
+    blog.js                 Client-side tag filtering (essays page)
 
 functions/
   lib/
-    templates.js        Shared HTML partials (buildHead, buildSiteNav, buildFooter, …)
-    snippets.js         Snippet CSS builder — uses CSS vars, not raw colour values
+    templates.js            Shared HTML partials (buildHead, buildSiteNav, buildFooter, …)
+    snippets.js             Snippet CSS builder — uses CSS vars, not raw colour values
   themes/
-    dark.js             Dark page renderers (buildPost, buildIndex, buildPage, …)
-    cinematic.js        Cinematic page renderers (only what structurally differs)
+    dark.js                 Dark page renderers (buildPost, buildIndex, buildPage, …) — fallback base
+    cinematic.js            Cinematic page renderers (only what structurally differs from dark)
+    brash-editorial.js      Brash editorial renderers (buildHomepage, imageRoles only)
   api/
-    [[path]].js         SITE_THEME constant, prepPostData(), theme dispatch
+    [[path]].js             THEMES registry, loadSiteContext() (reads active theme), theme dispatch
+```
+
+---
+
+## Renderer JS reference
+
+A theme renderer is an ES module at `functions/themes/<name>.js`. It can export any subset of six page-builder functions plus `imageRoles`. Anything not exported falls back to `dark.js`.
+
+### Template helpers (from `functions/lib/templates.js`)
+
+All renderers import from here. Never hardcode nav, footer, or `<head>` HTML directly.
+
+```js
+import { esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard, SITE_URL } from '../lib/templates.js';
+```
+
+| Helper | Signature | Returns |
+|---|---|---|
+| `esc(str)` | `esc(value: any) → string` | HTML-escaped string |
+| `SITE_URL` | constant | `'https://jrbnz.com'` |
+| `buildHead({ title, theme, accent, snippetCss, extraHead })` | all optional | Full `<!doctype html><html data-theme="…"><head>…</head><body>` opener |
+| `buildSiteNav(menuPages, activeHref)` | positional args | `<nav class="site-nav">…</nav>` |
+| `buildNavLinks(menuPages)` | `menuPages: Page[]` | `[{ href, label }]` — for building custom nav markup |
+| `buildFooter(menuPages, year)` | positional args | `<footer class="footer">…</footer>` (dark theme footer) |
+| `buildPostMeta({ title, postUrl, metaDesc, ogImage, date, authorName })` | all optional | OG/meta tags HTML string for `<head>` |
+| `buildAuthorCard(author)` | `author: Author` | HTML string for the author bio card |
+
+**`buildHead` detail:**
+```js
+buildHead({
+  title,       // string | null — null omits <title> (homepage uses site name from CSS)
+  theme,       // string — written to data-theme="…" on <html>
+  accent,      // string | null — hex colour; injected as inline style override for --color-accent
+  snippetCss,  // string | null — additional CSS for snippet blocks
+  extraHead,   // string | null — arbitrary HTML appended inside <head>
+})
+// → '<!doctype html>\n<html lang="en" data-theme="cinematic">\n<head>…</head>\n<body>'
+```
+
+---
+
+### `buildPost(data)` → string
+
+Renders a full post page. The dispatcher calls `themeRenderer(theme).buildPost(prepPostData(args))`.
+
+```js
+// data shape (all fields set by prepPostData):
+{
+  title: string,
+  slug: string,
+  date: string,              // ISO date e.g. '2025-01-01'
+  dateFormatted: string,     // e.g. '1 January 2025'
+  tags: string[],
+  contentHtml: string,       // rendered markdown body
+  excerpt: string,
+  subtitle: string,
+  coverImage: string | null,
+  coverImageAlt: string,
+  coverImageFocus: string,   // 'center' | 'top' | 'bottom' | 'left' | 'right'
+  author: Author,
+  authorCard: string,        // pre-rendered HTML from buildAuthorCard()
+  accent: string | null,
+  menuPages: Page[],
+  snippetCss: string | null,
+  readTime: number,          // minutes
+  postUrl: string,           // full URL
+  extraHead: string,         // pre-built OG/meta tags HTML
+  prevPost: Post | null,
+  nextPost: Post | null,
+  year: number,
+  theme: string,
+  recentPosts: Post[],       // up to 3 recent published posts
+}
+```
+
+---
+
+### `buildIndex(data)` → string
+
+Renders the essays list page (`/posts/`).
+
+```js
+{
+  items: string,          // pre-rendered <li> elements (tag filtering via data-tags attr)
+  tagChips: string,       // pre-rendered tag chip <a> elements
+  menuPages: Page[],
+  accent: string | null,
+  snippetCss: string | null,
+  year: number,
+  theme: string,
+  posts: Post[],          // published posts, sorted newest-first
+  defaultCoverImage: string | null,
+}
+```
+
+---
+
+### `buildPage(data)` → string
+
+Renders a CMS page (About, Now, etc.).
+
+```js
+{
+  title: string,
+  slug: string,
+  contentHtml: string,
+  menuPages: Page[],
+  accent: string | null,
+  snippetCss: string | null,
+  year: number,
+  theme: string,
+}
+```
+
+---
+
+### `buildPhotos(data)` → string
+
+Renders the `/photos/` page. No photo data is passed — photos are static HTML in `site/photos/index.html` and copied to `dist/`. This renderer wraps them in nav/footer.
+
+```js
+{
+  menuPages: Page[],
+  accent: string | null,
+  year: number,
+  theme: string,
+}
+```
+
+---
+
+### `buildHomepage(data)` → string
+
+Renders the site homepage (`/`). This is the most theme-specific renderer — most themes will want their own.
+
+```js
+{
+  author: Author,
+  recentPosts: Post[],       // all published posts, sorted newest-first
+  menuPages: Page[],
+  accent: string | null,
+  snippetCss: string | null,
+  theme: string,
+  defaultCoverImage: string | null,
+  homepageConfig: HomepageConfig | null,  // from settings/homepage.json
+}
+```
+
+See [Homepage config model](#homepage-config-model) for the `HomepageConfig` shape.
+
+---
+
+### `buildNotes(data)` → string
+
+Renders the notes stream (`/notes/`).
+
+```js
+{
+  notes: NoteWithHtml[],   // published notes with bodyHtml pre-rendered from markdown
+  menuPages: Page[],
+  accent: string | null,
+  snippetCss: string | null,
+  theme: string,
+}
+
+// NoteWithHtml shape:
+{
+  slug: string,
+  title: string,
+  date: string,
+  tags: string[],
+  bodyHtml: string,
+}
+```
+
+---
+
+### `imageRoles` export
+
+Tells Signal which layout and treatment options to show in the image editor for this theme. Fetched from `GET /api/theme/image-roles`.
+
+```js
+export const imageRoles = {
+  layouts: [
+    { className: 'img-wide',  label: 'Wide',  description: '…' },
+    { className: 'img-break', label: 'Break', description: '…' },
+    { className: 'img-small', label: 'Small', description: '…' },
+    { className: 'img-pair',  label: 'Pair',  description: '…' },
+  ],
+  treatments: [
+    { className: 'photo-muted',  label: 'Muted',  description: '…', isDefault: true },
+    { className: 'photo-mono',   label: 'Mono',   description: '…' },
+    { className: 'photo-colour', label: 'Colour', description: '…' },
+    { className: 'photo-soft',   label: 'Soft',   description: '…' },
+  ],
+  defaults: { layout: 'img-wide', treatment: 'photo-muted' },
+};
+```
+
+---
+
+### Shared data types
+
+```js
+// Author (from settings/author.json)
+{
+  name: string,
+  bio: string,
+  avatar: string,   // URL
+}
+
+// Page (from pages/index.json — menu pages)
+{
+  slug: string,
+  title: string,
+  nav_url: string | undefined,   // if set, this URL is used in nav instead of /slug/
+  include_in_menu: boolean,
+  status: 'published' | 'draft',
+}
+
+// Post (from posts/index.json)
+{
+  slug: string,
+  title: string,
+  date: string,         // ISO e.g. '2025-01-01'
+  status: 'published' | 'draft',
+  tags: string[],
+  coverImage: string | null,
+  coverImageAlt: string,
+  coverImageFocus: string,
+  excerpt: string,
+  subtitle: string,
+  wordCount: number,
+}
 ```
 
 ---
 
 ## HTML structure and class reference
 
-This section documents every class the cinematic theme CSS needs to target, organised by page. The HTML is generated by `functions/themes/cinematic.js` — a designer writing theme CSS should use this as the reference for selectors.
+This section documents every class the **cinematic** theme CSS targets, organised by page. The HTML is generated by `functions/themes/cinematic.js` (falling back to `dark.js` for pages it doesn't override). A designer writing a new theme should use this as a reference for what HTML structure to expect — or to produce from their own renderer.
 
-All pages carry `data-theme="cinematic"` on `<html>`. Theme CSS scopes all selectors with `[data-theme="cinematic"]`.
+All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all selectors with `[data-theme="<name>"]` to avoid leaking into Signal or other themes.
 
 ---
 
