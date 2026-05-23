@@ -208,6 +208,8 @@ ${buildSiteNav(menuPages, '/')}
 </html>`;
 }
 
+export const basedOn = 'cinematic';
+
 export const imageRoles = {
   layouts: [
     { className: 'img-wide', label: 'Wide', description: 'Large editorial image, slightly wider than the reading column.' },

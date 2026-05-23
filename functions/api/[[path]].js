@@ -15,13 +15,14 @@ const THEMES = { dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': 
 
 function themeRenderer(name) {
   const theme = THEMES[name] ?? THEMES.dark;
+  const base = THEMES[theme.basedOn] ?? darkTheme;
   return {
-    buildPost:     theme.buildPost     ?? darkTheme.buildPost,
-    buildIndex:    theme.buildIndex    ?? darkTheme.buildIndex,
-    buildPage:     theme.buildPage     ?? darkTheme.buildPage,
-    buildPhotos:   theme.buildPhotos   ?? darkTheme.buildPhotos,
-    buildHomepage: theme.buildHomepage ?? darkTheme.buildHomepage,
-    buildNotes:    theme.buildNotes    ?? null,
+    buildPost:     theme.buildPost     ?? base.buildPost,
+    buildIndex:    theme.buildIndex    ?? base.buildIndex,
+    buildPage:     theme.buildPage     ?? base.buildPage,
+    buildPhotos:   theme.buildPhotos   ?? base.buildPhotos,
+    buildHomepage: theme.buildHomepage ?? base.buildHomepage,
+    buildNotes:    theme.buildNotes    ?? base.buildNotes ?? null,
   };
 }
 

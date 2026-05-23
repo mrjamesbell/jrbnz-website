@@ -93,7 +93,9 @@ takes precedence via cascade order.
    HTML structure differs from the dark theme. Export any of `buildPost`,
    `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`.
    You only need to export the functions that differ — the dispatcher falls
-   back to `dark.js` for anything not exported.
+   back to `dark.js` for anything not exported, unless you declare a `basedOn`
+   export to specify a different base (e.g. `export const basedOn = 'cinematic'`
+   makes missing renderers fall back to `cinematic.js` instead).
    See [Renderer JS reference](#renderer-js-reference) for full function signatures and data models.
 
 7. **Register the theme** — two lines in `functions/api/[[path]].js`:
