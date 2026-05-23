@@ -765,6 +765,13 @@
     background: var(--color-bg);
 }
 
+[data-theme="cinematic"] .tag-filter-bar:not([hidden]) {
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 19;
+    margin-bottom: 24px;
+}
+
 /* ── More essays strip ────────────────────────────────────────────────────── */
 [data-theme="cinematic"] .more-essays {
     padding: 44px clamp(28px, 4vw, 56px) 64px;
