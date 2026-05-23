@@ -3,6 +3,7 @@ import { loadSnippetCss } from '../lib/snippets.js';
 import { SITE_URL, esc, buildHead, buildSiteNav, buildFooter, buildPostMeta, buildAuthorCard } from '../lib/templates.js';
 import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
+import * as baseTheme from '../themes/base.js';
 import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
 import * as brashEditorialTheme from '../themes/brash-editorial.js';
@@ -11,17 +12,17 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme };
+const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme };
 
 function themeRenderer(name) {
-  const theme = THEMES[name] ?? THEMES.dark;
+  const theme = THEMES[name] ?? THEMES.base;
   return {
-    buildPost:     theme.buildPost     ?? darkTheme.buildPost,
-    buildIndex:    theme.buildIndex    ?? darkTheme.buildIndex,
-    buildPage:     theme.buildPage     ?? darkTheme.buildPage,
-    buildPhotos:   theme.buildPhotos   ?? darkTheme.buildPhotos,
-    buildHomepage: theme.buildHomepage ?? darkTheme.buildHomepage,
-    buildNotes:    theme.buildNotes    ?? darkTheme.buildNotes ?? null,
+    buildPost:     theme.buildPost     ?? baseTheme.buildPost,
+    buildIndex:    theme.buildIndex    ?? baseTheme.buildIndex,
+    buildPage:     theme.buildPage     ?? baseTheme.buildPage,
+    buildPhotos:   theme.buildPhotos   ?? baseTheme.buildPhotos,
+    buildHomepage: theme.buildHomepage ?? baseTheme.buildHomepage,
+    buildNotes:    theme.buildNotes    ?? baseTheme.buildNotes,
   };
 }
 
