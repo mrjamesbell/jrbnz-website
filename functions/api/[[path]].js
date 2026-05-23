@@ -7,12 +7,13 @@ import * as baseTheme from '../themes/base.js';
 import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
 import * as brashEditorialTheme from '../themes/brash-editorial.js';
+import * as manifestoTheme from '../themes/manifesto.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme };
+const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme, manifesto: manifestoTheme };
 
 function themeRenderer(name) {
   const theme = THEMES[name] ?? THEMES.base;

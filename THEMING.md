@@ -326,6 +326,7 @@ site/
       dark.css              Dark theme token values + dark layout styles
       cinematic.css         Cinematic theme token values + cinematic layout styles
       brash-editorial.css   Brash editorial theme (warm paper, big serif, coloured blocks)
+      manifesto.css         Manifesto theme (dark, monochrome, architectural)
   scripts/
     blog.js                 Client-side tag filtering (essays page)
 
@@ -338,6 +339,7 @@ functions/
     dark.js                 Dark page renderers (internal; not selectable in Signal)
     cinematic.js            Cinematic page renderers
     brash-editorial.js      Brash editorial renderers (buildHomepage + re-exports from cinematic)
+    manifesto.js            Manifesto renderers (all pages — cinematic, architectural, monochrome)
   api/
     [[path]].js             THEMES registry, loadSiteContext() (reads active theme), theme dispatch
 ```
@@ -444,7 +446,7 @@ Renders a CMS page (About, Now, etc.).
 ```js
 {
   title: string,
-  slug: string,
+  slug: string,      // use this for the active nav href: `/${slug}/`
   contentHtml: string,
   menuPages: Page[],
   accent: string | null,
@@ -452,6 +454,11 @@ Renders a CMS page (About, Now, etc.).
   year: number,
   theme: string,
 }
+```
+
+**Use `slug` for the active nav href**, not `title.toLowerCase()` — slugs are authoritative and won't break on multi-word or mixed-case page titles:
+```js
+buildSiteNav(menuPages, `/${slug}/`)
 ```
 
 ---
