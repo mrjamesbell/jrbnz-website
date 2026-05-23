@@ -835,7 +835,7 @@ async function saveAppSettings() {
     });
   } catch {}
 
-  showToast('Settings saved', 'success');
+  showToast(theme ? `Settings saved — theme: ${theme}` : 'Settings saved', 'success');
 }
 
 function _markActiveSwatch(rowId, savedColor) {

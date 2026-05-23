@@ -1893,7 +1893,7 @@ textarea.media-field-input { resize: vertical; min-height: 68px; line-height: 1.
 /* Theme picker */
 .theme-pick-btn.active {
   background: var(--color-cream-text-primary);
-  color: var(--color-bg);
+  color: var(--color-cream-dark);
   border-color: var(--color-cream-text-primary);
 }
 
