@@ -674,10 +674,10 @@ async function handleDeploy(env) {
 }
 
 async function handleDeployStatus(env) {
-  if (!env.CF_ACCOUNT_ID || !env.CF_IMAGES_TOKEN) return json({ error: 'Missing credentials' }, 503);
+  if (!env.CF_ACCOUNT_ID || !env.CF_PAGES_API_TOKEN) return json({ error: 'Missing credentials' }, 503);
   const res = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/pages/projects/jrbnz-website/deployments?per_page=1`,
-    { headers: { Authorization: `Bearer ${env.CF_IMAGES_TOKEN}` } }
+    { headers: { Authorization: `Bearer ${env.CF_PAGES_API_TOKEN}` } }
   );
   if (!res.ok) return json({ error: `CF API error: ${res.status}` }, res.status);
   const data = await res.json();
