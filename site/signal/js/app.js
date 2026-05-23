@@ -796,6 +796,24 @@ function openSettingsView() {
       if (d.defaultCoverImage) img.src = d.defaultCoverImage;
     }
     _updateDefaultCoverFocusBtns(d.defaultCoverImageFocus || 'center');
+    _loadThemePicker(d.theme || 'cinematic');
+  }).catch(() => {});
+}
+
+function _loadThemePicker(activeTheme) {
+  const group = document.getElementById('theme-picker-group');
+  if (!group) return;
+  fetch('/api/theme/list').then(r => r.ok ? r.json() : []).then(themes => {
+    group.innerHTML = themes.map(t => {
+      const label = t.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+      return `<button type="button" class="btn btn-secondary btn-sm theme-pick-btn${t === activeTheme ? ' active' : ''}" data-theme="${t}">${label}</button>`;
+    }).join('');
+    group.querySelectorAll('.theme-pick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.theme-pick-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
   }).catch(() => {});
 }
 
@@ -807,11 +825,13 @@ async function saveAppSettings() {
   const defaultCoverImage = document.getElementById('site-default-cover')?.value.trim() || null;
   const activeDefaultFocusBtn = document.querySelector('.default-cover-focus-btn.active');
   const defaultCoverImageFocus = activeDefaultFocusBtn ? activeDefaultFocusBtn.dataset.focus : 'center';
+  const activeThemeBtn = document.querySelector('#theme-picker-group .theme-pick-btn.active');
+  const theme = activeThemeBtn ? activeThemeBtn.dataset.theme : null;
   try {
     await fetch('/api/site/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ defaultCoverImage, defaultCoverImageFocus }),
+      body: JSON.stringify({ defaultCoverImage, defaultCoverImageFocus, ...(theme ? { theme } : {}) }),
     });
   } catch {}
 

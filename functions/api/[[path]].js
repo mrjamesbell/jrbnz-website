@@ -5,14 +5,13 @@ import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFIma
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
+import * as brashEditorialTheme from '../themes/brash-editorial.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const SITE_THEME = 'cinematic'; // change to 'dark' to switch themes
-
-const THEMES = { dark: darkTheme, cinematic: cinematicTheme };
+const THEMES = { dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme };
 
 function themeRenderer(name) {
   const theme = THEMES[name] ?? THEMES.dark;
@@ -137,7 +136,7 @@ function extractFirstImage(body) {
   return md ? md[1] : null;
 }
 
-function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, defaultCoverImage, defaultCoverImageFocus, author, accent, menuPages, snippetCss, allPosts, wordCount }) {
+function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, defaultCoverImage, defaultCoverImageFocus, author, accent, menuPages, snippetCss, allPosts, wordCount, theme }) {
   const year = new Date().getFullYear();
   const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
   const postUrl = `${SITE_URL}/posts/${slug}/`;
@@ -161,18 +160,19 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, sub
   return {
     title, slug, date, dateFormatted, tags, contentHtml, author, accent,
     menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
-    authorCard, year, theme: SITE_THEME,
+    authorCard, year, theme: theme || 'cinematic',
     coverImage: coverImage || defaultCoverImage || null,
     coverImageAlt, coverImageFocus: coverImageFocus || (coverImage ? 'center' : defaultCoverImageFocus) || 'center',
     recentPosts, excerpt, subtitle,
   };
 }
 
-function buildPostHtml(args) {
-  return themeRenderer(SITE_THEME).buildPost(prepPostData(args));
+function buildPostHtml(args, theme) {
+  const t = theme || 'cinematic';
+  return themeRenderer(t).buildPost(prepPostData({ ...args, theme: t }));
 }
 
-function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage) {
+function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme) {
   const published = posts
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -198,42 +198,47 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage)
   const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
-  return themeRenderer(SITE_THEME).buildIndex({
-    items, tagChips, menuPages, accent, snippetCss, year, theme: SITE_THEME, posts: published, defaultCoverImage,
+  const t = theme || 'cinematic';
+  return themeRenderer(t).buildIndex({
+    items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: published, defaultCoverImage,
   });
 }
 
-function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss }) {
+function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss, theme }) {
   const year = new Date().getFullYear();
-  return themeRenderer(SITE_THEME).buildPage({
-    title, slug, contentHtml, menuPages, accent, snippetCss, year, theme: SITE_THEME,
+  const t = theme || 'cinematic';
+  return themeRenderer(t).buildPage({
+    title, slug, contentHtml, menuPages, accent, snippetCss, year, theme: t,
   });
 }
 
-function buildPhotosHtml(menuPages, accent) {
+function buildPhotosHtml(menuPages, accent, theme) {
   const year = new Date().getFullYear();
-  return themeRenderer(SITE_THEME).buildPhotos({
-    menuPages, accent, year, theme: SITE_THEME,
+  const t = theme || 'cinematic';
+  return themeRenderer(t).buildPhotos({
+    menuPages, accent, year, theme: t,
   });
 }
 
-function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig) {
+function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme) {
   const allPosts = (posts || [])
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
-  return themeRenderer(SITE_THEME).buildHomepage?.({
-    author, recentPosts: allPosts, menuPages, accent, snippetCss, theme: SITE_THEME, defaultCoverImage, homepageConfig,
+  const t = theme || 'cinematic';
+  return themeRenderer(t).buildHomepage?.({
+    author, recentPosts: allPosts, menuPages, accent, snippetCss, theme: t, defaultCoverImage, homepageConfig,
   }) ?? '';
 }
 
-function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss) {
-  const renderer = themeRenderer(SITE_THEME).buildNotes;
+function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme) {
+  const t = theme || 'cinematic';
+  const renderer = themeRenderer(t).buildNotes;
   if (!renderer) return '';
   const notesWithHtml = notes.map((note, i) => ({ ...note, bodyHtml: mdToHtml(bodies[i] || '') }));
-  return renderer({ notes: notesWithHtml, menuPages, accent, snippetCss, theme: SITE_THEME });
+  return renderer({ notes: notesWithHtml, menuPages, accent, snippetCss, theme: t });
 }
 
-async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss) {
+async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme) {
   const notes = (posts || [])
     .filter(p => p.status === 'published' && (p.tags || []).includes('note'))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -242,7 +247,7 @@ async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss
     const obj = await env.BLOG.get(`posts/${n.slug}/draft.md`);
     return obj ? await obj.text() : '';
   }));
-  return buildNotesHtml(notes, bodies, menuPages, accent, snippetCss);
+  return buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme);
 }
 
 // ── Index helpers ─────────────────────────────────────────────────────────────
@@ -258,10 +263,10 @@ async function saveIndex(env, posts) {
 }
 
 async function rebuildIndexHtml(env, posts) {
-  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig } = await loadSiteContext(env);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage);
-  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig);
-  const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig, theme } = await loadSiteContext(env);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme);
+  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme);
+  const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
     ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
@@ -278,8 +283,8 @@ async function rebuildPostHtml(env, slug, posts) {
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
-  const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, theme } = await loadSiteContext(env);
+  const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus }, theme);
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
 
@@ -369,7 +374,7 @@ async function loadSiteContext(env) {
   const menuPages = pagesObj ? JSON.parse(await pagesObj.text()) : [];
   const siteData = siteObj ? JSON.parse(await siteObj.text()) : {};
   const homepageConfig = homepageObj ? JSON.parse(await homepageObj.text()) : null;
-  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null, defaultCoverImageFocus: siteData.defaultCoverImageFocus || 'center', homepageConfig };
+  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null, defaultCoverImageFocus: siteData.defaultCoverImageFocus || 'center', homepageConfig, theme: siteData.theme || 'cinematic' };
 }
 
 async function handleGetSiteSettings(env) {
@@ -395,8 +400,8 @@ async function handleSaveHomepageConfig(request, env) {
   await env.BLOG.put('settings/homepage.json', JSON.stringify(data), { httpMetadata: { contentType: 'application/json' } });
   // Rebuild homepage HTML immediately
   const posts = await getIndex(env);
-  const { author, accent, menuPages, snippetCss, defaultCoverImage } = await loadSiteContext(env);
-  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, data);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, theme } = await loadSiteContext(env);
+  const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, data, theme);
   if (homepageHtml) {
     await env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } });
   }
@@ -447,8 +452,12 @@ export async function onRequest(context) {
 
   // Public theme config — no auth required
   if (resource === 'theme' && slug === 'image-roles' && method === 'GET') {
-    const theme = THEMES[SITE_THEME] ?? THEMES.dark;
+    const { theme: themeName } = await loadSiteContext(env);
+    const theme = THEMES[themeName] ?? THEMES.cinematic;
     return json(theme.imageRoles ?? { layouts: [], treatments: [], defaults: {} });
+  }
+  if (resource === 'theme' && slug === 'list' && method === 'GET') {
+    return json(Object.keys(THEMES).filter(k => k !== 'dark'));
   }
 
   // Internal build export — token auth, no session required
@@ -617,7 +626,7 @@ async function handleSaveAuthor(request, env) {
 }
 
 async function handleRebuildSite(env) {
-  const [posts, pages, { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig }] = await Promise.all([
+  const [posts, pages, { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig, theme }] = await Promise.all([
     getIndex(env),
     getPagesIndex(env),
     loadSiteContext(env),
@@ -628,21 +637,21 @@ async function handleRebuildSite(env) {
     ...publishedPosts.map(async post => {
       const obj = await env.BLOG.get(`posts/${post.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPostHtml({ ...post, body, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus });
+      const html = buildPostHtml({ ...post, body, contentHtml: mdToHtml(body), author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus }, theme);
       await env.BLOG.put(`posts/${post.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
     ...publishedPages.map(async page => {
       const obj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss });
+      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss, theme });
       await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
   ]);
   const [indexHtml, photosHtml, homepageHtml, notesHtml] = await Promise.all([
-    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage)),
-    Promise.resolve(buildPhotosHtml(menuPages, accent)),
-    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig)),
-    buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss),
+    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme)),
+    Promise.resolve(buildPhotosHtml(menuPages, accent, theme)),
+    Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme)),
+    buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme),
   ]);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
@@ -1647,9 +1656,9 @@ async function handlePublishPage(env, slug) {
   pages[idx].updatedAt = new Date().toISOString();
   await savePagesIndex(env, pages);
 
-  const { author, accent, snippetCss, defaultCoverImage, defaultCoverImageFocus } = await loadSiteContext(env);
+  const { author, accent, snippetCss, defaultCoverImage, defaultCoverImageFocus, theme } = await loadSiteContext(env);
   const menuPages = pages;
-  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent, snippetCss });
+  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent, snippetCss, theme });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
 
   return json({ ...pages[idx], url: `/${slug}/`, needsRebuild: pages[idx].include_in_menu });
