@@ -752,13 +752,46 @@ async function deploySite() {
   try {
     const res = await fetch('/api/site/deploy', { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
-    showToast('Deploy triggered — changes live in ~60s', 'success');
+    showToast('Deploy triggered — checking status…', 'info');
+    _pollDeployStatus(btn);
   } catch (e) {
     showToast('Deploy failed: ' + e.message, 'error');
-  } finally {
     btn.disabled = false;
     btn.textContent = 'Deploy';
   }
+}
+
+async function _pollDeployStatus(btn) {
+  const started = Date.now();
+  const timeout = 5 * 60 * 1000;
+  const interval = 6000;
+  await new Promise(r => setTimeout(r, 8000));
+  while (Date.now() - started < timeout) {
+    try {
+      const res = await fetch('/api/site/deploy-status');
+      if (res.ok) {
+        const d = await res.json();
+        if (d.status === 'success') {
+          showToast('Deploy complete — site is live', 'success');
+          btn.disabled = false;
+          btn.textContent = 'Deploy';
+          return;
+        }
+        if (d.status === 'failure') {
+          showToast('Deploy failed — check CF Pages dashboard', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Deploy';
+          return;
+        }
+        const elapsed = Math.round((Date.now() - started) / 1000);
+        btn.textContent = `Deploying… ${elapsed}s`;
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, interval));
+  }
+  showToast('Deploy is taking longer than expected — check CF Pages dashboard', 'warning');
+  btn.disabled = false;
+  btn.textContent = 'Deploy';
 }
 
 async function logout() {

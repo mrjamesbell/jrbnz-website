@@ -489,6 +489,7 @@ export async function onRequest(context) {
     if (slug === 'rebuild' && method === 'POST') return handleRebuildSite(env);
     if (slug === 'rebuild-indexes' && method === 'POST') return handleRebuildIndexHtml(env);
     if (slug === 'deploy' && method === 'POST') return handleDeploy(env);
+    if (slug === 'deploy-status' && method === 'GET') return handleDeployStatus(env);
     if (slug === 'accent') {
       if (method === 'GET') return handleGetAccent(env);
       if (method === 'PUT') return handleSaveAccent(request, env);
@@ -670,6 +671,19 @@ async function handleDeploy(env) {
   const res = await fetch(env.CF_PAGES_HOOK_URL, { method: 'POST' });
   if (!res.ok) return json({ error: `Deploy hook failed: ${res.status}` }, 502);
   return json({ triggered: true });
+}
+
+async function handleDeployStatus(env) {
+  if (!env.CF_ACCOUNT_ID || !env.CF_IMAGES_TOKEN) return json({ error: 'Missing credentials' }, 503);
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/pages/projects/jrbnz-website/deployments?per_page=1`,
+    { headers: { Authorization: `Bearer ${env.CF_IMAGES_TOKEN}` } }
+  );
+  if (!res.ok) return json({ error: `CF API error: ${res.status}` }, res.status);
+  const data = await res.json();
+  const d = data?.result?.[0];
+  if (!d) return json({ status: 'unknown' });
+  return json({ status: d.latest_stage?.status ?? d.stages?.at(-1)?.status ?? 'unknown', createdOn: d.created_on, url: d.url });
 }
 
 async function handleExport(request, env) {
