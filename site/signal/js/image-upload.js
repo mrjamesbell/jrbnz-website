@@ -106,17 +106,6 @@ export function renderRoleImageBlock(src, alt, imgRole, treatment, focalX = 0.5,
 </div>`;
 }
 
-export function insertSignalImage(textarea, publicUrl, altText, layout, width) {
-  const { selectionStart: start, selectionEnd: end, value } = textarea;
-  const alt = (altText || '').replace(/"/g, '&quot;');
-  const widthAttr = width && width !== 100 ? ` width="${width}"` : '';
-  const block = `\n<!-- signal:image src="${_cfVariant(publicUrl, 'hero')}" alt="${alt}" layout="${layout || 'full'}"${widthAttr} -->\n`;
-  textarea.value = value.slice(0, start) + block + value.slice(end);
-  textarea.selectionStart = textarea.selectionEnd = start + block.length;
-  textarea.dispatchEvent(new Event('input'));
-  textarea.focus();
-}
-
 export function insertSignalImageWithRole(textarea, publicUrl, altText, imgRole, treatment, focalX = 0.5, focalY = 0.5, caption = '') {
   const { selectionStart: start, selectionEnd: end, value } = textarea;
   const alt = (altText || '').replace(/"/g, '&quot;');
