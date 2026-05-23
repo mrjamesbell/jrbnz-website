@@ -663,12 +663,6 @@ async function handleDeploy(env) {
 }
 
 async function handleExport(request, env) {
-  const { searchParams } = new URL(request.url);
-  const token = searchParams.get('token');
-  if (!token || !env.CF_BUILD_SECRET || token !== env.CF_BUILD_SECRET) {
-    return json({ error: 'Unauthorized' }, 401);
-  }
-
   const [postsObj, pagesObj] = await Promise.all([
     env.BLOG.get('posts/index.json'),
     env.BLOG.get('pages/index.json'),

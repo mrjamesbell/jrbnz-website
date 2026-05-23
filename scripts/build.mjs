@@ -9,20 +9,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const dist = join(root, 'dist');
 
-const SITE_URL = process.env.SITE_URL;
-const CF_BUILD_SECRET = process.env.CF_BUILD_SECRET;
-
-if (!SITE_URL || !CF_BUILD_SECRET) {
-  console.error('Missing required env vars: SITE_URL, CF_BUILD_SECRET');
-  process.exit(1);
-}
+const SITE_URL = 'https://jrbnz.com';
 
 // 1. Copy all static assets from site/ into dist/
 execSync(`cp -r ${join(root, 'site')}/. ${dist}/`, { stdio: 'inherit' });
 console.log('Copied site/ → dist/');
 
 // 2. Fetch pre-rendered HTML from the live Worker
-const url = `${SITE_URL}/api/internal/export?token=${CF_BUILD_SECRET}`;
+const url = `${SITE_URL}/api/internal/export`;
 console.log(`Fetching export from ${SITE_URL}/api/internal/export ...`);
 const res = await fetch(url);
 if (!res.ok) {
