@@ -901,6 +901,19 @@
     margin-bottom: 18px;
 }
 
+[data-theme="cinematic"] .note-permalink {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-border-strong);
+    text-decoration: none;
+    transition: color 0.15s;
+    line-height: 1;
+}
+
+[data-theme="cinematic"] .note-permalink:hover {
+    color: var(--color-accent);
+}
+
 [data-theme="cinematic"] .note-date {
     font-family: var(--font-mono);
     font-size: 11px;
