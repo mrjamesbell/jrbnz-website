@@ -92,10 +92,14 @@ takes precedence via cascade order.
 6. **Create a renderer file** at `functions/themes/mytheme.js` if the page
    HTML structure differs from the dark theme. Export any of `buildPost`,
    `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`.
-   You only need to export the functions that differ — the dispatcher falls
-   back to `dark.js` for anything not exported, unless you declare a `basedOn`
-   export to specify a different base (e.g. `export const basedOn = 'cinematic'`
-   makes missing renderers fall back to `cinematic.js` instead).
+   The dispatcher falls back to `dark.js` for any renderer not exported by
+   your file. If you want to inherit another theme's renderer (e.g. cinematic's
+   post layout), re-export it explicitly — that way the theme file is the
+   complete truth about what it does:
+   ```js
+   export { buildPost, buildIndex, buildPage, buildPhotos, buildNotes } from './cinematic.js';
+   export function buildHomepage(data) { … }  // custom
+   ```
    See [Renderer JS reference](#renderer-js-reference) for full function signatures and data models.
 
 7. **Register the theme** — two lines in `functions/api/[[path]].js`:
@@ -507,18 +511,6 @@ Renders the notes stream (`/notes/`).
   bodyHtml: string,
 }
 ```
-
----
-
-### `basedOn` export (optional)
-
-Declares which theme to use as the fallback for any renderers not exported by this file. Defaults to `'dark'` if omitted.
-
-```js
-export const basedOn = 'cinematic';
-```
-
-Use this when your theme's CSS targets the HTML structure that another theme generates. For example, `brash-editorial` only exports `buildHomepage` but its CSS covers all the cinematic HTML classes (`.surface-invert`, `.cinematic-footer`, `.post-hero`, etc.), so it declares `basedOn = 'cinematic'` to ensure posts, pages, and lists use cinematic's renderers.
 
 ---
 

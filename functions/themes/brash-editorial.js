@@ -2,10 +2,12 @@
   Brash Editorial renderer for jrbnz.com.
 
   Install at: functions/themes/brash-editorial.js
-  Exports only buildHomepage and imageRoles. Other pages fall back to dark.js.
+  Exports a custom buildHomepage. All other page renderers are explicitly
+  re-exported from cinematic.js so the theme's full scope is visible here.
 */
 
 import { esc, buildHead, buildSiteNav, buildNavLinks, buildPostMeta, SITE_URL } from '../lib/templates.js';
+export { buildPost, buildIndex, buildPage, buildPhotos, buildNotes } from './cinematic.js';
 
 function postHref(post) {
   return `/posts/${post.slug}/`;
@@ -207,8 +209,6 @@ ${buildSiteNav(menuPages, '/')}
 </body>
 </html>`;
 }
-
-export const basedOn = 'cinematic';
 
 export const imageRoles = {
   layouts: [
