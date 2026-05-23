@@ -1026,18 +1026,16 @@ body {
 /* Masonry grid */
 .media-grid {
   flex: 1;
-  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden;
   padding: 16px 20px;
-  columns: 5 160px;
-  column-gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
   align-content: start;
 }
 
 .media-item {
-  break-inside: avoid;
-  margin-bottom: 8px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   position: relative;
@@ -1045,6 +1043,7 @@ body {
   background: var(--color-cream-dark);
   border: var(--border-cream);
   display: block;
+  aspect-ratio: 1;
   transition: border-color var(--transition-fast);
 }
 .media-item:hover { border-color: var(--color-accent); }
@@ -1068,7 +1067,8 @@ body {
 
 .media-item img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
