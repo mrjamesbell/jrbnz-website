@@ -42,3 +42,10 @@ photos/.wrangler/
 old/
 .wrangler/
 cf.env
+.cftoken
+scripts/migration-map.json
+test/
+/signal_logo.png
+/signal_logo.svg
+/Screenshot*.png
+dist/
