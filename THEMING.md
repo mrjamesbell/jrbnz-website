@@ -510,6 +510,18 @@ Renders the notes stream (`/notes/`).
 
 ---
 
+### `basedOn` export (optional)
+
+Declares which theme to use as the fallback for any renderers not exported by this file. Defaults to `'dark'` if omitted.
+
+```js
+export const basedOn = 'cinematic';
+```
+
+Use this when your theme's CSS targets the HTML structure that another theme generates. For example, `brash-editorial` only exports `buildHomepage` but its CSS covers all the cinematic HTML classes (`.surface-invert`, `.cinematic-footer`, `.post-hero`, etc.), so it declares `basedOn = 'cinematic'` to ensure posts, pages, and lists use cinematic's renderers.
+
+---
+
 ### `imageRoles` export
 
 Tells Signal which layout and treatment options to show in the image editor for this theme. Fetched from `GET /api/theme/image-roles`.
