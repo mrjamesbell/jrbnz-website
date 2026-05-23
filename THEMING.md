@@ -73,46 +73,153 @@ takes precedence via cascade order.
 
 ## Adding a new theme
 
-1. **Copy an existing theme CSS** as a starting point:
+A theme is two files: a CSS file that tokens and layouts your design, and a JS renderer that generates the HTML. The HTML class names are yours to define — you are not required to reuse class names from any existing theme. The only constraints are the [shared class contract](#shared-class-contract) below.
+
+1. **Create a CSS file** at `site/styles/themes/mytheme.css`. Start from scratch or use `base.css` as a minimal scaffold. Scope every rule to `[data-theme="mytheme"]`.
+
+   At minimum, set all semantic tokens:
+   ```css
+   [data-theme="mytheme"] {
+     --color-bg: …;
+     --color-surface: …;
+     --color-text: …;
+     --color-text-muted: …;
+     --color-text-subtle: …;
+     --color-border: …;
+     --color-border-strong: …;
+     --color-accent: …;
+     --color-accent-muted: …;
+     --color-accent-fg: …;
+     --font-body: …;
+     --font-display: …;
+     --font-mono: …;
+     --gutter: …;
+     --col-read: …;
+     --nav-h: …;
+   }
    ```
-   cp site/styles/themes/cinematic.css site/styles/themes/mytheme.css
+
+   Then add a `.surface-invert` block if your design has sections that flip the palette:
+   ```css
+   [data-theme="mytheme"] .surface-invert {
+     --color-bg: …;     /* inverted values */
+     --color-text: …;
+     background: var(--color-bg);
+     color: var(--color-text);
+   }
    ```
 
-2. **Rename the selectors** — replace `[data-theme="cinematic"]` with
-   `[data-theme="mytheme"]` throughout the file.
+   Then add whatever layout CSS your HTML requires — using your own class names.
 
-3. **Update the token values** to match your design.
+2. **Create a renderer file** at `functions/themes/mytheme.js`. Export any of `buildPost`, `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`. Any not exported fall back to `base.js` — which renders unstyled Arial 14px, making missing pages immediately obvious.
 
-4. **Add a `.surface-invert` block** if your theme uses inverted surface
-   sections. Set the tokens to whatever the inverted palette should be.
+   Your renderer writes the HTML. **Use whatever class names suit your design.** You do not need to reuse cinematic's class names. The only classes the system requires are listed in [Shared class contract](#shared-class-contract) below.
 
-5. **Add theme-specific layout styles** for any HTML structure your renderer
-   introduces (e.g. nav positioning, hero grid, homepage cards).
-
-6. **Create a renderer file** at `functions/themes/mytheme.js` if the page
-   HTML structure differs from the dark theme. Export any of `buildPost`,
-   `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`.
-   The dispatcher falls back to `base.js` for any renderer not exported by
-   your file — which renders unstyled Arial 14px, making it immediately obvious
-   that something is missing. If you want to inherit another theme's renderer,
-   re-export it explicitly — that way the theme file is the complete truth about
-   what it does:
    ```js
-   export { buildPost, buildIndex, buildPage, buildPhotos, buildNotes } from './cinematic.js';
-   export function buildHomepage(data) { … }  // custom
+   import { esc, buildHead, buildSiteNav, buildPostMeta, SITE_URL } from '../lib/templates.js';
+
+   export function buildPost(data) {
+     const { title, theme, accent, snippetCss, extraHead, menuPages, contentHtml } = data;
+     return `${buildHead({ title, theme, accent, snippetCss, extraHead })}
+       ${buildSiteNav(menuPages, '/posts/')}
+       <main class="my-article-shell">
+         <h1 class="my-title">${esc(title)}</h1>
+         <div class="my-body post-content e-content">${contentHtml}</div>
+       </main>
+     </body></html>`;
+   }
+   // export other builders …
    ```
+
+   If you want to borrow one page type from an existing theme rather than write it yourself, re-export it explicitly:
+   ```js
+   export { buildPhotos } from './cinematic.js';
+   ```
+
    See [Renderer JS reference](#renderer-js-reference) for full function signatures and data models.
 
-7. **Register the theme** — two lines in `functions/api/[[path]].js`:
+3. **Register the theme** — two lines in `functions/api/[[path]].js`:
    ```js
    import * as myTheme from '../themes/mytheme.js';           // at the top with other imports
-   const THEMES = { dark: darkTheme, cinematic: cinematicTheme, mytheme: myTheme };  // add entry
+   const THEMES = { …, mytheme: myTheme };                    // add entry
    ```
 
-8. **Activate in Signal** — go to **Settings → Appearance → Theme**, select the new theme, click Save.
+4. **Activate in Signal** — go to **Settings → Appearance → Theme**, select the new theme, click Save.
    Then **Rebuild site** and **Deploy** to apply it to the live site.
 
 That's it. No other files need to change.
+
+---
+
+## Shared class contract
+
+These class names are required by the system — blog.js tag filtering, Signal's image editor, and the template helpers produce or depend on them. Your CSS must style them; your renderer must not rename them.
+
+### From `buildSiteNav()` — always produced by the template helper
+
+```html
+<nav class="site-nav">
+  <a href="/" class="nav-logo">JRBNZ</a>
+  <ul class="nav-links">
+    <li><a href="/posts/" class="active">Essays</a></li>
+  </ul>
+</nav>
+```
+
+Style `site-nav`, `nav-logo`, `nav-links`, and `nav-links a.active` in your theme CSS.
+
+### From the markdown renderer — inside `.post-content`
+
+These elements appear inside the rendered article body. Your theme controls how they look via `.post-content` descendant selectors, but you cannot change the element structure.
+
+```html
+<div class="post-content e-content">
+  <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <blockquote>, <code>, <pre>
+  <div class="pull-quote"><blockquote>…</blockquote></div>
+  <div class="quote-interlude"><blockquote>…</blockquote></div>
+  <div class="snippet">…</div>
+</div>
+```
+
+### From Signal's image editor — figure layout and treatment
+
+Signal writes these class names into the markdown. Your CSS must define them.
+
+```html
+<!-- Layout (one of): -->
+<figure class="img-wide …">   <!-- breaks slightly outside reading column -->
+<figure class="img-break …">  <!-- full-width -->
+<figure class="img-small …">  <!-- within reading column -->
+<div class="img-pair">        <!-- wraps two figures side by side -->
+
+<!-- Treatment (one of, on same figure): -->
+… photo-muted">
+… photo-mono">
+… photo-colour">
+… photo-soft">
+```
+
+### From `blog.js` — tag filtering on the essays index
+
+The client-side tag filter script expects these IDs and classes to exist on the essays index page. If your `buildIndex` renderer doesn't produce them, tag filtering silently does nothing.
+
+```html
+<div class="tag-filter-bar" id="tag-filter-bar" hidden>
+  Essays tagged <strong id="tag-filter-label"></strong>
+  <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
+</div>
+<div class="tags-section">
+  <a href="/posts/?tag=theatre" class="tag-chip">#theatre</a>
+</div>
+<!-- Each essay card must carry data-tags: -->
+<a class="post-list-item" data-tags="theatre,writing" href="…">…</a>
+```
+
+### Microformats2 — search/reader compatibility
+
+Wrap each post page in `<article class="h-entry">` and the homepage in `<main class="h-card">`. Mark the post title with `p-name` and body with `e-content`. These do not need CSS — they are semantic hooks for feed readers and search.
+
+---
 
 ---
 
@@ -587,7 +694,9 @@ export const imageRoles = {
 
 ## HTML structure and class reference
 
-This section documents every class the **cinematic** theme CSS targets, organised by page. The HTML is generated by `functions/themes/cinematic.js` (falling back to `base.js` for pages it doesn't override). A designer writing a new theme should use this as a reference for what HTML structure to expect — or to produce from their own renderer.
+This section documents the HTML the **cinematic** theme produces, for reference. It is **not a contract** — a new theme's renderer can produce completely different HTML with its own class names. The only required classes are in [Shared class contract](#shared-class-contract) above.
+
+Use this section to understand how cinematic is built, or as inspiration for your own structure. If you re-export a cinematic renderer (e.g. `export { buildPost } from './cinematic.js'`) you will need to style its class names.
 
 All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all selectors with `[data-theme="<name>"]` to avoid leaking into Signal or other themes.
 
