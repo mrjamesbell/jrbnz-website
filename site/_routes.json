@@ -1,5 +1,15 @@
 {
   "version": 1,
-  "include": ["/api/*", "/img/*", "/media/*", "/signal/*"],
-  "exclude": []
+  "include": ["/*"],
+  "exclude": [
+    "/styles/*",
+    "/signal/*",
+    "/james-bell1.jpg",
+    "/james-bell2.jpg",
+    "/*.woff",
+    "/*.woff2",
+    "/*.ttf",
+    "/*.txt",
+    "/*.map"
+  ]
 }
