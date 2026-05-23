@@ -10,7 +10,9 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: none;
 }
+*::-webkit-scrollbar { display: none; }
 
 html, body {
   height: 100%;
@@ -1024,15 +1026,14 @@ body {
 /* Masonry grid */
 .media-grid {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 16px 20px;
   columns: 5 160px;
   column-gap: 8px;
   align-content: start;
 }
-.media-grid::-webkit-scrollbar { width: 6px; }
-.media-grid::-webkit-scrollbar-track { background: transparent; }
-.media-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
 .media-item {
   break-inside: avoid;
