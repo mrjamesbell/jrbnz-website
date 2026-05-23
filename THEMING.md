@@ -306,19 +306,33 @@ export const imageRoles = {
 ## File map
 
 ```
-styles/
-  main.css              Token names + dark defaults, reset, base typography
-  blog.css              Shared components — token references only, no raw values
-  themes/
-    dark.css            Dark theme token values + dark layout styles
-    cinematic.css       Cinematic theme token values + cinematic layout styles
+site/
+  styles/
+    main.css            Token names + dark defaults, reset, base typography
+    blog.css            Shared components — token references only, no raw values
+    themes/
+      dark.css          Dark theme token values + dark layout styles
+      cinematic.css     Cinematic theme token values + cinematic layout styles
+  scripts/
+    blog.js             Client-side tag filtering (essays page)
 
 functions/
   lib/
     templates.js        Shared HTML partials (buildHead, buildSiteNav, buildFooter, …)
+    snippets.js         Snippet CSS builder — uses CSS vars, not raw colour values
   themes/
     dark.js             Dark page renderers (buildPost, buildIndex, buildPage, …)
     cinematic.js        Cinematic page renderers (only what structurally differs)
   api/
     [[path]].js         SITE_THEME constant, prepPostData(), theme dispatch
 ```
+
+---
+
+## Static build notes
+
+HTML is pre-rendered to R2 at publish time and exported to `dist/` at deploy time (see `scripts/build.mjs`). Theme changes require a full **Rebuild site** in Signal to re-render all posts and pages with the updated templates, then a **Deploy** to push the new HTML to CDN.
+
+CSS and JS changes in `site/` are picked up automatically on the next deploy — no Rebuild needed since they are copied directly from `site/` to `dist/`.
+
+Snippets CSS (`functions/lib/snippets.js`) uses only CSS custom properties — the same vars defined in the theme token system. Raw colour values must not appear in snippets.
