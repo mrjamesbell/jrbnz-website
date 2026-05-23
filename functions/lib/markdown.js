@@ -147,9 +147,12 @@ export function mdToHtml(md) {
     const hm = line.match(/^(#{1,4})\s+(.*)/);
     if (hm) { out.push(`<h${hm[1].length}>${mdInline(hm[2])}</h${hm[1].length}>`); i++; continue; }
 
-    if (line.startsWith('> ')) {
+    if (line.startsWith('>')) {
       const quoteLines = [];
-      while (i < lines.length && lines[i].startsWith('> ')) { quoteLines.push(lines[i].slice(2)); i++; }
+      while (i < lines.length && lines[i].startsWith('>')) {
+        quoteLines.push(lines[i].startsWith('> ') ? lines[i].slice(2) : lines[i].slice(1));
+        i++;
+      }
       out.push(`<blockquote><p>${quoteLines.map(mdInline).join(' ')}</p></blockquote>`);
       continue;
     }
