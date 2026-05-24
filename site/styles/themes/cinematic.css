@@ -866,6 +866,7 @@
 }
 
 [data-theme="cinematic"] .footer-nav a {
+    font-family: var(--font-mono);
     color: var(--color-text-muted);
     border-bottom: none;
     transition: color 0.15s;
@@ -913,6 +914,7 @@
     font-size: 13px;
     color: var(--color-border-strong);
     text-decoration: none;
+    border-bottom: none;
     transition: color 0.15s;
     line-height: 1;
 }
@@ -1185,6 +1187,7 @@
     padding: 30px 0;
     color: var(--color-text);
     text-decoration: none;
+    border-bottom: none;
     transition: color 0.15s;
 }
 

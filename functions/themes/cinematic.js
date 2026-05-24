@@ -486,7 +486,7 @@ export function buildNotes(data) {
     return `
 <article class="note-entry">
   <div class="note-meta">
-    <a class="note-permalink" href="/posts/${esc(note.slug)}/" title="Permalink">#</a>
+    <a class="note-permalink" href="/posts/${esc(note.slug)}/" title="Permalink">note</a>
     <time class="note-date">${esc(_fmtDate(note.date))}</time>
     ${tagHtml}
   </div>
