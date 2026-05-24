@@ -8,12 +8,13 @@ import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
 import * as brashEditorialTheme from '../themes/brash-editorial.js';
 import * as manifestoTheme from '../themes/manifesto.js';
+import * as lightroomTheme from '../themes/lightroom.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme, manifesto: manifestoTheme };
+const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme, manifesto: manifestoTheme, lightroom: lightroomTheme };
 
 function themeRenderer(name) {
   if (!THEMES[name]) throw new Error(`Unknown theme: "${name}"`);

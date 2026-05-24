@@ -1,0 +1,888 @@
+/* ==========================================================================
+   Lightroom theme — clean, typographic, cream + black
+   All selectors scoped to [data-theme="lightroom"]
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. Semantic tokens
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] {
+  --color-bg:           #F0EBE0;
+  --color-surface:      #E8E2D6;
+  --color-text:         #111111;
+  --color-text-muted:   #111111;   /* no muted — use size for hierarchy */
+  --color-text-subtle:  #111111;
+  --color-border:       #dddddd;
+  --color-border-strong:#111111;
+  --color-accent:       #111111;
+  --color-accent-muted: rgba(17,17,17,0.08);
+  --color-accent-fg:    #F0EBE0;
+
+  --font-body:    'Barlow', sans-serif;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-mono:    'Barlow Condensed', sans-serif;
+
+  --gutter:    48px;
+  --col-read:  780px;
+  --nav-h:     56px;
+}
+
+/* surface-invert: used for quote-interlude dark bands */
+[data-theme="lightroom"] .surface-invert {
+  --color-bg:   #111111;
+  --color-text: #F0EBE0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* --------------------------------------------------------------------------
+   2. Base resets for this theme
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Kill the global border-bottom on anchors for nav/ui elements */
+[data-theme="lightroom"] .lr-nav a,
+[data-theme="lightroom"] .lr-nav-logo,
+[data-theme="lightroom"] .lr-footer a,
+[data-theme="lightroom"] .lr-footer-logo,
+[data-theme="lightroom"] .lr-box-nav a,
+[data-theme="lightroom"] .lr-tag-chip,
+[data-theme="lightroom"] .lr-post-item,
+[data-theme="lightroom"] .lr-note-tag {
+  border-bottom: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. Shared nav — produced by buildSiteNav()
+   The system always outputs .site-nav / .nav-logo / .nav-links
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 20px var(--gutter);
+  border-bottom: 1px solid var(--color-border-strong);
+  height: var(--nav-h);
+  box-sizing: border-box;
+}
+
+[data-theme="lightroom"] .nav-logo {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  border-bottom: none;
+  text-decoration: none;
+}
+
+[data-theme="lightroom"] .nav-links {
+  list-style: none;
+  display: flex;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+}
+
+[data-theme="lightroom"] .nav-links a {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: none;
+}
+
+[data-theme="lightroom"] .nav-links a.active {
+  border-bottom: 1.5px solid var(--color-text);
+  padding-bottom: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Homepage
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .lr-home {
+  background: var(--color-bg);
+}
+
+/* centred logo on homepage (overrides site-nav layout) */
+[data-theme="lightroom"] .lr-home-logo {
+  text-align: center;
+  padding: 32px var(--gutter);
+}
+
+[data-theme="lightroom"] .lr-home-logo a {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: none;
+}
+
+/* featured essay block */
+[data-theme="lightroom"] .lr-home-essay {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 32px var(--gutter) 56px;
+  text-align: center;
+}
+
+[data-theme="lightroom"] .lr-home-kicker {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 20px;
+}
+
+[data-theme="lightroom"] .lr-home-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 68px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 28px;
+  text-decoration: none;
+  display: block;
+  border-bottom: none;
+}
+
+[data-theme="lightroom"] .lr-home-rule {
+  width: 32px;
+  height: 2px;
+  background: var(--color-text);
+  margin: 0 auto 28px;
+}
+
+[data-theme="lightroom"] .lr-home-excerpt {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.85;
+  color: var(--color-text);
+  margin-bottom: 36px;
+}
+
+[data-theme="lightroom"] .lr-home-cta {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  border-bottom: 2px solid var(--color-text);
+  padding-bottom: 2px;
+  text-decoration: none;
+}
+
+/* full bleed image */
+[data-theme="lightroom"] .lr-home-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  display: block;
+}
+
+[data-theme="lightroom"] .lr-home-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-bottom: none;
+}
+
+/* three nav boxes */
+[data-theme="lightroom"] .lr-box-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  border-top: 1px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .lr-box-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  text-decoration: none;
+  border-bottom: none;
+  border-right: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.15s ease;
+}
+
+[data-theme="lightroom"] .lr-box-nav-item:last-child {
+  border-right: none;
+}
+
+[data-theme="lightroom"] .lr-box-nav-item:hover {
+  background: var(--color-accent-muted);
+}
+
+/* --------------------------------------------------------------------------
+   5. Footer
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .lr-footer {
+  border-top: 1px solid var(--color-border-strong);
+  padding: 20px var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  background: var(--color-bg);
+}
+
+[data-theme="lightroom"] .lr-footer-copy {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--color-text);
+}
+
+[data-theme="lightroom"] .lr-footer-nav {
+  display: flex;
+  gap: 24px;
+}
+
+[data-theme="lightroom"] .lr-footer-nav a {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: none;
+}
+
+[data-theme="lightroom"] .lr-footer-nav a.active {
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-text);
+  padding-bottom: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Post page
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .lr-post {
+  background: var(--color-bg);
+}
+
+/* post nav: logo left, back link right */
+[data-theme="lightroom"] .lr-post-nav {
+  padding: 20px var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .lr-post-nav-logo {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: none;
+}
+
+[data-theme="lightroom"] .lr-post-nav-back {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-text);
+  padding-bottom: 1px;
+}
+
+/* post header */
+[data-theme="lightroom"] .lr-post-header {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 56px var(--gutter) 48px;
+}
+
+[data-theme="lightroom"] .lr-post-kicker {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+[data-theme="lightroom"] .lr-post-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 28px;
+}
+
+[data-theme="lightroom"] .lr-post-deck {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.75;
+  color: var(--color-text);
+  max-width: 580px;
+}
+
+/* post body */
+[data-theme="lightroom"] .lr-post-body {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 48px var(--gutter) 56px;
+}
+
+[data-theme="lightroom"] .post-content p {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--color-text);
+  margin-bottom: 24px;
+}
+
+[data-theme="lightroom"] .post-content h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 48px 0 20px;
+}
+
+[data-theme="lightroom"] .post-content h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 36px 0 16px;
+}
+
+[data-theme="lightroom"] .post-content a {
+  color: var(--color-text);
+  border-bottom: 1.5px solid var(--color-text);
+}
+
+[data-theme="lightroom"] .post-content ul,
+[data-theme="lightroom"] .post-content ol {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--color-text);
+  padding-left: 24px;
+  margin-bottom: 24px;
+}
+
+[data-theme="lightroom"] .post-content blockquote {
+  border-left: 3px solid var(--color-text);
+  padding-left: 24px;
+  margin: 32px 0;
+  font-style: italic;
+  font-weight: 300;
+}
+
+[data-theme="lightroom"] .post-content blockquote p {
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+/* pull-quote */
+[data-theme="lightroom"] .post-content .pull-quote {
+  margin: 40px -24px;
+  padding: 32px 24px;
+  border-top: 2px solid var(--color-border-strong);
+  border-bottom: 2px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .post-content .pull-quote blockquote {
+  border-left: none;
+  padding-left: 0;
+  margin: 0;
+  font-style: normal;
+}
+
+[data-theme="lightroom"] .post-content .pull-quote blockquote p {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 38px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+/* quote-interlude — full dark band */
+[data-theme="lightroom"] .post-content .quote-interlude {
+  margin: 40px calc(-1 * var(--gutter));
+  background: var(--color-text);
+  padding: 56px var(--gutter);
+}
+
+[data-theme="lightroom"] .post-content .quote-interlude blockquote {
+  border-left: none;
+  padding-left: 0;
+  margin: 0;
+  font-style: normal;
+}
+
+[data-theme="lightroom"] .post-content .quote-interlude blockquote p {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--color-bg);
+  text-align: center;
+  margin: 0;
+}
+
+/* code */
+[data-theme="lightroom"] .post-content code {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 14px;
+  background: var(--color-surface);
+  padding: 2px 6px;
+}
+
+[data-theme="lightroom"] .post-content pre {
+  background: var(--color-surface);
+  padding: 20px 24px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+[data-theme="lightroom"] .post-content pre code {
+  background: none;
+  padding: 0;
+}
+
+/* snippet blocks */
+[data-theme="lightroom"] .post-content .snippet {
+  border: 1.5px solid var(--color-border-strong);
+  padding: 24px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* post ending */
+[data-theme="lightroom"] .lr-post-ending {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .lr-post-ending-meta {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+[data-theme="lightroom"] .lr-post-ending-back {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-text);
+  padding-bottom: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   7. Image layout classes
+   -------------------------------------------------------------------------- */
+
+/* img-break: full viewport width */
+[data-theme="lightroom"] .post-content .img-break,
+[data-theme="lightroom"] .lr-post-hero {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-bottom: 4px;
+}
+
+[data-theme="lightroom"] .post-content .img-break img,
+[data-theme="lightroom"] .lr-post-hero img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  display: block;
+  border-bottom: none;
+}
+
+/* img-wide: slightly outside reading column */
+[data-theme="lightroom"] .post-content .img-wide {
+  margin-left: calc(-1 * var(--gutter));
+  margin-right: calc(-1 * var(--gutter));
+  margin-bottom: 4px;
+}
+
+[data-theme="lightroom"] .post-content .img-wide img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  border-bottom: none;
+}
+
+/* img-small: within column */
+[data-theme="lightroom"] .post-content .img-small {
+  margin-bottom: 4px;
+}
+
+[data-theme="lightroom"] .post-content .img-small img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+  border-bottom: none;
+}
+
+/* img-pair: two side by side */
+[data-theme="lightroom"] .post-content .img-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+[data-theme="lightroom"] .post-content .img-pair img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  border-bottom: none;
+}
+
+/* figcaption shared */
+[data-theme="lightroom"] .post-content figcaption {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-text);
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+/* photo treatments */
+[data-theme="lightroom"] .photo-muted img {
+  filter: saturate(0.55) brightness(0.92) contrast(0.97);
+}
+[data-theme="lightroom"] .photo-mono img {
+  filter: grayscale(100%) brightness(0.88) contrast(1.05);
+}
+[data-theme="lightroom"] .photo-colour img {
+  filter: brightness(0.96);
+}
+[data-theme="lightroom"] .photo-soft img {
+  filter: saturate(0.75) brightness(1.02) contrast(0.88);
+}
+
+/* --------------------------------------------------------------------------
+   8. Essays index
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .lr-index {
+  background: var(--color-bg);
+}
+
+[data-theme="lightroom"] .lr-index-header {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 48px var(--gutter) 0;
+}
+
+[data-theme="lightroom"] .lr-index-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 32px;
+}
+
+/* tag chips */
+[data-theme="lightroom"] .tags-section {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+[data-theme="lightroom"] .tag-chip {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--color-border-strong);
+  padding: 4px 12px;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--color-border-strong);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+[data-theme="lightroom"] .tag-chip:hover {
+  background: var(--color-accent-muted);
+}
+
+/* tag filter bar */
+[data-theme="lightroom"] .tag-filter-bar {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+[data-theme="lightroom"] .tag-filter-clear {
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-text);
+  padding-bottom: 1px;
+  text-decoration: none;
+}
+
+/* post list */
+[data-theme="lightroom"] .lr-post-list {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 56px;
+}
+
+[data-theme="lightroom"] .post-list-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 60px;
+  gap: 24px;
+  align-items: baseline;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: var(--color-text);
+  border-top: none;
+}
+
+[data-theme="lightroom"] .post-list-item:first-child {
+  border-top: 1px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .post-list-item:last-child {
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .lr-post-item-date {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+[data-theme="lightroom"] .lr-post-item-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  line-height: 1.0;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+[data-theme="lightroom"] .lr-post-item-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+[data-theme="lightroom"] .lr-post-item-read {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   9. Notes page
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .lr-notes {
+  background: var(--color-bg);
+}
+
+[data-theme="lightroom"] .lr-notes-body {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 48px var(--gutter) 56px;
+}
+
+[data-theme="lightroom"] .lr-notes-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 48px;
+}
+
+[data-theme="lightroom"] .lr-note {
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+[data-theme="lightroom"] .lr-note:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+[data-theme="lightroom"] .lr-note-meta {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+[data-theme="lightroom"] .lr-note-body p {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+[data-theme="lightroom"] .lr-note-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   10. CMS page (About, Now, Theatre, etc.)
+   -------------------------------------------------------------------------- */
+
+[data-theme="lightroom"] .lr-page {
+  background: var(--color-bg);
+}
+
+[data-theme="lightroom"] .lr-page-body {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 48px var(--gutter) 64px;
+}
+
+[data-theme="lightroom"] .lr-page-title {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: 40px;
+}
+
+[data-theme="lightroom"] .page-content p {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--color-text);
+  margin-bottom: 20px;
+}
+
+[data-theme="lightroom"] .page-content h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 40px 0 16px;
+}
+
+[data-theme="lightroom"] .page-content a {
+  color: var(--color-text);
+  border-bottom: 1.5px solid var(--color-text);
+}
+
+[data-theme="lightroom"] .page-content .snippet {
+  border: 1.5px solid var(--color-border-strong);
+  padding: 24px;
+  margin: 32px 0;
+  font-size: 14px;
+  line-height: 1.75;
+}
