@@ -223,6 +223,93 @@ Wrap each post page in `<article class="h-entry">` and the homepage in `<main cl
 
 ---
 
+## Writing reliable theme CSS
+
+These are the rules that matter most for avoiding subtle bugs when building a new theme. Each one comes from a real regression.
+
+### 1. Understand the CSS load order
+
+```
+main.css          ← :root base tokens, reset, global a/body/h1 rules
+blog.css          ← shared component styles (post list, footer, nav, etc.)
+themes/<name>.css ← your theme (loaded last)
+<style> block     ← runtime accent override (injected inline by Worker)
+```
+
+Your theme CSS loads after `blog.css`, which helps. But **specificity still beats source order**. A bare `.footer-nav a` rule in `blog.css` (specificity 0,1,1) will win over an inherited value from `[data-theme="x"] .footer-nav` (specificity 0,2,0) because inheritance always loses to a directly-set property. See rule 2.
+
+### 2. Always set properties directly on `a` elements — never rely on inheritance from a container
+
+`blog.css` explicitly sets `font-family`, `font-size`, `letter-spacing`, and `color` on many anchor selectors (`.footer-nav a`, `.post-list-item a`, etc.). Even if you set the right `font-family` on a container with higher specificity, the direct `a` rule in `blog.css` beats it for the anchor element itself.
+
+**Rule:** if you want a different value on an `<a>` inside a shared class, you must set it directly on the `a`:
+
+```css
+/* ✗ Wrong — sets font on container; blog.css's .footer-nav a wins on the anchor */
+[data-theme="x"] .footer-nav {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ✓ Correct — targets the anchor directly, beats blog.css */
+[data-theme="x"] .footer-nav a {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+```
+
+When reusing a class name from blog.css, look it up and explicitly override **every property** that file sets on the element.
+
+### 3. Every `<a>` gets a visible border-bottom by default
+
+`main.css` applies `a { border-bottom: 1.6px solid var(--color-text) }` globally. Every link in your theme that should not have an underline needs `border-bottom: none` stated explicitly in your theme CSS:
+
+```css
+[data-theme="x"] .nav-logo,
+[data-theme="x"] .nav-links a,
+[data-theme="x"] .footer-nav a,
+[data-theme="x"] .my-card-link {
+  border-bottom: none;
+}
+```
+
+Forgetting this is the most common source of unexpected underlines appearing on link-styled elements.
+
+### 4. `:root` defaults are base theme values, not dark values
+
+If a token is not overridden by your theme, it resolves to the `:root` default — which is the base theme: white background, black text, Arial. A missing token will make a component look obviously wrong (white on white, or black Helvetica in the middle of a serif page) rather than accidentally inheriting the dark theme. This is intentional and helpful — gaps are visible.
+
+### 5. Scope every selector — no naked rules
+
+Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked rules (without the scope) will leak into Signal admin and every other theme. There are no exceptions.
+
+```css
+/* ✗ Leaks everywhere */
+.article-col { max-width: 680px; }
+
+/* ✓ Scoped to your theme only */
+[data-theme="x"] .article-col { max-width: 680px; }
+```
+
+### 6. Check blog.css before reusing a class name
+
+Before using a class name in your renderer HTML, `grep blog.css` for it. If it appears there, read what properties it sets. You will need to explicitly override all of them in `[data-theme="x"] .classname` and `[data-theme="x"] .classname a`. Shared class names that are most likely to clash:
+
+| Class | Properties set in blog.css |
+|---|---|
+| `.footer-nav a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` |
+| `.footer-logo` | `font-family`, `font-size`, `color`, `border-bottom` |
+| `.post-list-item a` | `font-size`, `color`, `border-bottom` |
+| `.post-content a` | `color`, `border-bottom-color` |
+| `.tag-chip` | `font-family`, `font-size`, `color`, `border` |
+| `.site-nav .nav-links a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` |
+
+If in doubt, use a unique class name for your theme instead.
+
+---
+
 ## Type system (cinematic theme)
 
 The cinematic theme uses three typefaces. Each is fixed — they cannot be changed in post content, only in the theme CSS.
@@ -910,7 +997,7 @@ Notes use a compact dark header instead of a full hero.
   <section class="notes-stream">
     <article class="note-entry">
       <div class="note-meta">
-        <a class="note-permalink" href="/posts/slug/" title="Permalink">#</a>
+        <a class="note-permalink" href="/posts/slug/" title="Permalink">note</a>
         <time class="note-date">January 1, 2025</time>
         <span class="note-tag">theatre</span>            <!-- one per non-note tag -->
       </div>
