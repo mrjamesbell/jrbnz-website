@@ -1135,7 +1135,7 @@
 .settings-action-desc { font-size: 12px; font-family: var(--font-sans); color: var(--color-cream-text-muted); }
 
 .deploy-progress {
-  display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
+  display: flex; flex-wrap: wrap; gap: 3px; align-items: center; justify-content: flex-end;
   flex: 1; padding: 0 16px;
 }
 .deploy-progress[hidden] { display: none; }
