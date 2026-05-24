@@ -63,8 +63,8 @@ function _buildCardBlocks() {
 
 async function _load() {
   const [postsRes, cfgRes] = await Promise.all([
-    fetch('/api/posts').catch(() => null),
-    fetch('/api/homepage-config').catch(() => null),
+    fetch('/api/posts').catch(e => { console.error('Failed to load posts:', e); return null; }),
+    fetch('/api/homepage-config').catch(e => { console.error('Failed to load homepage config:', e); return null; }),
   ]);
 
   if (postsRes?.ok) {

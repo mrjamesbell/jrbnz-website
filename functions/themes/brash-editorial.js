@@ -198,9 +198,9 @@ ${buildSiteNav(menuPages, '/')}
     </div>
   </section>
 </main>
-<footer class="cinematic-footer">
-  <p class="cinematic-footer-quote">Personal essays, observations and memories from a perpetually curious mind.</p>
-  <nav class="cinematic-footer-nav">
+<footer class="site-footer">
+  <p class="footer-tagline">Personal essays, observations and memories from a perpetually curious mind.</p>
+  <nav class="footer-nav">
     <a href="/posts/">Essays</a>
     <a href="/notes/">Notes</a>
     <a href="/feed.xml">RSS</a>

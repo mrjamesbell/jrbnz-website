@@ -221,12 +221,16 @@ async function _submitUpload() {
     if (result) {
       if (altVal || captionVal) {
         try {
-          await fetch(`/api/media/${encodeURIComponent(result.key || result.id)}`, {
+          const metaRes = await fetch(`/api/media/${encodeURIComponent(result.key || result.id)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ alt: altVal, caption: captionVal }),
           });
-        } catch {}
+          if (!metaRes.ok) throw new Error(`${metaRes.status}`);
+        } catch (e) {
+          console.error('Failed to save media metadata:', e);
+          showToast('Metadata save failed — ' + e.message, 'error');
+        }
       }
 
       _uploadedResult = result;
@@ -288,14 +292,16 @@ async function _openEditScreen(key, thumbUrl = '') {
   let meta = { displayName: '', alt: '', caption: '', focalX: 0.5, focalY: 0.5, urls: {}, size: 0, uploadedAt: null };
   try {
     const res = await fetch(`/api/media/${encodeURIComponent(key)}`);
-    if (res.ok) {
-      const data = await res.json();
-      meta = { ...meta, ...data };
-      if (previewImg) {
-        previewImg.src = data.urls?.hero || data.publicUrl || data.url || thumbUrl;
-      }
+    if (!res.ok) throw new Error(`${res.status}`);
+    const data = await res.json();
+    meta = { ...meta, ...data };
+    if (previewImg) {
+      previewImg.src = data.urls?.hero || data.publicUrl || data.url || thumbUrl;
     }
-  } catch {}
+  } catch (e) {
+    console.error('Failed to load media metadata:', e);
+    showToast('Failed to load media details — ' + e.message, 'error');
+  }
 
   const nameInput = document.getElementById('media-edit-name');
   const altInput = document.getElementById('media-edit-alt');

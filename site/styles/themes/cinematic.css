@@ -180,7 +180,7 @@
 
 /* Drop cap on first paragraph */
 [data-theme="cinematic"] .article-open .post-content > p:first-of-type::first-letter,
-[data-theme="cinematic"] .ci-page-content .post-content > p:first-of-type::first-letter {
+[data-theme="cinematic"] .page-body .post-content > p:first-of-type::first-letter {
     float: left;
     font-size: 4.8em;
     line-height: 0.78;
@@ -474,12 +474,12 @@
 }
 
 /* ── CMS page masthead ────────────────────────────────────────────────────── */
-[data-theme="cinematic"] .ci-page-masthead {
+[data-theme="cinematic"] .page-masthead {
     padding: calc(var(--nav-h) + 64px) clamp(32px, 8vw, 120px) 56px;
     background: var(--color-bg);
 }
 
-[data-theme="cinematic"] .ci-page-title {
+[data-theme="cinematic"] .page-title {
     font-family: var(--font-display);
     font-size: clamp(40px, 6vw, 80px);
     line-height: 0.92;
@@ -489,20 +489,20 @@
 }
 
 /* Page content — wider than article reading column */
-[data-theme="cinematic"] .ci-page-content {
+[data-theme="cinematic"] .page-body {
     max-width: 960px;
     margin: 0 auto;
     padding: 48px clamp(24px, 5vw, 48px) 80px;
 }
 
-[data-theme="cinematic"] .ci-page-content .page-content {
+[data-theme="cinematic"] .page-body .page-content {
     max-width: none;
     margin: 0;
     padding: 0;
 }
 
 /* Photos page */
-[data-theme="cinematic"] .ci-photos-content {
+[data-theme="cinematic"] .photos-content {
     padding: 40px clamp(24px, 5vw, 60px) 80px;
     background: var(--color-bg);
     color: var(--color-text);
@@ -665,7 +665,7 @@
 }
 
 /* ── Post index — featured essay ─────────────────────────────────────────── */
-[data-theme="cinematic"] .ci-featured {
+[data-theme="cinematic"] .featured-hero {
     min-height: 72vh;
     margin-top: var(--nav-h);
     position: relative;
@@ -675,7 +675,7 @@
     background: var(--color-surface);
 }
 
-[data-theme="cinematic"] .ci-featured::after {
+[data-theme="cinematic"] .featured-hero::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -683,7 +683,7 @@
     z-index: 1;
 }
 
-[data-theme="cinematic"] .ci-featured-img {
+[data-theme="cinematic"] .featured-hero-img {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -692,16 +692,16 @@
     filter: var(--image-filter-hero);
 }
 
-[data-theme="cinematic"] .ci-featured-overlay {
+[data-theme="cinematic"] .featured-hero-overlay {
     position: relative;
     z-index: 2;
     padding: clamp(36px, 6vw, 80px) clamp(28px, 5vw, 72px);
     width: 100%;
 }
 
-[data-theme="cinematic"] .ci-featured-inner { max-width: 800px; }
+[data-theme="cinematic"] .featured-hero-inner { max-width: 800px; }
 
-[data-theme="cinematic"] .ci-featured-title {
+[data-theme="cinematic"] .featured-hero-title {
     font-family: var(--font-display);
     font-size: clamp(32px, 5.5vw, 80px);
     line-height: 0.93;
@@ -711,15 +711,15 @@
     margin: 16px 0 20px;
 }
 
-[data-theme="cinematic"] .ci-featured-title a {
+[data-theme="cinematic"] .featured-hero-title a {
     color: inherit;
     border-bottom: none;
     transition: color 0.15s;
 }
 
-[data-theme="cinematic"] .ci-featured-title a:hover { color: var(--color-accent); border-bottom: none; }
+[data-theme="cinematic"] .featured-hero-title a:hover { color: var(--color-accent); border-bottom: none; }
 
-[data-theme="cinematic"] .ci-featured-excerpt {
+[data-theme="cinematic"] .featured-hero-excerpt {
     font-family: var(--font-body);
     font-size: clamp(15px, 1.5vw, 19px);
     line-height: 1.6;
@@ -728,7 +728,7 @@
     margin-bottom: 24px;
 }
 
-[data-theme="cinematic"] .ci-read-link {
+[data-theme="cinematic"] .read-link {
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.2em;
@@ -738,10 +738,10 @@
     transition: opacity 0.15s;
 }
 
-[data-theme="cinematic"] .ci-read-link:hover { opacity: 0.72; border-bottom: none; }
+[data-theme="cinematic"] .read-link:hover { opacity: 0.72; border-bottom: none; }
 
 /* All essays grid (below featured) */
-[data-theme="cinematic"] .ci-index-all {
+[data-theme="cinematic"] .index-all {
     padding-top: 56px;
 }
 
@@ -760,7 +760,7 @@
 }
 
 /* Tag filter section */
-[data-theme="cinematic"] .ci-tags {
+[data-theme="cinematic"] .index-tags {
     padding: 32px clamp(28px, 4vw, 56px) 48px;
     background: var(--color-bg);
 }
@@ -835,7 +835,7 @@
 }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
-[data-theme="cinematic"] .cinematic-footer {
+[data-theme="cinematic"] .site-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 48px;
@@ -844,7 +844,7 @@
     color: rgba(255, 255, 255, 0.85);
 }
 
-[data-theme="cinematic"] .cinematic-footer-quote {
+[data-theme="cinematic"] .footer-tagline {
     font-family: var(--font-display);
     font-size: clamp(18px, 2.5vw, 26px);
     line-height: 1.35;
@@ -853,7 +853,7 @@
     max-width: 44ch;
 }
 
-[data-theme="cinematic"] .cinematic-footer-nav {
+[data-theme="cinematic"] .footer-nav {
     display: flex;
     gap: 28px;
     justify-content: flex-end;
@@ -865,13 +865,13 @@
     text-transform: uppercase;
 }
 
-[data-theme="cinematic"] .cinematic-footer-nav a {
+[data-theme="cinematic"] .footer-nav a {
     color: var(--color-text-muted);
     border-bottom: none;
     transition: color 0.15s;
 }
 
-[data-theme="cinematic"] .cinematic-footer-nav a:hover {
+[data-theme="cinematic"] .footer-nav a:hover {
     color: var(--color-text);
     border-bottom: none;
 }
@@ -1109,8 +1109,8 @@
 @media (max-width: 960px) {
     [data-theme="cinematic"] .site-nav .nav-links { gap: 20px; }
     [data-theme="cinematic"] .essay-strip { grid-template-columns: 1fr 1fr; }
-    [data-theme="cinematic"] .cinematic-footer { grid-template-columns: 1fr; padding: 40px var(--gutter); }
-    [data-theme="cinematic"] .cinematic-footer-nav { justify-content: flex-start; }
+    [data-theme="cinematic"] .site-footer { grid-template-columns: 1fr; padding: 40px var(--gutter); }
+    [data-theme="cinematic"] .footer-nav { justify-content: flex-start; }
     [data-theme="cinematic"] .home-hero { grid-template-columns: 1fr; }
     [data-theme="cinematic"] .home-feature { min-height: 60vw; }
     [data-theme="cinematic"] .home-blocks { grid-template-columns: 1fr; }

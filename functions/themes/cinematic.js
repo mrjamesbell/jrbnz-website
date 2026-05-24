@@ -72,9 +72,9 @@ function buildCinematicFooter(menuPages) {
   const navLinks = buildNavLinks(menuPages)
     .map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`)
     .join('\n      ');
-  return `<footer class="cinematic-footer">
-  <p class="cinematic-footer-quote">Writing about memory, theatre, technology and life in between.</p>
-  <nav class="cinematic-footer-nav" aria-label="Footer">
+  return `<footer class="site-footer">
+  <p class="footer-tagline">Writing about memory, theatre, technology and life in between.</p>
+  <nav class="footer-nav" aria-label="Footer">
     ${navLinks}
     <a href="/feed.xml">RSS</a>
   </nav>
@@ -85,11 +85,11 @@ export function buildPage(data) {
   const { title, slug, contentHtml, menuPages, accent, snippetCss, year, theme } = data;
   return `${buildHead({ title, theme, accent, snippetCss })}
 ${buildSiteNav(menuPages, `/${slug}/`)}
-<div class="ci-page-masthead">
-  <h1 class="ci-page-title">${esc(title)}</h1>
+<div class="page-masthead">
+  <h1 class="page-title">${esc(title)}</h1>
 </div>
 <div class="surface-invert">
-  <div class="ci-page-content">
+  <div class="page-body">
     <div class="post-content page-content">${contentHtml}</div>
   </div>
 </div>
@@ -103,10 +103,10 @@ export function buildPhotos(data) {
   const extraHead = '<meta name="description" content="Photography portfolio by James Bell — theatre and travel photography"><link rel="stylesheet" href="/photos/styles/gallery.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">';
   return `${buildHead({ title: 'Photos', theme, accent, snippetCss, extraHead })}
 ${buildSiteNav(menuPages, '/photos/')}
-<div class="ci-page-masthead">
-  <h1 class="ci-page-title">Photos</h1>
+<div class="page-masthead">
+  <h1 class="page-title">Photos</h1>
 </div>
-<section class="ci-photos-content">
+<section class="photos-content">
   <nav class="filter-nav">
     <a href="/photos/" class="filter-back">← Photos</a>
     <a href="/photos/?category=theatre" class="filter-link" data-category="theatre">Theatre</a>
@@ -154,14 +154,14 @@ export function buildHomepage(data) {
   const featuredCta = cfg.featured?.ctaLabel || 'Read the essay →';
 
   const homeFeatured = featured ? `
-<section class="ci-featured" id="home-featured">
-  ${featuredImage ? `<img class="ci-featured-img" src="${esc(featuredImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featuredFocus)} center" loading="eager">` : ''}
-  <div class="ci-featured-overlay">
-    <div class="ci-featured-inner">
+<section class="featured-hero" id="home-featured">
+  ${featuredImage ? `<img class="featured-hero-img" src="${esc(featuredImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featuredFocus)} center" loading="eager">` : ''}
+  <div class="featured-hero-overlay">
+    <div class="featured-hero-inner">
       <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featured.date))}</p>
-      <h2 class="ci-featured-title"><a href="/posts/${esc(featured.slug)}/">${esc(featuredTitle)}</a></h2>
-      ${featuredDek ? `<p class="ci-featured-excerpt">${esc(featuredDek)}</p>` : ''}
-      <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">${esc(featuredCta)}</a>
+      <h2 class="featured-hero-title"><a href="/posts/${esc(featured.slug)}/">${esc(featuredTitle)}</a></h2>
+      ${featuredDek ? `<p class="featured-hero-excerpt">${esc(featuredDek)}</p>` : ''}
+      <a href="/posts/${esc(featured.slug)}/" class="read-link">${esc(featuredCta)}</a>
     </div>
   </div>
 </section>` : '';
@@ -286,14 +286,14 @@ export function buildIndex(data) {
   const rest = essays.slice(1);
 
   const featuredCard = featured ? `
-<section class="ci-featured" id="ci-featured" data-tags="${esc((featured.tags || []).join(','))}">
-  ${(featured.coverImage || defaultCoverImage) ? `<img class="ci-featured-img" src="${esc(featured.coverImage || defaultCoverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
-  <div class="ci-featured-overlay">
-    <div class="ci-featured-inner">
+<section class="featured-hero" id="featured-hero" data-tags="${esc((featured.tags || []).join(','))}">
+  ${(featured.coverImage || defaultCoverImage) ? `<img class="featured-hero-img" src="${esc(featured.coverImage || defaultCoverImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featured.coverImageFocus || 'center')} center" loading="eager">` : ''}
+  <div class="featured-hero-overlay">
+    <div class="featured-hero-inner">
       <p class="post-kicker">${featured.tags?.[0] ? `${esc(featured.tags[0])} · ` : ''}${esc(_fmtDate(featured.date))}</p>
-      <h2 class="ci-featured-title"><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
-      ${(featured.subtitle || featured.excerpt) ? `<p class="ci-featured-excerpt">${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
-      <a href="/posts/${esc(featured.slug)}/" class="ci-read-link">Read the essay →</a>
+      <h2 class="featured-hero-title"><a href="/posts/${esc(featured.slug)}/">${esc(featured.title)}</a></h2>
+      ${(featured.subtitle || featured.excerpt) ? `<p class="featured-hero-excerpt">${esc(featured.subtitle || featured.excerpt)}</p>` : ''}
+      <a href="/posts/${esc(featured.slug)}/" class="read-link">Read the essay →</a>
     </div>
   </div>
 </section>` : '';
@@ -314,7 +314,7 @@ export function buildIndex(data) {
   const postCards = rest.map(p => _postCard(p)).join('');
 
   const tagsSection = tagChips ? `
-<section class="ci-tags">
+<section class="index-tags">
   <div class="tag-filter-bar" id="tag-filter-bar" hidden>
     Essays tagged <strong id="tag-filter-label"></strong>
     <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
@@ -327,7 +327,7 @@ ${buildSiteNav(menuPages, '/posts/')}
 <main>
   ${featuredCard}
   ${tagsSection}
-  ${rest.length ? `<section class="more-essays ci-index-all">
+  ${rest.length ? `<section class="more-essays index-all">
   <p class="more-essays-label">All essays</p>
   <div class="essay-strip">${postCards}</div>
 </section>` : ''}
@@ -496,8 +496,8 @@ export function buildNotes(data) {
 
   return `${buildHead({ title: 'Notes', theme, accent, snippetCss })}
 ${buildSiteNav(menuPages, '/notes/')}
-<div class="ci-page-masthead">
-  <h1 class="ci-page-title">Notes</h1>
+<div class="page-masthead">
+  <h1 class="page-title">Notes</h1>
 </div>
 <div class="surface-invert">
   <section class="notes-stream">

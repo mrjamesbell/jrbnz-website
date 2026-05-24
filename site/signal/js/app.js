@@ -394,9 +394,12 @@ async function loadPosts() {
 async function _fetchPosts() {
   try {
     const res = await fetch('/api/posts');
-    if (!res.ok) return;
+    if (!res.ok) throw new Error(`${res.status}`);
     allPosts = await res.json();
-  } catch {}
+  } catch (e) {
+    console.error('Failed to load posts:', e);
+    showToast('Failed to load posts — ' + e.message, 'error');
+  }
 }
 
 function renderList(posts) {
@@ -480,9 +483,12 @@ function invalidatePageCache() { allPages = []; }
 async function loadPages() {
   try {
     const res = await fetch('/api/pages');
-    if (!res.ok) return;
+    if (!res.ok) throw new Error(`${res.status}`);
     allPages = await res.json();
-  } catch {}
+  } catch (e) {
+    console.error('Failed to load pages:', e);
+    showToast('Failed to load pages — ' + e.message, 'error');
+  }
   renderPageList(allPages);
 }
 
@@ -861,14 +867,17 @@ async function saveAppSettings() {
   const activeThemeBtn = document.querySelector('#theme-picker-group .theme-pick-btn.active');
   const theme = activeThemeBtn ? activeThemeBtn.dataset.theme : null;
   try {
-    await fetch('/api/site/settings', {
+    const res = await fetch('/api/site/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ defaultCoverImage, defaultCoverImageFocus, ...(theme ? { theme } : {}) }),
     });
-  } catch {}
-
-  showToast(theme ? `Settings saved — theme: ${theme}` : 'Settings saved', 'success');
+    if (!res.ok) throw new Error(`${res.status}`);
+    showToast(theme ? `Settings saved — theme: ${theme}` : 'Settings saved', 'success');
+  } catch (e) {
+    console.error('Failed to save settings:', e);
+    showToast('Settings save failed — ' + e.message, 'error');
+  }
 }
 
 function _markActiveSwatch(rowId, savedColor) {

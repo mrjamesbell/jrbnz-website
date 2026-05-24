@@ -5,32 +5,32 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
     /* Backgrounds */
-    --color-bg:              oklch(18% 0.01 50);
-    --color-surface:         oklch(14% 0.008 50);
+    --color-bg:              #ffffff;
+    --color-surface:         #f5f5f5;
 
     /* Text */
-    --color-text:            oklch(94% 0.008 75);
-    --color-text-muted:      oklch(78% 0.012 75);
-    --color-text-subtle:     oklch(60% 0.008 75);
+    --color-text:            #000000;
+    --color-text-muted:      #555555;
+    --color-text-subtle:     #888888;
 
     /* Borders */
-    --color-border:          oklch(94% 0.008 75 / 0.14);
-    --color-border-strong:   oklch(94% 0.008 75 / 0.3);
+    --color-border:          #cccccc;
+    --color-border-strong:   #000000;
 
-    /* Accent — also overridable at runtime via inline <style> */
-    --color-accent:          oklch(68% 0.13 50);
-    --color-accent-muted:    color-mix(in oklch, oklch(68% 0.13 50) 14%, transparent);
-    --color-accent-fg:       oklch(97% 0.008 75);
+    /* Accent */
+    --color-accent:          #000000;
+    --color-accent-muted:    rgba(0, 0, 0, 0.1);
+    --color-accent-fg:       #ffffff;
 
     /* Typography */
-    --font-body:             'Lora', serif;
-    --font-display:          'Bebas Neue', sans-serif;
-    --font-mono:             ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --font-body:             Arial, Helvetica, sans-serif;
+    --font-display:          Arial, Helvetica, sans-serif;
+    --font-mono:             monospace;
 
     /* Layout */
-    --gutter:                clamp(24px, 5vw, 60px);
-    --col-read:              720px;
-    --nav-h:                 auto;
+    --gutter:                16px;
+    --col-read:              680px;
+    --nav-h:                 40px;
 
     /* Legacy aliases — components still using these will keep working */
     --text-color:            var(--color-text);
@@ -46,7 +46,7 @@
 }
 
 body {
-    font-family: 'Lora', serif;
+    font-family: var(--font-body);
     background: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
@@ -54,21 +54,21 @@ body {
 }
 
 h1, h2 {
-    font-family: 'Lora', serif;
+    font-family: var(--font-body);
     font-weight: 600;
     line-height: 1.2;
 }
 
 a {
-    color: var(--link-color);
+    color: var(--color-text);
     text-decoration: none;
-    border-bottom: 1.6px solid var(--link-color);
+    border-bottom: 1.6px solid var(--color-text);
     transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 a:visited {
-    color: var(--link-color);
-    border-bottom-color: var(--link-color);
+    color: var(--color-text);
+    border-bottom-color: var(--color-text);
 }
 
 a:hover {
@@ -84,7 +84,7 @@ a:hover {
     padding: 12px 24px;
     background: var(--accent-color);
     color: var(--accent-fg, oklch(97% 0.008 75));
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 20px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -121,7 +121,7 @@ a:focus-visible {
 }
 
 .site-nav .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 40px;
     letter-spacing: 0.03em;
     color: var(--text-color);
@@ -141,7 +141,7 @@ a:focus-visible {
 }
 
 .site-nav .nav-links a {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 24px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -163,7 +163,7 @@ a:focus-visible {
 }
 
 .page-header h1 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(72px, 10vw, 140px);
     line-height: 0.92;
     letter-spacing: 0.01em;
@@ -208,7 +208,7 @@ a:focus-visible {
     display: inline-block;
     margin-top: 30px;
     font-size: 20px;
-    color: var(--link-color);
+    color: var(--color-text);
 }
 
 /* Footer */

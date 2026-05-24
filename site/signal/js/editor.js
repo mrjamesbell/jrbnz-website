@@ -288,7 +288,7 @@ export function closeEditor() {
     const slug = currentSlug;
     const apiBase = _getApiBase();
     const payload = { title: currentPost.title, body: currentPost.body, tags: currentPost.tags, date: currentPost.date, excerpt: currentPost.excerpt, coverImage: currentPost.coverImage, subtitle: currentPost.subtitle || '', coverImageAlt: currentPost.coverImageAlt || '', coverImageFocus: currentPost.coverImageFocus || 'center', include_in_menu: currentPost.include_in_menu, wordCount: currentPost.wordCount };
-    fetch(`${apiBase}/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
+    fetch(`${apiBase}/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(e => console.error('Autosave failed:', e));
   }
   cancelScheduled();
   currentSlug = null;
@@ -1037,12 +1037,16 @@ async function _regenerateExcerpt() {
       method: 'POST',
       headers: apiKey ? { 'x-api-key': apiKey } : {}
     });
-    const data = res.ok ? await res.json() : {};
+    if (!res.ok) throw new Error(`${res.status}`);
+    const data = await res.json();
     if (data.excerpt) {
       document.getElementById('publish-excerpt-textarea').value = data.excerpt;
       _onPublishExcerptInput();
     }
-  } catch {}
+  } catch (e) {
+    console.error('AI excerpt failed:', e);
+    showToast('Excerpt generation failed — ' + e.message, 'error');
+  }
   btn.disabled = false;
   btn.textContent = 'Regenerate';
 }

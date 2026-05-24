@@ -9,30 +9,37 @@ export async function onRequestGet({ env, request }) {
     }
   } catch {}
 
-  // Fall back to static index.html with accent injection
-  const [staticRes, accentObj] = await Promise.all([
+  // Fall back to static index.html with theme + accent injection
+  const [staticRes, accentObj, siteObj] = await Promise.all([
     env.ASSETS.fetch(request),
     env.BLOG.get('settings/accent.json'),
+    env.BLOG.get('settings/site.json'),
   ]);
 
-  if (!accentObj) return staticRes;
+  let accent = null;
+  try { ({ accent } = JSON.parse(await accentObj.text())); } catch {}
 
-  let accent;
-  try {
-    ({ accent } = JSON.parse(await accentObj.text()));
-  } catch {
-    return staticRes;
-  }
+  let theme = 'cinematic';
+  try { ({ theme = 'cinematic' } = JSON.parse(await siteObj.text())); } catch {}
 
-  if (!accent) return staticRes;
+  let html = await staticRes.text();
 
-  const html = await staticRes.text();
-  const injected = html.replace(
-    '</head>',
-    `<style>:root{--accent-color:${accent.replace(/<\/style>/gi, '')}}</style></head>`
+  // Inject data-theme onto <html>
+  html = html.replace(/(<html[^>]*)\bdata-theme="[^"]*"/, `$1data-theme="${theme}"`);
+
+  // Swap theme CSS link
+  html = html.replace(
+    /href="\/styles\/themes\/[^"]+"/,
+    `href="/styles/themes/${theme}.css"`
   );
 
-  return new Response(injected, {
+  // Inject accent if set
+  if (accent) {
+    const safe = accent.replace(/<\/style>/gi, '');
+    html = html.replace('</head>', `<style>:root{--color-accent:${safe};--accent-color:${safe}}</style></head>`);
+  }
+
+  return new Response(html, {
     headers: { 'content-type': 'text/html;charset=utf-8', 'cache-control': 'public,max-age=60' },
   });
 }

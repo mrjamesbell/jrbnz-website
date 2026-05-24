@@ -720,9 +720,9 @@ All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all sele
 </div>
 
 <!-- Footer -->
-<footer class="cinematic-footer">
-  <p class="cinematic-footer-quote">…tagline…</p>
-  <nav class="cinematic-footer-nav">
+<footer class="site-footer">
+  <p class="footer-tagline">…tagline…</p>
+  <nav class="footer-nav">
     <a href="/posts/">Essays</a>
     <a href="/feed.xml">RSS</a>
   </nav>
@@ -737,14 +737,14 @@ All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all sele
 <main class="h-card">
 
   <!-- Featured essay hero — full viewport height, image behind overlay -->
-  <section class="ci-featured" id="home-featured">
-    <img class="ci-featured-img" src="…" alt="…">       <!-- background image -->
-    <div class="ci-featured-overlay">                   <!-- dark gradient overlay -->
-      <div class="ci-featured-inner">
+  <section class="featured-hero" id="home-featured">
+    <img class="featured-hero-img" src="…" alt="…">       <!-- background image -->
+    <div class="featured-hero-overlay">                   <!-- dark gradient overlay -->
+      <div class="featured-hero-inner">
         <p class="post-kicker">Featured Essay · January 1, 2025</p>
-        <h2 class="ci-featured-title"><a href="/posts/slug/">Title</a></h2>
-        <p class="ci-featured-excerpt">Subtitle or excerpt</p>
-        <a href="/posts/slug/" class="ci-read-link">Read the essay →</a>
+        <h2 class="featured-hero-title"><a href="/posts/slug/">Title</a></h2>
+        <p class="featured-hero-excerpt">Subtitle or excerpt</p>
+        <a href="/posts/slug/" class="read-link">Read the essay →</a>
       </div>
     </div>
   </section>
@@ -791,13 +791,13 @@ All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all sele
 ```html
 <main>
 
-  <!-- Featured essay — same structure as homepage ci-featured, carries data-tags -->
-  <section class="ci-featured" id="ci-featured" data-tags="theatre,writing">
+  <!-- Featured essay — same structure as homepage featured-hero, carries data-tags -->
+  <section class="featured-hero" id="featured-hero" data-tags="theatre,writing">
     …same as homepage featured…
   </section>
 
   <!-- Tag filter bar + chips -->
-  <section class="ci-tags">
+  <section class="index-tags">
     <div class="tag-filter-bar" id="tag-filter-bar" hidden>   <!-- shown by blog.js when tag active -->
       Essays tagged <strong id="tag-filter-label"></strong>
       <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
@@ -809,7 +809,7 @@ All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all sele
   </section>
 
   <!-- All essays grid -->
-  <section class="more-essays ci-index-all">
+  <section class="more-essays index-all">
     <p class="more-essays-label">All essays</p>
     <div class="essay-strip">
       <!-- Each card carries data-tags for client-side filtering -->
@@ -902,8 +902,8 @@ Notes use a compact dark header instead of a full hero.
 
 ```html
 <!-- Page masthead — also used by CMS pages -->
-<div class="ci-page-masthead">
-  <h1 class="ci-page-title">Notes</h1>
+<div class="page-masthead">
+  <h1 class="page-title">Notes</h1>
 </div>
 
 <div class="surface-invert">
@@ -927,12 +927,12 @@ Notes use a compact dark header instead of a full hero.
 ### CMS page
 
 ```html
-<div class="ci-page-masthead">
-  <h1 class="ci-page-title">About</h1>
+<div class="page-masthead">
+  <h1 class="page-title">About</h1>
 </div>
 
 <div class="surface-invert">
-  <div class="ci-page-content">
+  <div class="page-body">
     <div class="post-content page-content">
       <!-- Rendered markdown -->
     </div>

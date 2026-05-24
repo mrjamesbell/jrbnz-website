@@ -16,7 +16,8 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme, manifesto: manifestoTheme };
 
 function themeRenderer(name) {
-  const theme = THEMES[name] ?? THEMES.base;
+  if (!THEMES[name]) throw new Error(`Unknown theme: "${name}"`);
+  const theme = THEMES[name];
   return {
     buildPost:     theme.buildPost     ?? baseTheme.buildPost,
     buildIndex:    theme.buildIndex    ?? baseTheme.buildIndex,
@@ -162,7 +163,7 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, sub
   return {
     title, slug, date, dateFormatted, tags, contentHtml, author, accent,
     menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
-    authorCard, year, theme: theme || 'cinematic',
+    authorCard, year, theme: theme,
     coverImage: coverImage || defaultCoverImage || null,
     coverImageAlt, coverImageFocus: coverImageFocus || (coverImage ? 'center' : defaultCoverImageFocus) || 'center',
     recentPosts, excerpt, subtitle,
@@ -170,7 +171,7 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, sub
 }
 
 function buildPostHtml(args, theme) {
-  const t = theme || 'cinematic';
+  const t = theme;
   return themeRenderer(t).buildPost(prepPostData({ ...args, theme: t }));
 }
 
@@ -200,7 +201,7 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage,
   const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
-  const t = theme || 'cinematic';
+  const t = theme;
   return themeRenderer(t).buildIndex({
     items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: published, defaultCoverImage,
   });
@@ -208,7 +209,7 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage,
 
 function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss, theme }) {
   const year = new Date().getFullYear();
-  const t = theme || 'cinematic';
+  const t = theme;
   return themeRenderer(t).buildPage({
     title, slug, contentHtml, menuPages, accent, snippetCss, year, theme: t,
   });
@@ -216,7 +217,7 @@ function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss
 
 function buildPhotosHtml(menuPages, accent, theme) {
   const year = new Date().getFullYear();
-  const t = theme || 'cinematic';
+  const t = theme;
   return themeRenderer(t).buildPhotos({
     menuPages, accent, year, theme: t,
   });
@@ -226,14 +227,14 @@ function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, default
   const allPosts = (posts || [])
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
-  const t = theme || 'cinematic';
+  const t = theme;
   return themeRenderer(t).buildHomepage?.({
     author, recentPosts: allPosts, menuPages, accent, snippetCss, theme: t, defaultCoverImage, homepageConfig,
   }) ?? '';
 }
 
 function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme) {
-  const t = theme || 'cinematic';
+  const t = theme;
   const renderer = themeRenderer(t).buildNotes;
   if (!renderer) return '';
   const notesWithHtml = notes.map((note, i) => ({ ...note, bodyHtml: mdToHtml(bodies[i] || '') }));
@@ -455,8 +456,8 @@ export async function onRequest(context) {
   // Public theme config — no auth required
   if (resource === 'theme' && slug === 'image-roles' && method === 'GET') {
     const { theme: themeName } = await loadSiteContext(env);
-    const theme = THEMES[themeName] ?? THEMES.cinematic;
-    return json(theme.imageRoles ?? { layouts: [], treatments: [], defaults: {} });
+    if (!THEMES[themeName]) return json({ error: `Unknown theme: "${themeName}"` }, 404);
+    return json(THEMES[themeName].imageRoles ?? { layouts: [], treatments: [], defaults: {} });
   }
   if (resource === 'theme' && slug === 'list' && method === 'GET') {
     return json(Object.keys(THEMES).filter(k => k !== 'dark'));
@@ -967,7 +968,10 @@ async function migrateMediaToPost(env, slug, body) {
       updated = updated
         .replaceAll(`https://jrbnz-blog.r2.dev${mediaPath}`, destUrl)
         .replaceAll(mediaPath, destUrl);
-    } catch {}
+    } catch (e) {
+      console.error(`Failed to migrate media ${mediaPath}:`, e);
+      throw e;
+    }
   }));
   return updated;
 }
@@ -1559,10 +1563,8 @@ async function handleSaveAccent(request, env) {
 
   // Merge with existing so the two fields are independent
   let existing = {};
-  try {
-    const obj = await env.BLOG.get('settings/accent.json');
-    if (obj) existing = await obj.json();
-  } catch {}
+  const obj = await env.BLOG.get('settings/accent.json');
+  if (obj) existing = await obj.json();
 
   const updated = { ...existing };
   if (accent && typeof accent === 'string') updated.accent = accent;
