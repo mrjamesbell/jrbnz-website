@@ -753,25 +753,48 @@ async function rebuildSite() {
 
 async function deploySite() {
   const btn = document.getElementById('btn-deploy-site');
+  const progress = document.getElementById('deploy-progress');
   btn.disabled = true;
   btn.textContent = 'Deploying…';
+  progress.hidden = false;
+  progress.innerHTML = '';
   try {
     const res = await fetch('/api/site/deploy', { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
-    showToast('Deploy triggered — checking status…', 'info');
-    _pollDeployStatus(btn);
+    _pollDeployStatus(btn, progress);
   } catch (e) {
     showToast('Deploy failed: ' + e.message, 'error');
-    btn.disabled = false;
-    btn.textContent = 'Deploy';
+    _deployFinish(btn, progress, false);
   }
 }
 
-async function _pollDeployStatus(btn) {
+function _deployAddBox(progress) {
+  const box = document.createElement('div');
+  box.className = 'deploy-box';
+  progress.appendChild(box);
+}
+
+function _deployFinish(btn, progress, success) {
+  progress.innerHTML = '';
+  const result = document.createElement('span');
+  result.className = success ? 'deploy-result deploy-result--success' : 'deploy-result deploy-result--fail';
+  result.textContent = success ? '✓' : '■';
+  progress.appendChild(result);
+  btn.disabled = false;
+  btn.textContent = success ? 'Deployed' : 'Deploy';
+  setTimeout(() => {
+    progress.hidden = true;
+    progress.innerHTML = '';
+    if (success) btn.textContent = 'Deploy';
+  }, 4000);
+}
+
+async function _pollDeployStatus(btn, progress) {
   const started = Date.now();
   const timeout = 5 * 60 * 1000;
   const interval = 6000;
   await new Promise(r => setTimeout(r, 8000));
+  _deployAddBox(progress);
   while (Date.now() - started < timeout) {
     try {
       const res = await fetch('/api/site/deploy-status');
@@ -779,25 +802,23 @@ async function _pollDeployStatus(btn) {
         const d = await res.json();
         if (d.status === 'success') {
           showToast('Deploy complete — site is live', 'success');
-          btn.disabled = false;
-          btn.textContent = 'Deploy';
+          _deployFinish(btn, progress, true);
           return;
         }
         if (d.status === 'failure') {
           showToast('Deploy failed — check CF Pages dashboard', 'error');
-          btn.disabled = false;
-          btn.textContent = 'Deploy';
+          _deployFinish(btn, progress, false);
           return;
         }
-        const elapsed = Math.round((Date.now() - started) / 1000);
-        btn.textContent = `Deploying… ${elapsed}s`;
+        _deployAddBox(progress);
       }
-    } catch {}
+    } catch (e) {
+      console.error('Deploy status check failed:', e);
+    }
     await new Promise(r => setTimeout(r, interval));
   }
   showToast('Deploy is taking longer than expected — check CF Pages dashboard', 'warning');
-  btn.disabled = false;
-  btn.textContent = 'Deploy';
+  _deployFinish(btn, progress, false);
 }
 
 async function logout() {

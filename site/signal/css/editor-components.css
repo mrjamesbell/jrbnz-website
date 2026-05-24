@@ -1134,6 +1134,30 @@
 .settings-action-label { font-size: 14px; font-family: var(--font-sans); color: var(--color-cream-text-primary); }
 .settings-action-desc { font-size: 12px; font-family: var(--font-sans); color: var(--color-cream-text-muted); }
 
+.deploy-progress {
+  display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
+  flex: 1; padding: 0 16px;
+}
+.deploy-progress[hidden] { display: none; }
+
+@keyframes deploy-box-in {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.deploy-box {
+  width: 7px; height: 7px; border-radius: 1px;
+  background: #22c55e;
+  animation: deploy-box-in 0.15s ease-out both;
+}
+.deploy-box--fail { background: #ef4444; }
+.deploy-result {
+  font-size: 15px; line-height: 1;
+  animation: deploy-box-in 0.2s ease-out both;
+}
+.deploy-result--success { color: #22c55e; }
+.deploy-result--fail    { color: #ef4444; }
+
 .media-picker-toolbar {
   padding: 12px 24px;
   border-bottom: var(--border-cream);
