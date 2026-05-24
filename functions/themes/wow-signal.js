@@ -50,40 +50,45 @@ export function buildHomepage({ author, recentPosts, menuPages, accent, snippetC
   const cfg   = homepageConfig ?? {};
   const posts = recentPosts ?? [];
 
-  // Featured post — use config override or most recent non-note
+  // Notes are identified by a 'note' tag — separate from essays
+  const isNote = p => Array.isArray(p.tags) && p.tags.includes('note');
+
+  // Featured post — config slug wins; otherwise most recent non-note post
+  const essays = posts.filter(p => !isNote(p));
   const featuredPost = cfg.featured?.slug
-    ? posts.find(p => p.slug === cfg.featured.slug) ?? posts[0]
-    : posts[0];
+    ? posts.find(p => p.slug === cfg.featured.slug) ?? essays[0]
+    : essays[0];
 
   const featuredTitle = cfg.featured?.titleOverride ?? featuredPost?.title ?? '';
   const featuredDek   = cfg.featured?.dekOverride   ?? featuredPost?.subtitle ?? featuredPost?.excerpt ?? '';
   const featuredCta   = cfg.featured?.ctaLabel       ?? 'Read the essay →';
-  const featuredHref  = featuredPost ? `/posts/${featuredPost.slug}/` : '/posts/';
+  const featuredHref  = featuredPost ? `/posts/${esc(featuredPost.slug)}/` : '/posts/';
 
   // Mixed recent feed — all posts except featured, newest first, up to 8
   const recents = posts
     .filter(p => p.slug !== featuredPost?.slug)
     .slice(0, 8);
 
-  const recentItems = recents.map(p => {
-    const isNote = p.tags?.includes('note') || p.wordCount < 200;
-    if (isNote) {
-      return `<li>
-        <p class="ws-recent-note">${esc(p.excerpt ?? p.title)}</p>
-        <p class="ws-recent-meta">${esc(p.dateFormatted ?? p.date)}</p>
+  const recentItems = recents.length
+    ? recents.map(p => {
+        if (isNote(p)) {
+          return `<li>
+          <p class="ws-recent-note">${esc(p.excerpt ?? p.title)}</p>
+          <p class="ws-recent-meta">${esc(p.dateFormatted ?? p.date)}</p>
+        </li>`;
+        }
+        return `<li>
+        <a href="/posts/${esc(p.slug)}/" class="ws-recent-title">${esc(p.title)}</a>
+        <p class="ws-recent-meta">${esc(p.dateFormatted ?? p.date)}${p.readTime ? ` · ${p.readTime} min` : ''}</p>
       </li>`;
-    }
-    return `<li>
-      <a href="/posts/${esc(p.slug)}/" class="ws-recent-title">${esc(p.title)}</a>
-      <p class="ws-recent-meta">${esc(p.dateFormatted ?? p.date)}${p.readTime ? ` · ${p.readTime} min` : ''}</p>
-    </li>`;
-  }).join('\n');
+      }).join('\n')
+    : '';
 
   // Nav cards — use config or defaults
   const cards = cfg.cards ?? [
-    { kicker: 'Essays',      title: 'Long-form writing on theatre, photography, and the technology of remembering.', href: '/posts/',  linkLabel: 'Read essays →',      style: '' },
-    { kicker: 'Photographs', title: 'Theatre production stills, travel, and long-exposure night sky work.',          href: '/photos/', linkLabel: 'View photographs →',  style: 'ws-card--raised' },
-    { kicker: 'Now',         title: 'What I\'m directing, reading, and thinking about this month.',                  href: '/now/',    linkLabel: 'Read →',              style: '' },
+    { kicker: 'Essays',      title: 'Long-form writing on theatre, photography, and the technology of remembering.', href: '/posts/',  linkLabel: 'Read essays →',     style: '' },
+    { kicker: 'Photographs', title: 'Theatre production stills, travel, and long-exposure night sky work.',          href: '/photos/', linkLabel: 'View photographs →', style: 'ws-card--raised' },
+    { kicker: 'Now',         title: 'What I\'m directing, reading, and thinking about this month.',                  href: '/now/',    linkLabel: 'Read →',             style: '' },
   ];
 
   const cardHtml = cards.map(c => `
@@ -93,7 +98,7 @@ export function buildHomepage({ author, recentPosts, menuPages, accent, snippetC
       <p class="ws-card-link">${esc(c.linkLabel)}</p>
     </a>`).join('\n');
 
-  // Interlude quote
+  // Interlude quote — only rendered if configured
   const interludeText = cfg.interlude?.text ?? '';
   const interlude = interludeText
     ? `<div class="ws-interlude">
@@ -101,21 +106,29 @@ export function buildHomepage({ author, recentPosts, menuPages, accent, snippetC
        </div>`
     : '';
 
-  return `${buildHead({ title: null, theme: THEME, accent, snippetCss })}
-<main class="h-card">
-  ${buildSiteNav(menuPages, '/')}
-
+  // Featured block — only rendered if we have a post to show
+  const featuredHtml = featuredPost ? `
   <div class="ws-featured-strip">
     <div class="ws-featured-main">
       <p class="kicker">Latest essay</p>
       <h1 class="ws-featured-title p-name">${esc(featuredTitle)}</h1>
       ${featuredDek ? `<p class="ws-featured-dek">${esc(featuredDek)}</p>` : ''}
-      <a href="${esc(featuredHref)}" class="ws-read-link">${esc(featuredCta)}</a>
+      <a href="${featuredHref}" class="ws-read-link">${esc(featuredCta)}</a>
     </div>
     <div class="ws-featured-aside">
       <ul class="ws-recents">${recentItems}</ul>
     </div>
+  </div>` : '';
+
+  return `${buildHead({ title: null, theme: THEME, accent, snippetCss })}
+<main class="h-card">
+  ${buildSiteNav(menuPages, '/')}
+
+  <div class="ws-dot-hero">
+    <canvas class="ws-dot-canvas" id="wsDotHero"></canvas>
   </div>
+
+  ${featuredHtml}
 
   <div class="ws-cards">${cardHtml}</div>
 
@@ -123,6 +136,125 @@ export function buildHomepage({ author, recentPosts, menuPages, accent, snippetC
 
 </main>
 ${buildFooter(menuPages, new Date().getFullYear())}
+
+<script>
+(function () {
+  const canvas = document.getElementById('wsDotHero');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const COLS = 34;
+  const ROWS = 6;
+  const HEIGHT = 130;
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = HEIGHT;
+  }
+  resize();
+  window.addEventListener('resize', function () { resize(); initDots(); });
+
+  // Read the current --color-accent from the theme token so the canvas
+  // automatically matches whichever palette is active.
+  function getAccentRgb() {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue('--color-accent').trim();
+    // Parse #rrggbb or #rgb
+    if (raw.startsWith('#')) {
+      const h = raw.slice(1);
+      if (h.length === 6) {
+        return [
+          parseInt(h.slice(0,2), 16),
+          parseInt(h.slice(2,4), 16),
+          parseInt(h.slice(4,6), 16),
+        ];
+      }
+      if (h.length === 3) {
+        return [
+          parseInt(h[0]+h[0], 16),
+          parseInt(h[1]+h[1], 16),
+          parseInt(h[2]+h[2], 16),
+        ];
+      }
+    }
+    return [79, 195, 247]; // fallback: signal blue
+  }
+
+  function getBgRgb() {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue('--color-bg').trim();
+    if (raw.startsWith('#')) {
+      const h = raw.slice(1);
+      if (h.length === 6) {
+        return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+      }
+    }
+    return [5, 11, 20]; // fallback: signal blue bg
+  }
+
+  var dots = [];
+  var t = 0;
+
+  function initDots() {
+    dots = [];
+    var cw = canvas.width;
+    var ch = canvas.height;
+    var sx = cw / (COLS + 1);
+    var sy = ch / (ROWS + 1);
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        dots.push({
+          x:     sx * (c + 1),
+          y:     sy * (r + 1),
+          base:  Math.random(),
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.4 + Math.random() * 0.6,
+          r:     sx * 0.26,
+        });
+      }
+    }
+  }
+  initDots();
+
+  function envelope(col, time) {
+    var peak = (Math.sin(time * 0.35) * 0.5 + 0.5) * COLS;
+    var w = COLS * 0.25;
+    var d = col - peak;
+    return Math.exp(-(d * d) / (2 * w * w));
+  }
+
+  function draw() {
+    var bg     = getBgRgb();
+    var accent = getAccentRgb();
+
+    ctx.fillStyle = 'rgb(' + bg[0] + ',' + bg[1] + ',' + bg[2] + ')';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    t += 0.016;
+
+    for (var i = 0; i < dots.length; i++) {
+      var d   = dots[i];
+      var col = i % COLS;
+      var sig = envelope(col, t);
+      var flicker = 0.5 + 0.5 * Math.sin(t * d.speed + d.phase);
+      var b = d.base * 0.2 + sig * flicker * 0.8;
+
+      var r  = Math.min(255, Math.round(bg[0] + b * accent[0]));
+      var g  = Math.min(255, Math.round(bg[1] + b * accent[1]));
+      var bl = Math.min(255, Math.round(bg[2] + b * accent[2]));
+
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + bl + ')';
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+}());
+</script>
 </body></html>`;
 }
 

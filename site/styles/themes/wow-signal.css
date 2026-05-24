@@ -788,6 +788,19 @@
    HOMEPAGE LAYOUT
    ══════════════════════════════════════════════════════════ */
 
+/* Dot matrix hero canvas */
+[data-theme="wow-signal"] .ws-dot-hero {
+  border-bottom: 1px solid var(--color-border);
+  line-height: 0;
+  overflow: hidden;
+}
+
+[data-theme="wow-signal"] .ws-dot-canvas {
+  display: block;
+  width: 100%;
+  height: 130px;
+}
+
 /* Featured strip — featured post + recent mixed feed */
 [data-theme="wow-signal"] .ws-featured-strip {
   display: grid;
