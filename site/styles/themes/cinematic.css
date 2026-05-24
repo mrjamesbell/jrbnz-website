@@ -213,17 +213,11 @@
     color: var(--color-text);
 }
 
-/* ── Blockquote — strip blog.css box/speech-mark, apply gold left rule ───── */
+/* ── Blockquote ─────────────────────────────────────────────────────────── */
 [data-theme="cinematic"] .post-content blockquote {
-    background: transparent;
-    border-radius: 0;
     font-style: normal;
     color: var(--color-text);
     padding: 0;
-}
-
-[data-theme="cinematic"] .post-content blockquote::before {
-    content: none;
 }
 
 [data-theme="cinematic"] .surface-invert blockquote {

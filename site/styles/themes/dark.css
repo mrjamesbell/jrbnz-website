@@ -25,6 +25,37 @@
     --nav-h:                 auto;
 }
 
+/* ── Post content ── */
+[data-theme="dark"] .post-content img {
+    border: 12px solid var(--color-border-strong);
+    border-radius: 2px;
+}
+
+[data-theme="dark"] .youtube-embed {
+    border: 12px solid var(--color-border-strong);
+    border-radius: 2px;
+}
+
+[data-theme="dark"] .post-content blockquote {
+    padding: 24px 28px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-style: italic;
+    line-height: 1.75;
+    border-radius: 3px;
+}
+
+[data-theme="dark"] .post-content blockquote::before {
+    content: '\201C';
+    font-family: var(--font-display);
+    font-size: 3em;
+    line-height: 0.55;
+    color: var(--color-accent);
+    display: block;
+    margin-bottom: 12px;
+    font-style: normal;
+}
+
 /* ── Light reading panel: content section and explicit surface-invert ── */
 [data-theme="dark"] .content-section,
 [data-theme="dark"] .surface-invert {
