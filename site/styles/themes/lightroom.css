@@ -580,6 +580,7 @@
 
 /* img-small: within column */
 [data-theme="lightroom"] .post-content .img-small {
+  max-width: 400px;
   margin-bottom: 4px;
 }
 
