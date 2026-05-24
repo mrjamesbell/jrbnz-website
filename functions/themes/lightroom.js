@@ -92,12 +92,8 @@ export function buildHomepage(data) {
     featured?.readTime ? `${featured.readTime} min` : null,
   ].filter(Boolean).join(' · ');
 
-  const imageUrl = featured?.imageOverride || featured?.coverImage || '';
-  const imageAlt = featured?.coverImageAlt || title;
-
-  const heroImg = imageUrl
-    ? `<img src="${esc(imageUrl)}" alt="${esc(imageAlt)}">`
-    : `<div style="width:100%;height:100%;background:#c8c4bc;"></div>`;
+  const imageUrl = homepageConfig?.featured?.imageOverride || '';
+  const imageAlt = homepageConfig?.featured?.imageAlt || title;
 
   const ctaLabel = homepageConfig?.featured?.ctaLabel || 'Read the essay';
 
@@ -116,9 +112,10 @@ export function buildHomepage(data) {
     <a href="${href}" class="lr-home-cta">${esc(ctaLabel)}</a>
   </section>
 
+  ${imageUrl ? `
   <div class="lr-home-image">
-    ${heroImg}
-  </div>
+    <img src="${esc(imageUrl)}" alt="${esc(imageAlt)}">
+  </div>` : ''}
 
   <nav class="lr-box-nav">
     <a href="/posts/"  class="lr-box-nav-item">Essays</a>
@@ -139,8 +136,7 @@ export function buildHomepage(data) {
 export function buildPost(data) {
   const {
     title, slug, date, dateFormatted, tags = [],
-    contentHtml, subtitle, coverImage, coverImageAlt,
-    coverImageFocus = 'center',
+    contentHtml, subtitle,
     menuPages = [], snippetCss, extraHead,
     readTime, postUrl, theme, accent,
   } = data;
@@ -150,11 +146,6 @@ export function buildPost(data) {
     dateFormatted || null,
     readTime ? `${readTime} min read` : null,
   ].filter(Boolean).join(' · ');
-
-  const heroHtml = coverImage ? `
-  <div class="lr-post-hero img-break">
-    <img src="${esc(coverImage)}" alt="${esc(coverImageAlt || title)}" style="object-position:${esc(coverImageFocus)};">
-  </div>` : '';
 
   const endingMeta = [
     tags[0] || '',
@@ -171,8 +162,6 @@ export function buildPost(data) {
     <h1 class="lr-post-title p-name">${esc(title)}</h1>
     ${subtitle ? `<p class="lr-post-deck">${esc(subtitle)}</p>` : ''}
   </header>
-
-  ${heroHtml}
 
   <div class="lr-post-body">
     <div class="post-content e-content">${contentHtml}</div>
