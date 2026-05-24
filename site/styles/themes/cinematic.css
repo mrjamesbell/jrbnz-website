@@ -867,6 +867,9 @@
 
 [data-theme="cinematic"] .footer-nav a {
     font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text-muted);
     border-bottom: none;
     transition: color 0.15s;
