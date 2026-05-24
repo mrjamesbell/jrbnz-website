@@ -39,8 +39,8 @@ Each theme lives in `styles/themes/<name>.css`. A theme file contains:
 1. A `[data-theme="<name>"]` block that sets values for every token above.
 2. A `[data-theme="<name>"] .surface-invert` block for the inverted surface
    (see below).
-3. Any layout styles specific to that theme's HTML structure (e.g. the
-   cinematic fixed nav, hero section, more-essays strip).
+3. Any layout styles specific to that theme's HTML structure (e.g. a fixed nav,
+   hero section, post grid).
 
 The active theme name is stored in `settings/site.json` in R2 (key `theme`).
 `loadSiteContext()` reads it on every render. The Worker writes `data-theme="<name>"` onto
@@ -111,9 +111,11 @@ A theme is two files: a CSS file that tokens and layouts your design, and a JS r
 
    Then add whatever layout CSS your HTML requires — using your own class names.
 
+   **Your CSS must also style every class in the [shared class contract](#shared-class-contract).** Use the checklist there to make sure nothing is missed.
+
 2. **Create a renderer file** at `functions/themes/mytheme.js`. Export any of `buildPost`, `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`. Any not exported fall back to `base.js` — which renders unstyled Arial 14px, making missing pages immediately obvious.
 
-   Your renderer writes the HTML. **Use whatever class names suit your design.** You do not need to reuse cinematic's class names. The only classes the system requires are listed in [Shared class contract](#shared-class-contract) below.
+   Your renderer writes the HTML. **Use whatever class names suit your design.** You do not need to reuse class names from any existing theme. The only classes the system requires are listed in [Shared class contract](#shared-class-contract) below.
 
    ```js
    import { esc, buildHead, buildSiteNav, buildPostMeta, SITE_URL } from '../lib/templates.js';
@@ -155,6 +157,8 @@ That's it. No other files need to change.
 
 These class names are required by the system — blog.js tag filtering, Signal's image editor, and the template helpers produce or depend on them. Your CSS must style them; your renderer must not rename them.
 
+Use this as a checklist when finishing a new theme CSS file.
+
 ### From `buildSiteNav()` — always produced by the template helper
 
 ```html
@@ -166,38 +170,106 @@ These class names are required by the system — blog.js tag filtering, Signal's
 </nav>
 ```
 
-Style `site-nav`, `nav-logo`, `nav-links`, and `nav-links a.active` in your theme CSS.
+Style all of: `site-nav`, `nav-logo`, `nav-links`, `nav-links a`, `nav-links a.active`.
+
+### Footer — each theme writes its own
+
+There is no shared footer helper. Each theme renderer inlines its own footer HTML with its own class names. Use whatever structure suits your design.
+
+`blog.css` contains styles for a set of footer classes written for the `buildFooter` helper in `functions/lib/templates.js`. That helper is not called by any active theme, but its styles remain in the cascade. **Avoid reusing these class names** unless you want those styles applied. The helper produces:
+
+```html
+<footer class="footer">
+  <div class="footer-left">
+    <a href="/" class="footer-logo">JRBNZ</a>
+    <div class="footer-fineprint">© 2026 James Bell</div>
+    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+  </div>
+  <div class="footer-right">
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="/posts/">Essays</a> …
+    </nav>
+    <div class="footer-bottom-links">
+      <a href="/feed.xml" class="footer-rss"><!-- RSS SVG --> RSS Feed</a>
+      <span class="footer-signal" title="Made with Signal"><!-- Signal SVG --></span>
+    </div>
+  </div>
+</footer>
+```
+
+Classes with blog.css styles: `.footer`, `.footer-left`, `.footer-right`, `.footer-logo`, `.footer-fineprint`, `.footer-nav`, `.footer-nav a`, `.footer-bottom-links`, `.footer-rss`, `.footer-signal`. See the clash table below.
+
+Two current footer patterns for reference:
+
+```html
+<!-- Lightroom — minimal, own class names, no clash risk -->
+<footer class="lr-footer">
+  <span class="lr-footer-copy">©2026 JRBNZ</span>
+  <nav class="lr-footer-nav">
+    <a href="/posts/">Essays</a>
+    …
+  </nav>
+</footer>
+
+<!-- Cinematic — reuses .footer-nav (blog.css styles apply; overridden in cinematic.css) -->
+<footer class="site-footer">
+  <p class="footer-tagline">…tagline…</p>
+  <nav class="footer-nav" aria-label="Footer">
+    <a href="/posts/">Essays</a>
+    …
+    <a href="/feed.xml">RSS</a>
+  </nav>
+</footer>
+```
 
 ### From the markdown renderer — inside `.post-content`
 
 These elements appear inside the rendered article body. Your theme controls how they look via `.post-content` descendant selectors, but you cannot change the element structure.
 
+Style all of the following inside `.post-content`:
+
 ```html
 <div class="post-content e-content">
-  <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <blockquote>, <code>, <pre>
+  <h2>, <h3>, <h4>
+  <p>
+  <ul>, <ol>, <li>
+  <blockquote>
+  <code>
+  <pre><code>
+  <figcaption>
   <div class="pull-quote"><blockquote>…</blockquote></div>
   <div class="quote-interlude"><blockquote>…</blockquote></div>
   <div class="snippet">…</div>
 </div>
 ```
 
+`pull-quote` and `quote-interlude` have increasing visual weight — they should be styled distinctly from plain blockquotes and from each other.
+
 ### From Signal's image editor — figure layout and treatment
 
-Signal writes these class names into the markdown. Your CSS must define them.
+Signal writes these class names into the markdown. Your CSS must define all of them.
+
+**All four layout classes:**
 
 ```html
-<!-- Layout (one of): -->
 <figure class="img-wide …">   <!-- breaks slightly outside reading column -->
 <figure class="img-break …">  <!-- full-width -->
-<figure class="img-small …">  <!-- within reading column -->
-<div class="img-pair">        <!-- wraps two figures side by side -->
-
-<!-- Treatment (one of, on same figure): -->
-… photo-muted">
-… photo-mono">
-… photo-colour">
-… photo-soft">
+<figure class="img-small …">  <!-- within reading column, max-width constrained -->
+<div class="img-pair">        <!-- wraps two figures side by side on desktop, stacked on mobile -->
 ```
+
+**All four treatment classes** (applied to the same figure as the layout class):
+
+```html
+… class="… photo-muted">    <!-- reduced saturation and contrast -->
+… class="… photo-mono">     <!-- strong monochrome -->
+… class="… photo-colour">   <!-- mostly untreated -->
+… class="… photo-soft">     <!-- lower contrast, slightly lifted -->
+```
+
+All 4 × 4 combinations are valid. Define each layout and each treatment independently so they compose freely.
+
+Your theme JS must also export an `imageRoles` object so Signal knows which options to show. See [`imageRoles` export](#imageroles-export) in the renderer reference.
 
 ### From `blog.js` — tag filtering on the essays index
 
@@ -215,11 +287,11 @@ The client-side tag filter script expects these IDs and classes to exist on the 
 <a class="post-list-item" data-tags="theatre,writing" href="…">…</a>
 ```
 
+Style: `tag-filter-bar`, `tag-filter-clear`, `tags-section`, `tag-chip`, `post-list-item`.
+
 ### Microformats2 — search/reader compatibility
 
 Wrap each post page in `<article class="h-entry">` and the homepage in `<main class="h-card">`. Mark the post title with `p-name` and body with `e-content`. These do not need CSS — they are semantic hooks for feed readers and search.
-
----
 
 ---
 
@@ -297,214 +369,26 @@ Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked ru
 
 Before using a class name in your renderer HTML, `grep blog.css` for it. If it appears there, read what properties it sets. You will need to explicitly override all of them in `[data-theme="x"] .classname` and `[data-theme="x"] .classname a`. Shared class names that are most likely to clash:
 
-| Class | Properties set in blog.css |
-|---|---|
-| `.footer-nav a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` |
-| `.footer-logo` | `font-family`, `font-size`, `color`, `border-bottom` |
-| `.post-list-item a` | `font-size`, `color`, `border-bottom` |
-| `.post-content a` | `color`, `border-bottom-color` |
-| `.tag-chip` | `font-family`, `font-size`, `color`, `border` |
-| `.site-nav .nav-links a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` |
+| Class | Properties set in blog.css | Note |
+|---|---|---|
+| `.footer-nav a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` | From unused `buildFooter` helper — avoid or override |
+| `.footer-logo` | `font-family`, `font-size`, `color`, `border-bottom` | From unused `buildFooter` helper — avoid or override |
+| `.post-list-item a` | `font-size`, `color`, `border-bottom` | |
+| `.post-content a` | `color`, `border-bottom-color` | |
+| `.tag-chip` | `font-family`, `font-size`, `color`, `border` | |
+| `.site-nav .nav-links a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` | |
 
 If in doubt, use a unique class name for your theme instead.
 
----
+### 7. Minimum font size is 14px
 
-## Type system (cinematic theme)
+No rendered text — body, captions, labels, metadata, fine print — should be set below `14px`. This applies to every element in every state, including `:hover` and inside compressed layouts on mobile. If something feels too large at 14px, reconsider the surrounding spacing or weight rather than dropping the size.
 
-The cinematic theme uses three typefaces. Each is fixed — they cannot be changed in post content, only in the theme CSS.
+### 8. No muted colours — always maintain contrast
 
-| Token | Typeface | Role |
-|---|---|---|
-| `--font-display` | `Baskerville, Georgia, 'Times New Roman', serif` | Hero titles, section headings, pull quotes, quote interludes, homepage feature title, footer quote |
-| `--font-body` | `Georgia, 'Times New Roman', serif` | All running prose: article paragraphs, blockquote text, decks, excerpts, card descriptions |
-| `--font-mono` | `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace` | Labels, kickers, metadata, nav items, dates, all UI chrome |
+Do not use low-contrast or muted text colours as a design move. `--color-text-muted` and `--color-text-subtle` exist in the token system, but their values must still pass WCAG AA contrast against the background they sit on (4.5:1 for normal text, 3:1 for large text). Do not set these tokens to colours that are decoratively faint — if it looks faded, it will fail for low-vision readers.
 
-Display contexts should have tight letter-spacing (around `-0.05em` to `-0.065em` for large titles) and a low line-height (around `0.86` to `0.92` for the largest sizes). Body text uses a generous line-height (`1.7`–`1.82`). Mono text uses uppercase with `0.16`–`0.22em` letter-spacing.
-
----
-
-## Background colour vars (cinematic theme)
-
-In addition to the standard semantic `--color-bg` token, the cinematic theme defines three atmospheric colour vars in the `[data-theme="cinematic"]` block:
-
-| Variable | Value | Use |
-|---|---|---|
-| `--color-reading-bg` | `#eee7dc` | Warm reading surface (`.surface-invert` background) |
-| `--color-deep-bg` | `#03040a` | Deep dark (legacy; prefer `--color-deeper-bg` for new use) |
-| `--color-deeper-bg` | `#040608` | Deepest dark — used for interlude sections, footer, `.quote-interlude` |
-
-These are internal to the cinematic theme and should not be referenced from component CSS. Only reference the semantic tokens (`--color-bg`, `--color-text`, etc.) from shared components.
-
----
-
-## Quote hierarchy (cinematic theme)
-
-There are three quote structures with increasing visual weight:
-
-| Syntax | Output | When to use |
-|---|---|---|
-| `> text` (standard blockquote) | Gold left rule, 60% column width, Georgia body text | A cited passage or key sentence incidental to the surrounding prose |
-| `<div class="pull-quote"> > text </div>` | In-flow, display font at `clamp(24px, 3.8vw, 48px)`, slightly wider than column, top/bottom rules | One sentence you want the reader to stop at; editorial emphasis; once per section at most |
-| `<div class="quote-interlude"> > text </div>` | Full-width dark section break, display font at `clamp(28px, 4.5vw, 66px)`, centred | A structural pause between major sections; once per long piece at most |
-
-The `.pull-quote` and `.quote-interlude` wrappers suppress the standard blockquote styling and apply display-font rules automatically.
-
----
-
-## Article ending (cinematic theme)
-
-Each post ends with a quiet `.article-ending` footer rendered inside the warm reading surface (`.surface-invert`), immediately after the article body and before the "More Essays" strip.
-
-The ending shows:
-- A mono label: `Essay` or `Note` depending on post type
-- A meta line: `Published [Month Year] · [tag1] · [tag2]`
-- A `Back to Essays` link on the right
-
-This is generated automatically from the post's `date` and `tags` fields — no author action needed. It is deliberately understated: the intent is to let the article breathe rather than jump straight from the last sentence into recommendations.
-
-Stronger image exits, afterwords, or decorative closing marks are future optional styles and should not replace the default fade-out treatment.
-
----
-
-## Homepage config model
-
-The homepage layout is driven by a JSON config stored at `settings/homepage.json` in R2. It is loaded by `loadSiteContext(env)` and passed to `buildHomepage()` in the active theme renderer.
-
-### Schema
-
-```json
-{
-  "featured": {
-    "slug": "optional-post-slug",
-    "titleOverride": "Optional override title",
-    "dekOverride": "Optional override subtitle/deck",
-    "imageOverride": "https://… (optional)",
-    "ctaLabel": "Read the essay →"
-  },
-  "cards": [
-    { "kicker": "Essays", "title": "Long-form pieces…", "href": "/posts/", "linkLabel": "Read essays →", "style": "" },
-    { "kicker": "Photographs", "title": "Theatre, travel…", "href": "/photos/", "linkLabel": "View photographs →", "style": "invert" },
-    { "kicker": "Now", "title": "What I'm doing now", "href": "/now/", "linkLabel": "Read →", "style": "" }
-  ],
-  "interlude": {
-    "text": "Theatre, memory, technology…",
-    "image": "https://… (optional)",
-    "treatment": "photo-muted",
-    "href": "/posts/ (optional)"
-  },
-  "archive": {
-    "title": "From the Archive",
-    "posts": ["slug-one", "slug-two", "slug-three"]
-  }
-}
-```
-
-### Fallback behaviour
-
-Every field is optional. When absent:
-- `featured`: defaults to `essays[0]` (most recent non-note post)
-- `cards`: defaults to the hardcoded Essays / Photographs / first nav-page blocks
-- `interlude`: defaults to the text-only version with the standing tagline
-- `archive`: defaults to the three most recent essays that are not the featured post
-
-### Archive section
-
-The homepage archive section (`home-archive`) uses a **sparse editorial list** treatment by default: typographic, restrained, publication-like. Each item shows a large display-font title and a small mono category label. The background is `--color-deeper-bg`, slightly darker than the page, to give it a distinct curated zone feel.
-
-Archive picks are **curated, not automatic**. The `archive.posts` array in `settings/homepage.json` should be hand-selected. The fallback (three most recent non-featured essays) is only for when no config exists. Stronger image exits or card-based archive displays are future optional styles and should not become the default.
-
-### Editing
-
-Use the **Homepage** view in Signal Admin (`/signal/#homepage`). Clicking **Save & publish** calls `PUT /api/homepage-config`, which saves the config to KV and immediately rebuilds the homepage HTML. No full site rebuild is needed.
-
----
-
-## Image roles in the cinematic theme
-
-The cinematic theme has a two-axis image system: **layout** (how the image fits into the page) and **treatment** (how it is filtered). These are separate CSS classes that combine freely.
-
-### Why these exist
-
-Many article images will not depict the post subject directly. A photo may be atmospheric, emotional, textural, archival, or documentary. These classes support that without every image becoming a visual distraction. The goal is mood, pacing, and editorial texture — not illustration.
-
-Not every post needs a literal image. Use images that add something the text cannot.
-
-### Layout roles
-
-| Class | Purpose |
-|---|---|
-| `.img-wide` | Breaks slightly outside the reading column. Best for landscape, atmospheric, or location images. |
-| `.img-break` | Full-width pause between sections. Cinematic, immersive. Best for mood images that reset the reader's attention. |
-| `.img-small` | Sits comfortably within the reading column. Intentionally modest. Best for archival, documentary, personal, or reference images. |
-| `.img-pair` | Two related images side by side on desktop, stacked on mobile. Best for contrasts, sequences, before/after, or images that form a visual thought. |
-
-### Treatment roles
-
-| Class | Purpose |
-|---|---|
-| `.photo-muted` | Reduced saturation and contrast. **Recommended default** for most atmospheric photos. |
-| `.photo-mono` | Strong monochrome. Use for archival, cinematic, stark, or memory-like images. |
-| `.photo-colour` | Mostly untreated. Use when colour is important — not as a default. |
-| `.photo-soft` | Lower contrast, slightly lifted. Use for reflective, quiet, nostalgic, or landscape images. |
-
-### Combining roles
-
-Apply one layout class and one treatment class to the same `<figure>`:
-
-```html
-<figure class="img-wide photo-muted">…</figure>
-<figure class="img-break photo-mono">…</figure>
-<figure class="img-small photo-colour">…</figure>
-<figure class="img-pair photo-soft">…</figure>
-```
-
-**Recommended defaults:** `.img-wide.photo-muted` for most unrelated-but-atmospheric images. `.img-break.photo-muted` for a major atmospheric pause.
-
-Use literal or external/CC images sparingly — mostly when the article is explicitly about that person, object, place, or event. In those cases, `.photo-colour` is appropriate.
-
-### `.img-pair` usage
-
-`.img-pair` is a grid wrapper around two `<figure>` (or `<img>`) children. In Signal, insert two consecutive images both with **Pair** layout — the renderer wraps them automatically. A blank line between them breaks the pair.
-
-```
-<!-- signal:image src="url1" alt="…" imgRole="img-pair" treatment="photo-soft" -->
-<!-- signal:image src="url2" alt="…" imgRole="img-pair" treatment="photo-soft" -->
-```
-
-### Hero images
-
-Hero image filters are controlled by the `--image-filter-hero` custom property on `[data-theme="cinematic"]`. Change this one value to adjust all hero images at once. It defaults to full grayscale with a slight brightness/contrast adjustment.
-
-### Theme-level image filter vars
-
-| Variable | Default value |
-|---|---|
-| `--image-filter-hero` | `grayscale(100%) brightness(0.80) contrast(1.04)` |
-| `--image-filter-mono` | Same as hero |
-| `--image-filter-muted` | `saturate(0.55) brightness(0.92) contrast(0.97)` |
-| `--image-filter-soft` | `saturate(0.75) brightness(1.02) contrast(0.88)` |
-| `--image-filter-colour` | `brightness(0.96)` |
-
-### Where the config lives / adding a new theme
-
-Image role metadata is defined in `functions/themes/<name>.js` as a named export `imageRoles`. The Signal editor fetches this from `GET /api/theme/image-roles` (public, no auth) and uses it to populate the layout and treatment selects.
-
-To add, remove, or rename roles in a new theme: export an `imageRoles` object from the theme file with the same shape as `cinematic.js`. Signal will reflect the change automatically.
-
-```js
-export const imageRoles = {
-  layouts: [
-    { className: 'img-wide', label: 'Wide', description: '…' },
-    // …
-  ],
-  treatments: [
-    { className: 'photo-muted', label: 'Muted', description: '…', isDefault: true },
-    // …
-  ],
-  defaults: { layout: 'img-wide', treatment: 'photo-muted' },
-};
-```
+This applies to every foreground value in the theme: body text, captions, labels, dates, placeholders, icon fills, and link colours in all states.
 
 ---
 
@@ -513,16 +397,11 @@ export const imageRoles = {
 ```
 site/
   styles/
-    main.css                Token names + dark defaults, reset, base typography
+    main.css                Token names + defaults, reset, base typography
     blog.css                Shared components — token references only, no raw values
     themes/
       base.css              Minimal starter theme — Arial 14px, no decoration
-      dark.css              Dark theme token values + dark layout styles
-      cinematic.css         Cinematic theme token values + cinematic layout styles
-      brash-editorial.css   Brash editorial theme (warm paper, big serif, coloured blocks)
-      manifesto.css         Manifesto theme (dark, monochrome, architectural)
-  scripts/
-    blog.js                 Client-side tag filtering (essays page)
+      <name>.css            One file per theme
 
 functions/
   lib/
@@ -530,10 +409,7 @@ functions/
     snippets.js             Snippet CSS builder — uses CSS vars, not raw colour values
   themes/
     base.js                 Minimal fallback — all page types, Arial 14px, no decoration
-    dark.js                 Dark page renderers (internal; not selectable in Signal)
-    cinematic.js            Cinematic page renderers
-    brash-editorial.js      Brash editorial renderers (buildHomepage + re-exports from cinematic)
-    manifesto.js            Manifesto renderers (all pages — cinematic, architectural, monochrome)
+    <name>.js               One file per theme
   api/
     [[path]].js             THEMES registry, loadSiteContext() (reads active theme), theme dispatch
 ```
@@ -689,7 +565,36 @@ Renders the site homepage (`/`). This is the most theme-specific renderer — mo
 }
 ```
 
-See [Homepage config model](#homepage-config-model) for the `HomepageConfig` shape.
+#### HomepageConfig shape
+
+```json
+{
+  "featured": {
+    "slug": "optional-post-slug",
+    "titleOverride": "Optional override title",
+    "dekOverride": "Optional override subtitle/deck",
+    "imageOverride": "https://… (optional)",
+    "ctaLabel": "Read the essay →"
+  },
+  "cards": [
+    { "kicker": "Essays", "title": "Long-form pieces…", "href": "/posts/", "linkLabel": "Read essays →", "style": "" },
+    { "kicker": "Photographs", "title": "Theatre, travel…", "href": "/photos/", "linkLabel": "View photographs →", "style": "invert" },
+    { "kicker": "Now", "title": "What I'm doing now", "href": "/now/", "linkLabel": "Read →", "style": "" }
+  ],
+  "interlude": {
+    "text": "Theatre, memory, technology…",
+    "image": "https://… (optional)",
+    "treatment": "photo-muted",
+    "href": "/posts/ (optional)"
+  },
+  "archive": {
+    "title": "From the Archive",
+    "posts": ["slug-one", "slug-two", "slug-three"]
+  }
+}
+```
+
+Every field is optional. When absent, `featured` defaults to the most recent non-note post; `cards`, `interlude`, and `archive` fall back to hardcoded defaults. The config is edited via **Homepage** in Signal Admin — no full rebuild needed.
 
 ---
 
@@ -720,25 +625,29 @@ Renders the notes stream (`/notes/`).
 
 ### `imageRoles` export
 
-Tells Signal which layout and treatment options to show in the image editor for this theme. Fetched from `GET /api/theme/image-roles`.
+Tells Signal which layout and treatment options to show in the image editor for this theme. Fetched from `GET /api/theme/image-roles`. **Every theme must export this** — without it, Signal falls back to an empty list and the image editor shows no options.
+
+Export all four layouts and all four treatments, matching the class names in the [shared class contract](#shared-class-contract):
 
 ```js
 export const imageRoles = {
   layouts: [
-    { className: 'img-wide',  label: 'Wide',  description: '…' },
-    { className: 'img-break', label: 'Break', description: '…' },
-    { className: 'img-small', label: 'Small', description: '…' },
-    { className: 'img-pair',  label: 'Pair',  description: '…' },
+    { className: 'img-wide',  label: 'Wide',  description: 'Breaks slightly outside the reading column' },
+    { className: 'img-break', label: 'Break', description: 'Full-width pause between sections' },
+    { className: 'img-small', label: 'Small', description: 'Within the reading column, modest size' },
+    { className: 'img-pair',  label: 'Pair',  description: 'Two images side by side on desktop' },
   ],
   treatments: [
-    { className: 'photo-muted',  label: 'Muted',  description: '…', isDefault: true },
-    { className: 'photo-mono',   label: 'Mono',   description: '…' },
-    { className: 'photo-colour', label: 'Colour', description: '…' },
-    { className: 'photo-soft',   label: 'Soft',   description: '…' },
+    { className: 'photo-muted',  label: 'Muted',  description: 'Reduced saturation and contrast', isDefault: true },
+    { className: 'photo-mono',   label: 'Mono',   description: 'Strong monochrome' },
+    { className: 'photo-colour', label: 'Colour', description: 'Mostly untreated' },
+    { className: 'photo-soft',   label: 'Soft',   description: 'Lower contrast, slightly lifted' },
   ],
   defaults: { layout: 'img-wide', treatment: 'photo-muted' },
 };
 ```
+
+If your theme uses different layout or treatment classes, update the `className` values to match — Signal will use whatever you export.
 
 ---
 
@@ -775,298 +684,6 @@ export const imageRoles = {
   subtitle: string,
   wordCount: number,
 }
-```
-
----
-
-## HTML structure and class reference
-
-This section documents the HTML the **cinematic** theme produces, for reference. It is **not a contract** — a new theme's renderer can produce completely different HTML with its own class names. The only required classes are in [Shared class contract](#shared-class-contract) above.
-
-Use this section to understand how cinematic is built, or as inspiration for your own structure. If you re-export a cinematic renderer (e.g. `export { buildPost } from './cinematic.js'`) you will need to style its class names.
-
-All pages carry `data-theme="<name>"` on `<html>`. Theme CSS must scope all selectors with `[data-theme="<name>"]` to avoid leaking into Signal or other themes.
-
----
-
-### Shared — every page
-
-```html
-<!-- Nav (position: fixed) -->
-<nav class="site-nav">
-  <a href="/" class="nav-logo">JRBNZ</a>
-  <ul class="nav-links">
-    <li><a href="/posts/" class="active">Essays</a></li>  <!-- .active on current page -->
-    <li><a href="/photos/">Photos</a></li>
-  </ul>
-</nav>
-
-<!-- Inverted surface (warm light panel on dark page) -->
-<div class="surface-invert">
-  <!-- article body, notes stream, CMS page content -->
-</div>
-
-<!-- Footer -->
-<footer class="site-footer">
-  <p class="footer-tagline">…tagline…</p>
-  <nav class="footer-nav">
-    <a href="/posts/">Essays</a>
-    <a href="/feed.xml">RSS</a>
-  </nav>
-</footer>
-```
-
----
-
-### Homepage (`/`)
-
-```html
-<main class="h-card">
-
-  <!-- Featured essay hero — full viewport height, image behind overlay -->
-  <section class="featured-hero" id="home-featured">
-    <img class="featured-hero-img" src="…" alt="…">       <!-- background image -->
-    <div class="featured-hero-overlay">                   <!-- dark gradient overlay -->
-      <div class="featured-hero-inner">
-        <p class="post-kicker">Featured Essay · January 1, 2025</p>
-        <h2 class="featured-hero-title"><a href="/posts/slug/">Title</a></h2>
-        <p class="featured-hero-excerpt">Subtitle or excerpt</p>
-        <a href="/posts/slug/" class="read-link">Read the essay →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Navigation cards -->
-  <section class="home-blocks">
-    <a class="home-block" href="/posts/">               <!-- standard card -->
-      <div>
-        <p class="home-block-kicker">Essays</p>
-        <h2 class="home-block-title">Long-form pieces…</h2>
-      </div>
-      <span class="home-block-link">Read essays →</span>
-    </a>
-    <a class="home-block home-block-invert" href="/photos/">  <!-- inverted card -->
-      …
-    </a>
-  </section>
-
-  <!-- Interlude — full viewport height, atmospheric image or text break -->
-  <!-- Renders as <section> or <a> depending on whether href is set -->
-  <section class="home-interlude home-interlude--image">   <!-- --image modifier when image present -->
-    <img class="home-interlude-img photo-muted" src="…" alt="">
-    <p class="home-interlude-text">Theatre, memory, technology…</p>
-  </section>
-
-  <!-- Archive — curated post list -->
-  <section class="home-archive">
-    <div class="home-archive-label">From the Archive</div>
-    <div class="home-archive-list">
-      <a href="/posts/slug/" class="home-archive-item">
-        <span class="home-archive-title">Post title</span>
-        <span class="home-archive-meta">Theatre</span>
-      </a>
-    </div>
-  </section>
-
-</main>
-```
-
----
-
-### Essays index (`/posts/`)
-
-```html
-<main>
-
-  <!-- Featured essay — same structure as homepage featured-hero, carries data-tags -->
-  <section class="featured-hero" id="featured-hero" data-tags="theatre,writing">
-    …same as homepage featured…
-  </section>
-
-  <!-- Tag filter bar + chips -->
-  <section class="index-tags">
-    <div class="tag-filter-bar" id="tag-filter-bar" hidden>   <!-- shown by blog.js when tag active -->
-      Essays tagged <strong id="tag-filter-label"></strong>
-      <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
-    </div>
-    <div class="tags-section">
-      <a href="/posts/?tag=theatre" class="tag-chip">#theatre</a>
-      <a href="/posts/?tag=writing" class="tag-chip">#writing</a>
-    </div>
-  </section>
-
-  <!-- All essays grid -->
-  <section class="more-essays index-all">
-    <p class="more-essays-label">All essays</p>
-    <div class="essay-strip">
-      <!-- Each card carries data-tags for client-side filtering -->
-      <a href="/posts/slug/" class="essay-card post-list-item" data-tags="theatre">
-        <img class="essay-card-img" src="…" alt="…">    <!-- or .essay-card-no-img div if no image -->
-        <h3 class="essay-card-title">Post title</h3>
-        <p class="essay-card-meta">Theatre · January 1, 2025</p>
-      </a>
-    </div>
-  </section>
-
-</main>
-```
-
----
-
-### Post — essay
-
-```html
-<article class="h-entry">
-
-  <!-- Full-viewport hero -->
-  <section class="post-hero">
-    <img class="post-hero-img" src="…" alt="…">         <!-- optional cover image -->
-    <div class="post-hero-content">
-      <p class="post-kicker">January 1, 2025 · 8 min read · Theatre</p>
-      <h1 class="post-hero-title p-name">Post title</h1>
-      <p class="post-hero-dek">Subtitle / deck</p>       <!-- optional -->
-    </div>
-  </section>
-
-  <!-- Warm reading surface -->
-  <div class="surface-invert">
-    <div class="article-col article-open article-section">
-      <div class="post-content e-content">
-        <!-- Rendered markdown — see Post content classes below -->
-      </div>
-    </div>
-
-    <!-- Article ending footer -->
-    <footer class="article-ending">
-      <div>
-        <div class="article-ending-label">Essay</div>       <!-- or "Note" -->
-        <div class="article-ending-meta">Published January 2025 · theatre</div>
-      </div>
-      <a class="article-ending-back" href="/posts/">Back to Essays</a>
-    </footer>
-  </div>
-
-  <!-- More essays strip (dark background) -->
-  <section class="more-essays">
-    <p class="more-essays-label">More essays</p>
-    <div class="essay-strip">
-      <a href="/posts/slug/" class="essay-card">…</a>
-      <a href="/posts/" class="essay-card essay-card--archive">…</a>   <!-- archive link card -->
-    </div>
-  </section>
-
-</article>
-```
-
----
-
-### Post — note
-
-Notes use a compact dark header instead of a full hero.
-
-```html
-<article class="h-entry">
-
-  <!-- Compact header (no hero image) -->
-  <div class="post-hero-compact">
-    <p class="post-kicker">January 1, 2025 · 2 min read</p>
-    <h1 class="post-hero-compact-title p-name">Note title</h1>
-    <p class="post-hero-dek">Optional subtitle</p>
-  </div>
-
-  <!-- Same surface-invert + article-col + article-ending as essay -->
-  <div class="surface-invert">…</div>
-
-  <!-- Same more-essays strip as essay -->
-  <section class="more-essays">…</section>
-
-</article>
-```
-
----
-
-### Notes stream (`/notes/`)
-
-```html
-<!-- Page masthead — also used by CMS pages -->
-<div class="page-masthead">
-  <h1 class="page-title">Notes</h1>
-</div>
-
-<div class="surface-invert">
-  <section class="notes-stream">
-    <article class="note-entry">
-      <div class="note-meta">
-        <a class="note-permalink" href="/posts/slug/" title="Permalink">note</a>
-        <time class="note-date">January 1, 2025</time>
-        <span class="note-tag">theatre</span>            <!-- one per non-note tag -->
-      </div>
-      <div class="note-body post-content">
-        <!-- Rendered markdown -->
-      </div>
-    </article>
-  </section>
-</div>
-```
-
----
-
-### CMS page
-
-```html
-<div class="page-masthead">
-  <h1 class="page-title">About</h1>
-</div>
-
-<div class="surface-invert">
-  <div class="page-body">
-    <div class="post-content page-content">
-      <!-- Rendered markdown -->
-    </div>
-  </div>
-</div>
-```
-
----
-
-### Post content (inside `.post-content`)
-
-These classes appear inside the rendered markdown body and are applied by the markdown renderer or Signal image blocks.
-
-```html
-<!-- Standard prose elements -->
-<h2>, <h3>, <h4>
-<p>, <ul>, <ol>, <li>
-<blockquote>          <!-- gold left-rule style -->
-<code>, <pre><code>   <!-- inline and block code -->
-<figcaption>
-
-<!-- Quote structures (increasing visual weight) -->
-<div class="pull-quote">
-  <blockquote><p>…</p></blockquote>    <!-- display font, in-flow emphasis -->
-</div>
-
-<div class="quote-interlude">
-  <blockquote><p>…</p></blockquote>    <!-- full-width dark section break -->
-</div>
-
-<!-- Images — layout class + treatment class on the figure -->
-<figure class="img-wide photo-muted">
-  <img src="…" alt="…">
-  <figcaption>Optional caption</figcaption>
-</figure>
-
-<!-- Available layout classes: img-wide, img-break, img-small -->
-<!-- img-pair is a wrapper around two figures: -->
-<div class="img-pair">
-  <figure class="photo-soft"><img …></figure>
-  <figure class="photo-soft"><img …></figure>
-</div>
-
-<!-- Available treatment classes: photo-muted, photo-mono, photo-colour, photo-soft -->
-
-<!-- Snippet blocks (inline styled via CSS vars — do not override with raw colours) -->
-<div class="snippet">…</div>
 ```
 
 ---

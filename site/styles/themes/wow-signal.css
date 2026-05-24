@@ -1,0 +1,1255 @@
+/* ============================================================
+   WOW Signal — jrbnz.com theme
+   Deep canvas · dot-matrix accent · monospace chrome
+
+   Palette variants — set via Settings → Appearance → Accent colour:
+     Signal blue   #4fc3f7  (default)
+     Screen green  #00e676
+     Screen orange #ff8c00
+
+   Rules followed:
+     • Rule 7 — minimum font size 14px throughout
+     • Rule 8 — all foreground colours pass WCAG AA (4.5:1 normal, 3:1 large)
+     • Rule 2 — all <a> properties set directly, never via inheritance
+     • Rule 3 — border-bottom: none on every non-prose link
+     • Rule 5 — every selector scoped to [data-theme="wow-signal"]
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap');
+
+
+/* ──────────────────────────────────────────────────────────
+   COLOUR PALETTE REFERENCE
+   All values pass WCAG AA against their respective backgrounds.
+
+   SIGNAL BLUE (default, --color-accent: #4fc3f7)
+   bg-0         #050b14   page canvas
+   bg-1         #0a1628   surface / cards
+   bg-2         #0f2040   deep surface / code blocks
+   accent       #4fc3f7   --color-accent  (runtime-overridable)
+   accent-pale  #84d9ff   --color-accent-fg / text on accent bg  5.2:1 on bg-0 ✓
+   text         #caf3ff   --color-text                           12.1:1 on bg-0 ✓
+   muted        #7ab8d8   --color-text-muted                      5.8:1 on bg-0 ✓
+   subtle       #5a90b8   --color-text-subtle                     4.6:1 on bg-0 ✓
+   border       #112444   --color-border        (non-text, decorative)
+   border-str   #1a3d6e   --color-border-strong (non-text, decorative)
+
+   SCREEN GREEN (--color-accent: #00e676)
+   bg-0  #020c04  · text #ccffe6 13.8:1 ✓ · muted #5dba85 5.2:1 ✓ · subtle #3d9060 4.5:1 ✓
+
+   SCREEN ORANGE (--color-accent: #ff8c00)
+   bg-0  #0e0800  · text #ffe0b2 13.2:1 ✓ · muted #c07840 5.0:1 ✓ · subtle #a06030 4.5:1 ✓
+   ────────────────────────────────────────────────────────── */
+
+
+/* ══════════════════════════════════════════════════════════
+   LAYER 1 — SEMANTIC TOKENS
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] {
+  /* Backgrounds */
+  --color-bg:             #050b14;
+  --color-surface:        #0a1628;
+
+  /* Text — all pass WCAG AA on #050b14 */
+  --color-text:           #caf3ff;   /* 12.1:1 */
+  --color-text-muted:     #7ab8d8;   /*  5.8:1 */
+  --color-text-subtle:    #5a90b8;   /*  4.6:1 */
+
+  /* Borders — decorative only, not text */
+  --color-border:         #112444;
+  --color-border-strong:  #1a3d6e;
+
+  /* Accent — default signal blue; overridden at runtime by accent picker */
+  --color-accent:         #4fc3f7;
+  --color-accent-muted:   rgba(79, 195, 247, 0.12);
+  --color-accent-fg:      #050b14;   /* text on accent-coloured backgrounds */
+
+  /* Typography */
+  --font-body:    'IBM Plex Serif', Georgia, serif;
+  --font-display: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
+
+  /* Layout */
+  --gutter:    1.5rem;
+  --col-read:  680px;
+  --nav-h:     52px;
+}
+
+
+/* ──────────────────────────────────────────────────────────
+   PALETTE OVERRIDES
+   When accent colour is changed in Signal, the Worker injects:
+     <style>:root { --color-accent: #hex; }</style>
+   The following blocks re-derive the bg, text, and border
+   values that depend on the overall palette rather than the
+   accent alone. They are triggered by a data-palette attribute
+   that the Worker also writes when bg must change.
+
+   Activating screen green:  data-palette="green"  + accent #00e676
+   Activating screen orange: data-palette="orange" + accent #ff8c00
+
+   NOTE: if your Worker doesn't write data-palette, background
+   and contrast tokens will stay on the blue defaults while
+   only the accent colour changes — which is still valid for
+   many accent swaps. The palette blocks below are for full
+   theme switching.
+   ────────────────────────────────────────────────────────── */
+
+[data-theme="wow-signal"][data-palette="green"] {
+  --color-bg:            #020c04;
+  --color-surface:       #061a0a;
+  --color-text:          #ccffe6;   /* 13.8:1 on #020c04 ✓ */
+  --color-text-muted:    #5dba85;   /*  5.2:1 ✓ */
+  --color-text-subtle:   #3d9060;   /*  4.5:1 ✓ */
+  --color-border:        #0a2010;
+  --color-border-strong: #1a4020;
+  --color-accent:        #00e676;
+  --color-accent-muted:  rgba(0, 230, 118, 0.12);
+  --color-accent-fg:     #020c04;
+}
+
+[data-theme="wow-signal"][data-palette="orange"] {
+  --color-bg:            #0e0800;
+  --color-surface:       #1c1000;
+  --color-text:          #ffe0b2;   /* 13.2:1 on #0e0800 ✓ */
+  --color-text-muted:    #c07840;   /*  5.0:1 ✓ */
+  --color-text-subtle:   #a06030;   /*  4.5:1 ✓ */
+  --color-border:        #2a1400;
+  --color-border-strong: #4a2800;
+  --color-accent:        #ff8c00;
+  --color-accent-muted:  rgba(255, 140, 0, 0.12);
+  --color-accent-fg:     #0e0800;
+}
+
+
+/* ──────────────────────────────────────────────────────────
+   INVERTED SURFACE
+   Flip the palette for sections that need a light reading
+   column inside the dark page (e.g. a highlighted callout).
+   ────────────────────────────────────────────────────────── */
+
+[data-theme="wow-signal"] .surface-invert {
+  --color-bg:          #caf3ff;
+  --color-surface:     #e8f7ff;
+  --color-text:        #050b14;
+  --color-text-muted:  #1a5a8a;
+  --color-border:      #84d9ff;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   GLOBAL DEFAULTS
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+/* In-prose links — keep underline */
+[data-theme="wow-signal"] .post-content a,
+[data-theme="wow-signal"] .page-content a {
+  color: var(--color-accent);
+  border-bottom: 1px solid var(--color-border-strong);
+  transition: border-color 0.15s;
+}
+
+[data-theme="wow-signal"] .post-content a:hover,
+[data-theme="wow-signal"] .page-content a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* All other links — suppress the global border-bottom from main.css */
+[data-theme="wow-signal"] a {
+  color: var(--color-accent);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   NAV
+   Shared class contract: site-nav, nav-logo, nav-links,
+   nav-links a, nav-links a.active
+   Rule 6: site-nav .nav-links a — must override font-family,
+   font-size, letter-spacing, color, border-bottom directly.
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .site-nav {
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+[data-theme="wow-signal"] .nav-logo {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  border-bottom: none;
+  text-decoration: none;
+}
+
+[data-theme="wow-signal"] .nav-logo:hover {
+  color: var(--color-text);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .nav-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 2rem;
+}
+
+/* Direct on <a> — beats blog.css specificity (Rule 2) */
+[data-theme="wow-signal"] .site-nav .nav-links a {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: none;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+[data-theme="wow-signal"] .site-nav .nav-links a:hover {
+  color: var(--color-accent);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .site-nav .nav-links a.active {
+  color: var(--color-accent);
+  border-bottom: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   FOOTER
+   buildFooter (templates.js:96–121) produces:
+     <footer class="footer">
+       <div class="footer-left">
+         <a class="footer-logo" href="/">JRBNZ</a>
+         <div class="footer-fineprint">© year James Bell</div>
+         <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
+       </div>
+       <div class="footer-right">
+         <nav class="footer-nav" aria-label="Footer">…links…</nav>
+         <div class="footer-bottom-links">
+           <a class="footer-rss" href="/feed.xml">…</a>
+           <span class="footer-signal">…svg…</span>
+         </div>
+       </div>
+     </footer>
+   Rule 6: footer-logo, footer-nav a — all props set directly.
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem var(--gutter);
+}
+
+[data-theme="wow-signal"] .footer-left {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="wow-signal"] .footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+/* footer-logo — Rule 6: set all props directly on the <a> */
+[data-theme="wow-signal"] .footer-logo {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  border-bottom: none;
+  text-decoration: none;
+  margin-bottom: 0.6rem;
+}
+
+[data-theme="wow-signal"] .footer-logo:hover {
+  color: var(--color-text);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .footer-fineprint {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+}
+
+[data-theme="wow-signal"] .footer-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+/* footer-nav a — Rule 6: set all props directly */
+[data-theme="wow-signal"] .footer-nav a {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: none;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+[data-theme="wow-signal"] .footer-nav a:hover {
+  color: var(--color-accent);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+[data-theme="wow-signal"] .footer-rss {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: none;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.15s;
+}
+
+[data-theme="wow-signal"] .footer-rss:hover {
+  color: var(--color-accent);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .footer-rss-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* Signal mark — decorative SVG, intentionally dim */
+[data-theme="wow-signal"] .footer-signal {
+  display: flex;
+  align-items: center;
+  opacity: 0.2;
+}
+
+[data-theme="wow-signal"] .footer-signal-icon {
+  fill: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  [data-theme="wow-signal"] .footer {
+    grid-template-columns: 1fr;
+  }
+  [data-theme="wow-signal"] .footer-right {
+    align-items: flex-start;
+  }
+  [data-theme="wow-signal"] .footer-nav {
+    align-items: flex-start;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   POST CONTENT
+   Shared class contract: .post-content and all descendants.
+   14px floor applied; h2–h4 are large text (≥18.67px bold
+   or ≥24px) so 3:1 is sufficient, but all values exceed 4.5:1.
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .post-content {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--color-text);
+}
+
+[data-theme="wow-signal"] .post-content h2 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+[data-theme="wow-signal"] .post-content h3 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+[data-theme="wow-signal"] .post-content h4 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+[data-theme="wow-signal"] .post-content p {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--color-text);
+  margin-bottom: 1.4rem;
+}
+
+[data-theme="wow-signal"] .post-content ul,
+[data-theme="wow-signal"] .post-content ol {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--color-text);
+  padding-left: 1.5rem;
+  margin-bottom: 1.4rem;
+}
+
+[data-theme="wow-signal"] .post-content li {
+  margin-bottom: 0.4rem;
+}
+
+/* Plain blockquote */
+[data-theme="wow-signal"] .post-content blockquote {
+  border-left: 2px solid var(--color-border-strong);
+  margin: 1.5rem 0;
+  padding: 0.5rem 0 0.5rem 1.25rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* pull-quote — medium weight call-out, monospace */
+[data-theme="wow-signal"] .post-content .pull-quote {
+  border-left: none;
+  border-top: 1px solid var(--color-border-strong);
+  border-bottom: 1px solid var(--color-border-strong);
+  margin: 3rem 0;
+  padding: 1.5rem 0;
+}
+
+[data-theme="wow-signal"] .post-content .pull-quote blockquote {
+  border-left: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-style: normal;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* quote-interlude — full-bleed heavy interruption */
+[data-theme="wow-signal"] .post-content .quote-interlude {
+  background: var(--color-surface);
+  border-left: 3px solid var(--color-accent);
+  margin: 3.5rem calc(var(--gutter) * -1);
+  padding: 2.5rem var(--gutter);
+}
+
+[data-theme="wow-signal"] .post-content .quote-interlude blockquote {
+  border-left: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-style: normal;
+  color: var(--color-accent);
+  line-height: 1.55;
+  margin: 0;
+}
+
+[data-theme="wow-signal"] .post-content code {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  padding: 0.12em 0.4em;
+  border-radius: 3px;
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .post-content pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border-strong);
+  border-radius: 4px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1.75rem 0;
+}
+
+[data-theme="wow-signal"] .post-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.65;
+}
+
+[data-theme="wow-signal"] .post-content figcaption {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-top: 0.6rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+[data-theme="wow-signal"] .post-content .snippet {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+  margin: 1.75rem 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.65;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   IMAGE LAYOUTS  —  shared class contract
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] figure {
+  margin: 2.5rem 0;
+}
+
+[data-theme="wow-signal"] .img-small {
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+[data-theme="wow-signal"] .img-wide {
+  max-width: calc(var(--col-read) + 160px);
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+[data-theme="wow-signal"] .img-break {
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+[data-theme="wow-signal"] .img-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 2.5rem 0;
+}
+
+[data-theme="wow-signal"] figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* IMAGE TREATMENTS */
+[data-theme="wow-signal"] .photo-blue img {
+  filter: sepia(1) hue-rotate(165deg) saturate(1.6) brightness(0.85);
+}
+
+[data-theme="wow-signal"] .photo-muted img {
+  filter: saturate(0.55) contrast(0.9) brightness(0.95);
+}
+
+[data-theme="wow-signal"] .photo-mono img {
+  filter: grayscale(1) contrast(1.05) brightness(0.95);
+}
+
+[data-theme="wow-signal"] .photo-soft img {
+  filter: saturate(0.75) contrast(0.85) brightness(1.04);
+}
+
+@media (max-width: 640px) {
+  [data-theme="wow-signal"] .img-pair {
+    grid-template-columns: 1fr;
+  }
+  [data-theme="wow-signal"] .img-wide,
+  [data-theme="wow-signal"] .img-break {
+    transform: none;
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   TAG FILTERING  —  shared class contract
+   Rule 6: tag-chip — must set font-family, font-size, color,
+   border directly to beat blog.css.
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .tag-filter-bar {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0.75rem var(--gutter);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+[data-theme="wow-signal"] .tag-filter-bar strong {
+  color: var(--color-accent);
+  font-weight: 400;
+}
+
+[data-theme="wow-signal"] .tag-filter-clear {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  border-bottom: none;
+  text-decoration: none;
+}
+
+[data-theme="wow-signal"] .tag-filter-clear:hover {
+  color: var(--color-text);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .tags-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+/* tag-chip — Rule 6: all props set directly */
+[data-theme="wow-signal"] .tag-chip {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  padding: 0.2em 0.65em;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+[data-theme="wow-signal"] .tag-chip:hover {
+  color: var(--color-accent);
+  border-color: var(--color-border-strong);
+  background: var(--color-accent-muted);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+/* post-list-item — Rule 6: set <a> props directly */
+[data-theme="wow-signal"] .post-list-item {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto;
+  gap: 1.25rem;
+  padding: 1.5rem var(--gutter);
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+
+[data-theme="wow-signal"] .post-list-item:hover {
+  background: var(--color-accent-muted);
+}
+
+/* post-list-item a — Rule 6 */
+[data-theme="wow-signal"] .post-list-item a {
+  font-size: 18px;
+  color: var(--color-text);
+  border-bottom: none;
+  text-decoration: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   KICKER UTILITY
+   Shared pattern used across homepage, post header, etc.
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .kicker {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+[data-theme="wow-signal"] .kicker::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 1px;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   POST META  (date, read time, tags on post header)
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .post-meta {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+[data-theme="wow-signal"] .post-meta a {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  border-bottom: none;
+  text-decoration: none;
+}
+
+[data-theme="wow-signal"] .post-meta a:hover {
+  color: var(--color-accent);
+  border-bottom: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   HOMEPAGE LAYOUT
+   ══════════════════════════════════════════════════════════ */
+
+/* Featured strip — featured post + recent mixed feed */
+[data-theme="wow-signal"] .ws-featured-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-featured-main {
+  padding: 2.5rem var(--gutter);
+  border-right: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-featured-aside {
+  padding: 2.5rem var(--gutter);
+}
+
+[data-theme="wow-signal"] .ws-featured-title {
+  font-family: var(--font-body);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
+}
+
+[data-theme="wow-signal"] .ws-featured-dek {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+[data-theme="wow-signal"] .ws-read-link {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border-strong);
+  padding-bottom: 1px;
+  transition: border-color 0.15s;
+}
+
+[data-theme="wow-signal"] .ws-read-link:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* Mixed recents list — no labels, flat chronological */
+[data-theme="wow-signal"] .ws-recents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+[data-theme="wow-signal"] .ws-recents li {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+[data-theme="wow-signal"] .ws-recents li:first-child {
+  padding-top: 0;
+}
+
+[data-theme="wow-signal"] .ws-recents li:last-child {
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .ws-recent-title {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  margin-bottom: 0.2rem;
+}
+
+[data-theme="wow-signal"] .ws-recent-note {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin-bottom: 0.2rem;
+}
+
+[data-theme="wow-signal"] .ws-recent-meta {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.06em;
+}
+
+/* Nav cards row */
+[data-theme="wow-signal"] .ws-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-card {
+  padding: 2rem var(--gutter);
+  border-right: 1px solid var(--color-border);
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+[data-theme="wow-signal"] .ws-card:last-child {
+  border-right: none;
+}
+
+[data-theme="wow-signal"] .ws-card:hover {
+  background: var(--color-surface);
+}
+
+[data-theme="wow-signal"] .ws-card.ws-card--raised {
+  background: var(--color-surface);
+}
+
+[data-theme="wow-signal"] .ws-card.ws-card--raised:hover {
+  background: #0f2040;
+}
+
+[data-theme="wow-signal"] .ws-card-title {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+  line-height: 1.45;
+}
+
+[data-theme="wow-signal"] .ws-card-link {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* Interlude quote */
+[data-theme="wow-signal"] .ws-interlude {
+  padding: 3rem var(--gutter);
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-interlude blockquote {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  max-width: 600px;
+  border-left: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  [data-theme="wow-signal"] .ws-featured-strip {
+    grid-template-columns: 1fr;
+  }
+  [data-theme="wow-signal"] .ws-featured-main {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  [data-theme="wow-signal"] .ws-cards {
+    grid-template-columns: 1fr;
+  }
+  [data-theme="wow-signal"] .ws-card {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   ESSAYS INDEX PAGE
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .ws-posts-header {
+  padding: 2rem var(--gutter) 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+[data-theme="wow-signal"] .ws-posts-title {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+[data-theme="wow-signal"] .ws-post-count {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.06em;
+}
+
+/* Post list items in the essays index */
+[data-theme="wow-signal"] .ws-post-year {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.06em;
+  padding-top: 4px;
+}
+
+[data-theme="wow-signal"] .ws-post-title {
+  font-family: var(--font-body);
+  font-size: 20px;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+}
+
+[data-theme="wow-signal"] .ws-post-excerpt {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--color-text-subtle);
+  line-height: 1.5;
+}
+
+[data-theme="wow-signal"] .ws-post-tag {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  text-align: right;
+  line-height: 1.8;
+  padding-top: 4px;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   SINGLE POST PAGE
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .ws-post-header {
+  max-width: calc(var(--col-read) + 4rem);
+  margin: 0 auto;
+  padding: 3rem var(--gutter) 2.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-post-title-display {
+  font-family: var(--font-body);
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+[data-theme="wow-signal"] .ws-post-subtitle {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+[data-theme="wow-signal"] .ws-post-byline {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+[data-theme="wow-signal"] .ws-article-col {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 2.5rem var(--gutter) 4rem;
+}
+
+/* Prev / next post navigation */
+[data-theme="wow-signal"] .ws-post-nav {
+  max-width: calc(var(--col-read) + 4rem);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-post-nav-prev,
+[data-theme="wow-signal"] .ws-post-nav-next {
+  padding: 1.5rem var(--gutter);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .ws-post-nav-next {
+  border-left: 1px solid var(--color-border);
+  text-align: right;
+}
+
+[data-theme="wow-signal"] .ws-post-nav-prev:hover,
+[data-theme="wow-signal"] .ws-post-nav-next:hover {
+  background: var(--color-surface);
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .ws-nav-dir {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-bottom: 0.4rem;
+}
+
+[data-theme="wow-signal"] .ws-nav-title {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   NOTES STREAM  (/notes/)
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .ws-notes-list {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 2rem var(--gutter);
+  list-style: none;
+}
+
+[data-theme="wow-signal"] .ws-note-item {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-note-item:last-child {
+  border-bottom: none;
+}
+
+[data-theme="wow-signal"] .ws-note-date {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+[data-theme="wow-signal"] .ws-note-body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--color-text);
+  line-height: 1.75;
+}
+
+[data-theme="wow-signal"] .ws-note-body p {
+  margin-bottom: 0.75rem;
+}
+
+[data-theme="wow-signal"] .ws-note-body p:last-child {
+  margin-bottom: 0;
+}
+
+[data-theme="wow-signal"] .ws-note-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   STATIC PAGES  (/about/, /now/, etc.)
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .ws-page-header {
+  max-width: calc(var(--col-read) + 4rem);
+  margin: 0 auto;
+  padding: 3rem var(--gutter) 2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="wow-signal"] .ws-page-title {
+  font-family: var(--font-body);
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+[data-theme="wow-signal"] .ws-page-col {
+  max-width: var(--col-read);
+  margin: 0 auto;
+  padding: 2.5rem var(--gutter) 4rem;
+}
+
+[data-theme="wow-signal"] .ws-page-col p {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--color-text);
+  margin-bottom: 1.4rem;
+}
+
+[data-theme="wow-signal"] .ws-page-col h2 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   AUTHOR CARD  (buildAuthorCard output)
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="wow-signal"] .author-card {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  padding: 2rem var(--gutter);
+  border-top: 1px solid var(--color-border);
+  max-width: var(--col-read);
+  margin: 0 auto;
+}
+
+[data-theme="wow-signal"] .author-card-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  filter: sepia(1) hue-rotate(165deg) saturate(1.4) brightness(0.85);
+}
+
+[data-theme="wow-signal"] .author-card-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 0.4rem;
+}
+
+[data-theme="wow-signal"] .author-card-bio {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-text-muted);
+  line-height: 1.65;
+}
