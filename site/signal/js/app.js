@@ -836,8 +836,8 @@ function openSettingsView() {
   document.getElementById('btn-show-apikey').textContent = 'Show';
 
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
-    _markActiveSwatch('signal-swatch-row', d.signalAccent || '');
-    _markActiveSwatch('live-swatch-row', d.accent || '');
+    _updateAccentButtons('signal-swatch-row', d.signalAccent || '');
+    _updateAccentButtons('live-swatch-row', d.accent || '');
   }).catch(() => {});
 
   const tokenEl = document.getElementById('micropub-token-display');
@@ -901,34 +901,38 @@ async function saveAppSettings() {
   }
 }
 
-function _markActiveSwatch(rowId, savedColor) {
+function _updateAccentButtons(rowId, color) {
   const row = document.getElementById(rowId);
   if (!row) return;
-  let matched = false;
-  row.querySelectorAll('.accent-swatch').forEach(s => {
-    const match = savedColor && s.dataset.color.toLowerCase() === savedColor.toLowerCase();
-    s.classList.toggle('is-active', match);
-    if (match) matched = true;
-  });
   const customBtn = row.querySelector('.accent-custom-btn');
-  if (customBtn) {
-    customBtn.classList.toggle('is-active', !matched && !!savedColor);
-    customBtn.style.background = (!matched && savedColor) ? savedColor : '';
-  }
-  // Keep hidden picker in sync so it opens at the current custom colour
+  const noneBtn = row.querySelector('.accent-none-btn');
   const picker = row.querySelector('.accent-picker-input');
-  if (picker && !matched && savedColor && savedColor.startsWith('#')) picker.value = savedColor;
+  if (color) {
+    customBtn?.classList.add('is-active');
+    noneBtn?.classList.remove('is-active');
+    if (customBtn) customBtn.style.background = color;
+    if (picker && color.startsWith('#')) picker.value = color;
+  } else {
+    customBtn?.classList.remove('is-active');
+    noneBtn?.classList.add('is-active');
+    if (customBtn) customBtn.style.background = '';
+  }
 }
 
 function _applySignalAccent(color) {
-  document.documentElement.style.setProperty('--color-accent', color);
-  document.documentElement.style.setProperty('--color-accent-dim', `color-mix(in oklch, ${color} 15%, transparent)`);
-  document.documentElement.style.setProperty('--color-accent-fg', accentFg(color));
-  // Save to R2 — fire-and-forget, UI already updated instantly above
+  if (color) {
+    document.documentElement.style.setProperty('--color-accent', color);
+    document.documentElement.style.setProperty('--color-accent-dim', `color-mix(in oklch, ${color} 15%, transparent)`);
+    document.documentElement.style.setProperty('--color-accent-fg', accentFg(color));
+  } else {
+    document.documentElement.style.removeProperty('--color-accent');
+    document.documentElement.style.removeProperty('--color-accent-dim');
+    document.documentElement.style.removeProperty('--color-accent-fg');
+  }
   fetch('/api/site/accent', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ signalAccent: color }),
+    body: JSON.stringify({ signalAccent: color || null }),
   }).catch(() => {});
 }
 
@@ -956,57 +960,45 @@ function _applyLiveAccent(color) {
   fetch('/api/site/accent', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ accent: color }),
+    body: JSON.stringify({ accent: color || null }),
   }).catch(() => {});
 }
 
 function _initAccentPickers() {
   // Signal
-  const signalRow = document.getElementById('signal-swatch-row');
   const signalPicker = document.getElementById('signal-color-picker');
   const signalCustomBtn = document.getElementById('signal-custom-btn');
+  const signalNoneBtn = document.getElementById('signal-none-btn');
 
-  signalRow?.querySelectorAll('.accent-swatch').forEach(swatch => {
-    swatch.addEventListener('click', () => {
-      signalRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
-      swatch.classList.add('is-active');
-      if (signalCustomBtn) signalCustomBtn.style.background = '';
-      _applySignalAccent(swatch.dataset.color);
-    });
-  });
   signalCustomBtn?.addEventListener('click', () => signalPicker?.click());
   const _onSignalPicker = () => {
-    signalRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
-    signalCustomBtn?.classList.add('is-active');
-    if (signalCustomBtn) signalCustomBtn.style.background = signalPicker.value;
+    _updateAccentButtons('signal-swatch-row', signalPicker.value);
     _applySignalAccent(signalPicker.value);
   };
   // iOS fires 'change' not 'input' when the colour wheel closes; listen to both
   signalPicker?.addEventListener('input', _onSignalPicker);
   signalPicker?.addEventListener('change', _onSignalPicker);
+  signalNoneBtn?.addEventListener('click', () => {
+    _updateAccentButtons('signal-swatch-row', '');
+    _applySignalAccent('');
+  });
 
   // Live
-  const liveRow = document.getElementById('live-swatch-row');
   const livePicker = document.getElementById('live-color-picker');
   const liveCustomBtn = document.getElementById('live-custom-btn');
+  const liveNoneBtn = document.getElementById('live-none-btn');
 
-  liveRow?.querySelectorAll('.accent-swatch').forEach(swatch => {
-    swatch.addEventListener('click', () => {
-      liveRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
-      swatch.classList.add('is-active');
-      if (liveCustomBtn) liveCustomBtn.style.background = '';
-      _applyLiveAccent(swatch.dataset.color);
-    });
-  });
   liveCustomBtn?.addEventListener('click', () => livePicker?.click());
   const _onLivePicker = () => {
-    liveRow.querySelectorAll('.accent-swatch, .accent-custom-btn').forEach(s => s.classList.remove('is-active'));
-    liveCustomBtn?.classList.add('is-active');
-    if (liveCustomBtn) liveCustomBtn.style.background = livePicker.value;
+    _updateAccentButtons('live-swatch-row', livePicker.value);
     _applyLiveAccent(livePicker.value);
   };
   livePicker?.addEventListener('input', _onLivePicker);
   livePicker?.addEventListener('change', _onLivePicker);
+  liveNoneBtn?.addEventListener('click', () => {
+    _updateAccentButtons('live-swatch-row', '');
+    _applyLiveAccent('');
+  });
 
   // Apply Signal accent on boot from R2; migrate any legacy localStorage value on first run
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
