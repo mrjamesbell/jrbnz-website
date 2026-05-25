@@ -1,17 +1,18 @@
 # Theming
 
-The site uses a two-layer CSS custom property system. Components reference
-semantic tokens; themes supply the values. Switching the active theme changes
-visual output without touching any component CSS.
+The site uses a two-layer CSS system. `site.css` handles structural layout only — no colours, no typography, no borders. Theme files own all visual decisions. Switching the active theme changes the entire look without touching any layout CSS.
 
 ---
 
 ## How it works
 
-### Layer 1 — Semantic tokens
+### Layer 1 — Structural foundation (`site.css`)
 
-Defined in `styles/main.css` `:root`. These names never change between themes;
-only their values do. Every component references only these tokens.
+`site/styles/site.css` contains:
+
+- **`:root` token defaults** — fallback values for every semantic token. Themes override these via `[data-theme="x"]`. No component uses raw values; everything references a token.
+- **Reset** — `box-sizing`, `margin`, `padding`, `overflow-x`.
+- **Structural layout** — `display`, `grid`, `flex`, `max-width`, `padding`, `margin`, `gap` for shared components (nav, post layout, sidebar, footer, etc.). No colours, borders, font sizes, or font families.
 
 | Token | Purpose |
 |---|---|
@@ -34,26 +35,19 @@ only their values do. Every component references only these tokens.
 
 ### Layer 2 — Theme files
 
-Each theme lives in `styles/themes/<name>.css`. A theme file contains:
+Each theme lives in `site/styles/themes/<name>.css`. A theme file contains:
 
-1. A `[data-theme="<name>"]` block that sets values for every token above.
-2. A `[data-theme="<name>"] .surface-invert` block for the inverted surface
-   (see below).
-3. Any layout styles specific to that theme's HTML structure (e.g. a fixed nav,
-   hero section, post grid).
+1. A `[data-theme="<name>"]` block that overrides every token above.
+2. All visual rules — colours, typography, borders, backgrounds — for every component, scoped to `[data-theme="<name>"]`.
+3. Any layout adjustments specific to that theme's HTML structure (e.g. a sticky nav, hero section, post grid).
 
-The active theme name is stored in `settings/site.json` in R2 (key `theme`).
-`loadSiteContext()` reads it on every render. The Worker writes `data-theme="<name>"` onto
-the `<html>` element and loads `/styles/themes/<name>.css`. The active theme can be
-changed from the **Settings → Appearance → Theme** picker in Signal — no code change needed.
+Because `site.css` makes no visual decisions, themes start from a clean slate. The `:root` defaults give a plain black-on-white Arial fallback — any missing theme rule will look obviously wrong rather than accidentally inheriting a previous design.
+
+The active theme name is stored in `settings/site.json` in R2 (key `theme`). `loadSiteContext()` reads it on every render. The Worker writes `data-theme="<name>"` onto the `<html>` element and loads `/styles/themes/<name>.css`. The active theme can be changed from **Settings → Appearance → Theme** in Signal — no code change needed.
 
 ### The `.surface-invert` pattern
 
-Many designs have sections that invert the palette — a light reading surface
-inside a dark page, or vice versa. Rather than hardcoding colours for that
-surface, wrap it in a `<div class="surface-invert">`. The theme's
-`.surface-invert` block re-declares the same token names with inverted values,
-so every component inside automatically renders correctly.
+Many designs have sections that invert the palette — a light reading surface inside a dark page, or vice versa. Rather than hardcoding colours for that surface, wrap it in a `<div class="surface-invert">`. The theme's `.surface-invert` block re-declares the same token names with inverted values, so every component inside automatically renders correctly.
 
 ```html
 <!-- Dark page background, then a light reading column -->
@@ -64,20 +58,17 @@ so every component inside automatically renders correctly.
 
 ### Runtime accent override
 
-`--color-accent` (and its legacy alias `--accent-color`) can be overridden at
-runtime via an inline `<style>` injected by the Worker when a site has a custom
-accent colour configured. This sits on top of whatever the theme file sets and
-takes precedence via cascade order.
+`--color-accent` (and its legacy alias `--accent-color`) can be overridden at runtime via an inline `<style>` injected by the Worker when a site has a custom accent colour configured. This sits on top of whatever the theme file sets and takes precedence via cascade order.
 
 ---
 
 ## Adding a new theme
 
-A theme is two files: a CSS file that tokens and layouts your design, and a JS renderer that generates the HTML. The HTML class names are yours to define — you are not required to reuse class names from any existing theme. The only constraints are the [shared class contract](#shared-class-contract) below.
+A theme is two files: a CSS file that styles your design, and a JS renderer that generates the HTML. The HTML class names are yours to define — you are not required to reuse class names from any existing theme. The only constraints are the [shared class contract](#shared-class-contract) below.
 
-1. **Create a CSS file** at `site/styles/themes/mytheme.css`. Start from scratch or use `base.css` as a minimal scaffold. Scope every rule to `[data-theme="mytheme"]`.
+1. **Create a CSS file** at `site/styles/themes/mytheme.css`. Scope every rule to `[data-theme="mytheme"]`.
 
-   At minimum, set all semantic tokens:
+   At minimum, override all semantic tokens:
    ```css
    [data-theme="mytheme"] {
      --color-bg: …;
@@ -99,6 +90,19 @@ A theme is two files: a CSS file that tokens and layouts your design, and a JS r
    }
    ```
 
+   Then style `body` and all global elements:
+   ```css
+   [data-theme="mytheme"] body {
+     background: var(--color-bg);
+     color: var(--color-text);
+     font-family: var(--font-body);
+     font-size: …;
+     line-height: …;
+   }
+
+   [data-theme="mytheme"] a { … }
+   ```
+
    Then add a `.surface-invert` block if your design has sections that flip the palette:
    ```css
    [data-theme="mytheme"] .surface-invert {
@@ -109,9 +113,7 @@ A theme is two files: a CSS file that tokens and layouts your design, and a JS r
    }
    ```
 
-   Then add whatever layout CSS your HTML requires — using your own class names.
-
-   **Your CSS must also style every class in the [shared class contract](#shared-class-contract).** Use the checklist there to make sure nothing is missed.
+   Then style every class in the [shared class contract](#shared-class-contract). Use the checklist there to make sure nothing is missed.
 
 2. **Create a renderer file** at `functions/themes/mytheme.js`. Export any of `buildPost`, `buildIndex`, `buildPage`, `buildHomepage`, `buildPhotos`, `buildNotes`. Any not exported fall back to `base.js` — which renders unstyled Arial 14px, making missing pages immediately obvious.
 
@@ -155,7 +157,7 @@ That's it. No other files need to change.
 
 ## Shared class contract
 
-These class names are required by the system — blog.js tag filtering, Signal's image editor, and the template helpers produce or depend on them. Your CSS must style them; your renderer must not rename them.
+These class names are required by the system — `blog.js` tag filtering, Signal's image editor, and the template helpers produce or depend on them. Your CSS must style them; your renderer must not rename them.
 
 Use this as a checklist when finishing a new theme CSS file.
 
@@ -172,37 +174,18 @@ Use this as a checklist when finishing a new theme CSS file.
 
 Style all of: `site-nav`, `nav-logo`, `nav-links`, `nav-links a`, `nav-links a.active`.
 
+`site.css` gives these elements structural layout (flex, gap, list-style) but no visual properties — your theme must supply all colours, typography, and borders.
+
 ### Footer — each theme writes its own
 
 There is no shared footer helper. Each theme renderer inlines its own footer HTML with its own class names. Use whatever structure suits your design.
 
-`blog.css` contains styles for a set of footer classes written for the `buildFooter` helper in `functions/lib/templates.js`. That helper is not called by any active theme, but its styles remain in the cascade. **Avoid reusing these class names** unless you want those styles applied. The helper produces:
-
-```html
-<footer class="footer">
-  <div class="footer-left">
-    <a href="/" class="footer-logo">JRBNZ</a>
-    <div class="footer-fineprint">© 2026 James Bell</div>
-    <div class="footer-fineprint">Tāmaki Makaurau, Aotearoa</div>
-  </div>
-  <div class="footer-right">
-    <nav class="footer-nav" aria-label="Footer">
-      <a href="/posts/">Essays</a> …
-    </nav>
-    <div class="footer-bottom-links">
-      <a href="/feed.xml" class="footer-rss"><!-- RSS SVG --> RSS Feed</a>
-      <span class="footer-signal" title="Made with Signal"><!-- Signal SVG --></span>
-    </div>
-  </div>
-</footer>
-```
-
-Classes with blog.css styles: `.footer`, `.footer-left`, `.footer-right`, `.footer-logo`, `.footer-fineprint`, `.footer-nav`, `.footer-nav a`, `.footer-bottom-links`, `.footer-rss`, `.footer-signal`. See the clash table below.
+`site.css` contains structural layout rules for a set of footer classes used by the `buildFooter` helper in `functions/lib/templates.js` (`.footer`, `.footer-left`, `.footer-right`, `.footer-nav`, etc.). That helper is not called by any active theme, but the structural rules remain. **These rules are layout-only** (flex/grid, padding, gaps) — reusing the class names will not impose any unwanted colours or typography.
 
 Two current footer patterns for reference:
 
 ```html
-<!-- Lightroom — minimal, own class names, no clash risk -->
+<!-- Lightroom — minimal, own class names -->
 <footer class="lr-footer">
   <span class="lr-footer-copy">©2026 JRBNZ</span>
   <nav class="lr-footer-nav">
@@ -211,7 +194,7 @@ Two current footer patterns for reference:
   </nav>
 </footer>
 
-<!-- Cinematic — reuses .footer-nav (blog.css styles apply; overridden in cinematic.css) -->
+<!-- Cinematic — own class names -->
 <footer class="site-footer">
   <p class="footer-tagline">…tagline…</p>
   <nav class="footer-nav" aria-label="Footer">
@@ -289,6 +272,8 @@ The client-side tag filter script expects these IDs and classes to exist on the 
 
 Style: `tag-filter-bar`, `tag-filter-clear`, `tags-section`, `tag-chip`, `post-list-item`.
 
+`site.css` gives `tag-filter-bar` and `post-list-item` structural layout — your theme supplies all visual properties.
+
 ### Microformats2 — search/reader compatibility
 
 Wrap each post page in `<article class="h-entry">` and the homepage in `<main class="h-card">`. Mark the post title with `p-name` and body with `e-content`. These do not need CSS — they are semantic hooks for feed readers and search.
@@ -297,65 +282,40 @@ Wrap each post page in `<article class="h-entry">` and the homepage in `<main cl
 
 ## Writing reliable theme CSS
 
-These are the rules that matter most for avoiding subtle bugs when building a new theme. Each one comes from a real regression.
-
 ### 1. Understand the CSS load order
 
 ```
-main.css          ← :root base tokens, reset, global a/body/h1 rules
-blog.css          ← shared component styles (post list, footer, nav, etc.)
-themes/<name>.css ← your theme (loaded last)
+site.css          ← :root token defaults, reset, structural layout only
+themes/<name>.css ← all visual decisions (loaded last)
 <style> block     ← runtime accent override (injected inline by Worker)
 ```
 
-Your theme CSS loads after `blog.css`, which helps. But **specificity still beats source order**. A bare `.footer-nav a` rule in `blog.css` (specificity 0,1,1) will win over an inherited value from `[data-theme="x"] .footer-nav` (specificity 0,2,0) because inheritance always loses to a directly-set property. See rule 2.
+Your theme loads after `site.css`. Since `site.css` makes no visual decisions, there is nothing to fight — your theme defines colours, typography, and borders from scratch.
 
-### 2. Always set properties directly on `a` elements — never rely on inheritance from a container
+### 2. Style `body` and `a` explicitly — don't rely on `:root` defaults
 
-`blog.css` explicitly sets `font-family`, `font-size`, `letter-spacing`, and `color` on many anchor selectors (`.footer-nav a`, `.post-list-item a`, etc.). Even if you set the right `font-family` on a container with higher specificity, the direct `a` rule in `blog.css` beats it for the anchor element itself.
-
-**Rule:** if you want a different value on an `<a>` inside a shared class, you must set it directly on the `a`:
+`site.css` sets `body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); }` using the token values, but makes no other typography decisions. Your theme should set `font-size`, `line-height`, and link styles directly:
 
 ```css
-/* ✗ Wrong — sets font on container; blog.css's .footer-nav a wins on the anchor */
-[data-theme="x"] .footer-nav {
-  font-family: var(--font-mono);
-  font-size: 12px;
+[data-theme="x"] body {
+  font-size: 18px;
+  line-height: 1.75;
 }
 
-/* ✓ Correct — targets the anchor directly, beats blog.css */
-[data-theme="x"] .footer-nav a {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+[data-theme="x"] a {
+  color: var(--color-accent);
+  text-decoration: none;
+  /* add border-bottom or underline if your design uses it */
 }
 ```
 
-When reusing a class name from blog.css, look it up and explicitly override **every property** that file sets on the element.
+### 3. `:root` defaults are a plain fallback, not a dark theme
 
-### 3. Every `<a>` gets a visible border-bottom by default
+If a token is not overridden by your theme, it resolves to the `:root` default — white background, black text, Arial. A missing token will make a component look obviously wrong rather than accidentally inheriting another theme's values. This is intentional — gaps are visible.
 
-`main.css` applies `a { border-bottom: 1.6px solid var(--color-text) }` globally. Every link in your theme that should not have an underline needs `border-bottom: none` stated explicitly in your theme CSS:
+### 4. Scope every selector — no naked rules
 
-```css
-[data-theme="x"] .nav-logo,
-[data-theme="x"] .nav-links a,
-[data-theme="x"] .footer-nav a,
-[data-theme="x"] .my-card-link {
-  border-bottom: none;
-}
-```
-
-Forgetting this is the most common source of unexpected underlines appearing on link-styled elements.
-
-### 4. `:root` defaults are base theme values, not dark values
-
-If a token is not overridden by your theme, it resolves to the `:root` default — which is the base theme: white background, black text, Arial. A missing token will make a component look obviously wrong (white on white, or black Helvetica in the middle of a serif page) rather than accidentally inheriting the dark theme. This is intentional and helpful — gaps are visible.
-
-### 5. Scope every selector — no naked rules
-
-Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked rules (without the scope) will leak into Signal admin and every other theme. There are no exceptions.
+Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked rules will leak into Signal admin and every other theme. There are no exceptions.
 
 ```css
 /* ✗ Leaks everywhere */
@@ -365,30 +325,28 @@ Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked ru
 [data-theme="x"] .article-col { max-width: 680px; }
 ```
 
-### 6. Check blog.css before reusing a class name
-
-Before using a class name in your renderer HTML, `grep blog.css` for it. If it appears there, read what properties it sets. You will need to explicitly override all of them in `[data-theme="x"] .classname` and `[data-theme="x"] .classname a`. Shared class names that are most likely to clash:
-
-| Class | Properties set in blog.css | Note |
-|---|---|---|
-| `.footer-nav a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` | From unused `buildFooter` helper — avoid or override |
-| `.footer-logo` | `font-family`, `font-size`, `color`, `border-bottom` | From unused `buildFooter` helper — avoid or override |
-| `.post-list-item a` | `font-size`, `color`, `border-bottom` | |
-| `.post-content a` | `color`, `border-bottom-color` | |
-| `.tag-chip` | `font-family`, `font-size`, `color`, `border` | |
-| `.site-nav .nav-links a` | `font-family`, `font-size`, `letter-spacing`, `color`, `border-bottom` | |
-
-If in doubt, use a unique class name for your theme instead.
-
-### 7. Minimum font size is 14px
+### 5. Minimum font size is 14px
 
 No rendered text — body, captions, labels, metadata, fine print — should be set below `14px`. This applies to every element in every state, including `:hover` and inside compressed layouts on mobile. If something feels too large at 14px, reconsider the surrounding spacing or weight rather than dropping the size.
 
-### 8. No muted colours — always maintain contrast
+### 6. No muted colours — always maintain contrast
 
-Do not use low-contrast or muted text colours as a design move. `--color-text-muted` and `--color-text-subtle` exist in the token system, but their values must still pass WCAG AA contrast against the background they sit on (4.5:1 for normal text, 3:1 for large text). Do not set these tokens to colours that are decoratively faint — if it looks faded, it will fail for low-vision readers.
+Do not use low-contrast or muted text colours as a design move. `--color-text-muted` and `--color-text-subtle` exist in the token system, but their values must still pass WCAG AA contrast against the background they sit on (4.5:1 for normal text, 3:1 for large text). This applies to every foreground value: body text, captions, labels, dates, placeholders, icon fills, and link colours in all states.
 
-This applies to every foreground value in the theme: body text, captions, labels, dates, placeholders, icon fills, and link colours in all states.
+---
+
+## Local theme development
+
+A local snapshot of the live site is available for theme development without redeploying.
+
+```bash
+./scripts/snapshot.sh [theme]   # seed ~/www/jrbnz with live HTML + project CSS
+./scripts/push-theme.sh [theme] # copy edited CSS back to the project
+```
+
+The snapshot fetches the homepage, about, now, theatre, posts listing, five recent posts, and notes. Images load from the live site. CSS is copied from the project — edits to `~/www/jrbnz/styles/` take effect on the next browser refresh without any server restart.
+
+The local site is served by Caddy on port 8083.
 
 ---
 
@@ -397,11 +355,10 @@ This applies to every foreground value in the theme: body text, captions, labels
 ```
 site/
   styles/
-    main.css                Token names + defaults, reset, base typography
-    blog.css                Shared components — token references only, no raw values
+    site.css                Token defaults + reset + structural layout (no visual opinions)
     themes/
       base.css              Minimal starter theme — Arial 14px, no decoration
-      <name>.css            One file per theme
+      <name>.css            One file per theme — all visual decisions live here
 
 functions/
   lib/
@@ -435,7 +392,7 @@ import { esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta
 | `buildHead({ title, theme, accent, snippetCss, extraHead })` | all optional | Full `<!doctype html><html data-theme="…"><head>…</head><body>` opener |
 | `buildSiteNav(menuPages, activeHref)` | positional args | `<nav class="site-nav">…</nav>` |
 | `buildNavLinks(menuPages)` | `menuPages: Page[]` | `[{ href, label }]` — for building custom nav markup |
-| `buildFooter(menuPages, year)` | positional args | `<footer class="footer">…</footer>` (dark theme footer) |
+| `buildFooter(menuPages, year)` | positional args | `<footer class="footer">…</footer>` (structural only — theme provides visual styles) |
 | `buildPostMeta({ title, postUrl, metaDesc, ogImage, date, authorName })` | all optional | OG/meta tags HTML string for `<head>` |
 | `buildAuthorCard(author)` | `author: Author` | HTML string for the author bio card |
 
