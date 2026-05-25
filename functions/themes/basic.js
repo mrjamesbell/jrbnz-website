@@ -1,14 +1,12 @@
 /**
  * functions/themes/basic.js
  * Warm Serif theme renderer for jrbnz.com
- *
- * Exports: buildPost, buildIndex, buildPage, buildHomepage, buildPhotos, buildNotes, imageRoles
  */
 
 import { esc, buildHead, buildSiteNav, buildNavLinks, SITE_URL } from '../lib/templates.js';
 
 /* ------------------------------------------------------------------
-   imageRoles — tells Signal which layout/treatment options to offer
+   imageRoles
    ------------------------------------------------------------------ */
 export const imageRoles = {
   layouts: [
@@ -51,12 +49,21 @@ export function buildPost(data) {
   const {
     title, slug, date, dateFormatted, tags = [], contentHtml,
     excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus,
-    author, authorCard, accent, menuPages, snippetCss, extraHead,
+    author, accent, menuPages, snippetCss, extraHead,
     readTime, postUrl, prevPost, nextPost, year, theme,
   } = data;
 
   const tagHtml = tags.length
     ? `<div class="post-tags">${tags.map(t => `<span class="post-tag">${esc(t)}</span>`).join('')}</div>`
+    : '';
+
+  const sidebarTagsHtml = tags.length
+    ? `<div class="sidebar-block">
+        <div class="sidebar-label">Filed under</div>
+        <div class="sidebar-tags">
+          ${tags.map(t => `<a class="sidebar-tag" href="/posts/?tag=${esc(t)}">${esc(t)}</a>`).join('')}
+        </div>
+      </div>`
     : '';
 
   const coverHtml = coverImage
@@ -67,15 +74,19 @@ export function buildPost(data) {
     ? `<p class="post-subtitle">${esc(subtitle)}</p>`
     : '';
 
+  const avatarHtml = author && author.avatar
+    ? `<img class="sidebar-avatar" src="${esc(author.avatar)}" alt="${esc(author.name)}">`
+    : '';
+
   const prevHtml = prevPost
-    ? `<a class="post-nav-link" href="/${esc(prevPost.slug)}/">
+    ? `<a class="post-nav-link" href="/posts/${esc(prevPost.slug)}/">
         <div class="post-nav-dir">← Previous</div>
         <div class="post-nav-title">${esc(prevPost.title)}</div>
       </a>`
     : '<span></span>';
 
   const nextHtml = nextPost
-    ? `<a class="post-nav-link post-nav-next" href="/${esc(nextPost.slug)}/">
+    ? `<a class="post-nav-link post-nav-next" href="/posts/${esc(nextPost.slug)}/">
         <div class="post-nav-dir">Next →</div>
         <div class="post-nav-title">${esc(nextPost.title)}</div>
       </a>`
@@ -84,32 +95,52 @@ export function buildPost(data) {
   return `${buildHead({ title, theme, accent, snippetCss, extraHead })}
   ${buildSiteNav(menuPages, `/posts/`)}
 
-  <article class="post-shell h-entry">
+  <article class="post-layout h-entry">
 
-    <header class="post-header">
-      <div class="post-kicker">Essay</div>
-      <h1 class="post-title p-name">${esc(title)}</h1>
-      ${subtitleHtml}
-      <div class="post-meta">
-        <time datetime="${esc(date)}">${esc(dateFormatted)}</time>
-        <span class="post-meta-sep">·</span>
-        <span>${readTime} min read</span>
+    <div class="post-main">
+      <header class="post-header">
+        <div class="post-kicker">Essay</div>
+        <h1 class="post-title p-name">${esc(title)}</h1>
+        ${subtitleHtml}
+        <div class="post-meta">
+          <time datetime="${esc(date)}">${esc(dateFormatted)}</time>
+          <span class="post-meta-sep">·</span>
+          <span>${readTime} min read</span>
+        </div>
+        ${tagHtml}
+      </header>
+
+      ${coverHtml}
+
+      <div class="post-content e-content">
+        ${contentHtml}
       </div>
-      ${tagHtml}
-    </header>
 
-    ${coverHtml}
-
-    <div class="post-content e-content">
-      ${contentHtml}
+      <nav class="post-nav" aria-label="Post navigation">
+        ${prevHtml}
+        ${nextHtml}
+      </nav>
     </div>
 
-    ${authorCard ? `<div class="author-card">${authorCard}</div>` : ''}
+    <aside class="post-sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-label">Written by</div>
+        <div class="sidebar-author">
+          ${avatarHtml}
+          <div>
+            <div class="sidebar-author-name">${esc(author ? author.name : '')}</div>
+            <p class="sidebar-author-bio">${esc(author ? author.bio : '')}</p>
+          </div>
+        </div>
+      </div>
 
-    <nav class="post-nav" aria-label="Post navigation">
-      ${prevHtml}
-      ${nextHtml}
-    </nav>
+      ${sidebarTagsHtml}
+
+      <div class="sidebar-block">
+        <div class="sidebar-label">Published</div>
+        <div class="sidebar-date">${esc(dateFormatted)}<br>${readTime} min read</div>
+      </div>
+    </aside>
 
   </article>
 
@@ -122,7 +153,7 @@ export function buildPost(data) {
    ------------------------------------------------------------------ */
 export function buildIndex(data) {
   const {
-    items, tagChips, menuPages, accent, snippetCss, year, theme, posts = [],
+    items, tagChips, menuPages, accent, snippetCss, year, theme,
   } = data;
 
   return `${buildHead({ title: 'Essays', theme, accent, snippetCss })}
@@ -130,7 +161,6 @@ export function buildIndex(data) {
 
   <main class="index-shell">
     <h1 class="index-heading">Essays</h1>
-    <hr class="index-rule">
 
     <div class="tag-filter-bar" id="tag-filter-bar" hidden>
       Essays tagged <strong id="tag-filter-label"></strong>
@@ -163,7 +193,6 @@ export function buildPage(data) {
 
   <main class="page-shell">
     <h1 class="page-title">${esc(title)}</h1>
-    <hr class="page-rule">
     <div class="post-content">
       ${contentHtml}
     </div>
@@ -183,10 +212,8 @@ export function buildHomepage(data) {
   } = data;
 
   const year = new Date().getFullYear();
-
-  /* --- Featured post -------------------------------------------- */
-  const cfg      = homepageConfig || {};
-  const featCfg  = cfg.featured || {};
+  const cfg     = homepageConfig || {};
+  const featCfg = cfg.featured || {};
   const featured = recentPosts.find(p => p.slug === featCfg.slug) || recentPosts[0];
 
   let featuredHtml = '';
@@ -203,7 +230,7 @@ export function buildHomepage(data) {
     featuredHtml = `
     <section class="home-featured">
       <div class="home-section-label">Latest essay</div>
-      <a class="home-featured-link" href="/${esc(featured.slug)}/">
+      <a class="home-featured-link" href="/posts/${esc(featured.slug)}/">
         ${imgHtml}
         <h2 class="home-featured-title">${esc(featTitle)}</h2>
         ${dekHtml}
@@ -212,25 +239,23 @@ export function buildHomepage(data) {
     </section>`;
   }
 
-  /* --- Recent posts grid (skip featured) ------------------------ */
   const otherPosts = recentPosts.filter(p => p.slug !== (featured && featured.slug)).slice(0, 3);
   const recentHtml = otherPosts.length ? `
     <section class="home-recent">
       <div class="home-section-label">More recent</div>
       <div class="home-recent-grid">
         ${otherPosts.map(p => `
-        <a class="home-recent-item" href="/${esc(p.slug)}/">
+        <a class="home-recent-item" href="/posts/${esc(p.slug)}/">
           <div class="home-recent-date">${esc(p.date)}</div>
           <div class="home-recent-title">${esc(p.title)}</div>
         </a>`).join('')}
       </div>
     </section>` : '';
 
-  /* --- Nav cards ------------------------------------------------ */
   const defaultCards = [
-    { kicker: 'Essays',      title: 'Long-form pieces on theatre, memory, and technology', href: '/posts/',  linkLabel: 'Read essays →',      style: '' },
-    { kicker: 'Photographs', title: 'Theatre, travel, and the quiet sky',                  href: '/photos/', linkLabel: 'View photographs →',   style: 'invert' },
-    { kicker: 'Now',         title: 'What I\'m doing right now',                           href: '/now/',    linkLabel: 'Read →',               style: '' },
+    { kicker: 'Essays',      title: 'Long-form pieces on theatre, memory, and technology', href: '/posts/',  linkLabel: 'Read essays →',    style: '' },
+    { kicker: 'Photographs', title: 'Theatre, travel, and the quiet sky',                  href: '/photos/', linkLabel: 'View photographs →', style: 'invert' },
+    { kicker: 'Now',         title: 'What I\'m doing right now',                           href: '/now/',    linkLabel: 'Read →',             style: '' },
   ];
   const cards = (cfg.cards && cfg.cards.length) ? cfg.cards : defaultCards;
   const cardsHtml = `
@@ -272,7 +297,6 @@ export function buildPhotos(data) {
 
   <div class="photos-shell">
     <h1 class="photos-heading">Photographs</h1>
-    <!-- Static photos content injected from site/photos/index.html -->
   </div>
 
   ${buildBasicFooter(menuPages, year)}
@@ -284,14 +308,12 @@ export function buildPhotos(data) {
    ------------------------------------------------------------------ */
 export function buildNotes(data) {
   const { notes = [], menuPages, accent, snippetCss, theme } = data;
-
   const year = new Date().getFullYear();
 
   const notesHtml = notes.map(note => {
     const tagsHtml = note.tags && note.tags.length
       ? `<div class="note-tags">${note.tags.map(t => `<span class="note-tag">#${esc(t)}</span>`).join(' ')}</div>`
       : '';
-
     const titleHtml = note.title
       ? `<h2 class="note-title"><a href="/notes/${esc(note.slug)}/">${esc(note.title)}</a></h2>`
       : '';
@@ -310,7 +332,6 @@ export function buildNotes(data) {
 
   <main class="notes-shell">
     <h1 class="notes-heading">Notes</h1>
-    <hr class="notes-rule">
     ${notesHtml}
   </main>
 

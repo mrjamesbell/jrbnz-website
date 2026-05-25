@@ -356,7 +356,31 @@ No rendered text — body, captions, labels, metadata, fine print — should be 
 
 The safe pattern: use `rem` for body text and headings (which scale together), use `px` for labels, captions, metadata, and fine print (which have a hard floor).
 
-### 6. All three text tokens must independently pass WCAG AA — including `--color-text-subtle`
+### 6. Post links must use `/posts/{slug}/` — never `/{slug}/`
+
+Posts are served from `dist/posts/{slug}/index.html`. Any link that omits the `/posts/` prefix will 404 or redirect to the homepage.
+
+| Content type | Correct URL pattern | Wrong |
+|---|---|---|
+| Post | `/posts/${slug}/` | `/${slug}/` |
+| CMS page (About, Now, etc.) | `/${slug}/` | `/posts/${slug}/` |
+| Note | `/notes/${slug}/` | `/${slug}/` |
+
+This applies everywhere a renderer links to a post: prev/next nav in `buildPost`, featured and recent items in `buildHomepage`, archive grids, and anywhere else post slugs appear as hrefs.
+
+```js
+// ✗ Wrong — posts at /{slug}/ don't exist as static files
+`<a href="/${esc(prevPost.slug)}/">`
+`<a href="/${esc(p.slug)}/">`
+
+// ✓ Correct
+`<a href="/posts/${esc(prevPost.slug)}/">`
+`<a href="/posts/${esc(p.slug)}/">`
+```
+
+CMS page slugs (`buildPage`, `buildSiteNav` active href) correctly use `/${slug}/` — that's right because pages live at `dist/{slug}/index.html`.
+
+### 7. All three text tokens must independently pass WCAG AA — including `--color-text-subtle`
 
 **The site owner is sight-impaired. WCAG AA (4.5:1) is the floor, not the goal. Where the design allows, target AAA (7:1) for body text and AA for secondary text. When in doubt, go higher.**
 

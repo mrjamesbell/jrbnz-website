@@ -21,7 +21,7 @@
     });
 
     // Show/hide the featured hero section
-    var featured = document.getElementById('ci-featured');
+    var featured = document.getElementById('featured-hero');
     if (featured) {
       var ftags = (featured.dataset.tags || '').split(',').map(function (s) { return s.trim(); });
       featured.style.display = (!t || ftags.includes(t)) ? '' : 'none';

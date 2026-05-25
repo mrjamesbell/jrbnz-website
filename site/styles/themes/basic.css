@@ -37,7 +37,7 @@
   background:   var(--color-bg);
   color:        var(--color-text);
   font-family:  var(--font-body);
-  font-size:    18px;
+  font-size:    20px;
   line-height:  1.8;
   -webkit-font-smoothing: antialiased;
 }
@@ -89,7 +89,7 @@
 
 [data-theme="basic"] .nav-links a {
   font-family:     var(--font-mono);
-  font-size:       14px;
+  font-size:       15px;
   letter-spacing:  0.08em;
   text-transform:  uppercase;
   color:           var(--color-text-muted);
@@ -108,23 +108,29 @@
 }
 
 /* -------------------------------------------------------------
-   5. Post page
+   5. Post page — two-column layout
    ------------------------------------------------------------- */
-[data-theme="basic"] .post-shell {
-  max-width:     calc(var(--col-read) + var(--gutter) * 2);
-  margin:        0 auto;
-  padding:       3.5rem var(--gutter) 5rem;
+[data-theme="basic"] .post-layout {
+  display:               grid;
+  grid-template-columns: minmax(0, var(--col-read)) 220px;
+  gap:                   0 52px;
+  max-width:             calc(var(--col-read) + 52px + 220px + var(--gutter) * 2);
+  margin:                0 auto;
+  padding:               3.5rem var(--gutter) 5rem;
+  align-items:           start;
+}
+
+[data-theme="basic"] .post-main {
+  min-width: 0;
 }
 
 [data-theme="basic"] .post-header {
   margin-bottom: 2.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--color-border);
 }
 
 [data-theme="basic"] .post-kicker {
   font-family:     var(--font-mono);
-  font-size:       14px;
+  font-size:       15px;
   letter-spacing:  0.1em;
   text-transform:  uppercase;
   color:           var(--color-text-subtle);
@@ -133,7 +139,7 @@
 
 [data-theme="basic"] .post-title {
   font-family:  var(--font-display);
-  font-size:    clamp(1.75rem, 4vw, 2.5rem);
+  font-size:    clamp(1.9rem, 4vw, 2.75rem);
   font-weight:  600;
   line-height:  1.2;
   color:        var(--color-text);
@@ -142,7 +148,7 @@
 
 [data-theme="basic"] .post-subtitle {
   font-family:  var(--font-body);
-  font-size:    1.1rem;
+  font-size:    1.2rem;
   font-style:   italic;
   color:        var(--color-text-muted);
   margin:       0 0 1.25rem;
@@ -151,7 +157,7 @@
 
 [data-theme="basic"] .post-meta {
   font-family:  var(--font-mono);
-  font-size:    14px;
+  font-size:    15px;
   color:        var(--color-text-subtle);
   display:      flex;
   gap:          1.25rem;
@@ -164,15 +170,15 @@
 }
 
 [data-theme="basic"] .post-tags {
-  display:   flex;
-  gap:       0.5rem;
-  flex-wrap: wrap;
+  display:    flex;
+  gap:        0.5rem;
+  flex-wrap:  wrap;
   margin-top: 0.75rem;
 }
 
 [data-theme="basic"] .post-tag {
   font-family:     var(--font-mono);
-  font-size:       14px;
+  font-size:       15px;
   letter-spacing:  0.06em;
   text-transform:  uppercase;
   background:      var(--color-accent-muted);
@@ -202,7 +208,7 @@
 
 [data-theme="basic"] .post-content h2 {
   font-family:   var(--font-display);
-  font-size:     1.5rem;
+  font-size:     1.6rem;
   font-weight:   600;
   margin:        2.5rem 0 0.75rem;
   color:         var(--color-text);
@@ -211,7 +217,7 @@
 
 [data-theme="basic"] .post-content h3 {
   font-family:   var(--font-display);
-  font-size:     1.2rem;
+  font-size:     1.25rem;
   font-weight:   500;
   font-style:    italic;
   margin:        2rem 0 0.5rem;
@@ -221,7 +227,7 @@
 
 [data-theme="basic"] .post-content h4 {
   font-family:     var(--font-mono);
-  font-size:       14px;
+  font-size:       15px;
   letter-spacing:  0.08em;
   text-transform:  uppercase;
   color:           var(--color-text-muted);
@@ -247,11 +253,11 @@
 }
 
 [data-theme="basic"] .post-content a {
-  color:           var(--color-accent);
-  text-decoration: underline;
+  color:                 var(--color-accent);
+  text-decoration:       underline;
   text-underline-offset: 3px;
   text-decoration-color: var(--color-accent-muted);
-  transition: text-decoration-color 0.15s;
+  transition:            text-decoration-color 0.15s;
 }
 
 [data-theme="basic"] .post-content a:hover {
@@ -274,49 +280,48 @@
 
 /* Pull quote */
 [data-theme="basic"] .post-content .pull-quote {
-  margin: 2.5rem -1.5rem;
-  padding: 1.5rem 2rem;
+  margin:     2.5rem -1.5rem;
+  padding:    1.5rem 2rem;
   border-top: 2px solid var(--color-text);
   border-bottom: 2px solid var(--color-text);
   text-align: center;
 }
 
 [data-theme="basic"] .post-content .pull-quote blockquote {
-  border: none;
-  padding: 0;
-  margin: 0;
-  color: var(--color-text);
-  font-size: 1.3rem;
+  border:      none;
+  padding:     0;
+  margin:      0;
+  color:       var(--color-text);
+  font-size:   1.4rem;
   font-weight: 500;
-  font-style: italic;
+  font-style:  italic;
   line-height: 1.5;
 }
 
 /* Quote interlude */
 [data-theme="basic"] .post-content .quote-interlude {
   background:    var(--color-surface);
-  border:        1px solid var(--color-border);
-  border-radius: 2px;
+  border-left:   3px solid var(--color-border-strong);
   margin:        2rem 0;
-  padding:       1.5rem 2rem;
+  padding:       1.25rem 1.75rem;
 }
 
 [data-theme="basic"] .post-content .quote-interlude blockquote {
-  border: none;
-  padding: 0;
-  margin: 0;
-  font-size: 1.05rem;
-  color: var(--color-text-muted);
-  font-style: italic;
+  border:      none;
+  padding:     0;
+  margin:      0;
+  font-size:   1.1rem;
+  color:       var(--color-text-muted);
+  font-style:  italic;
 }
 
 /* Code */
 [data-theme="basic"] .post-content code {
-  font-family:  var(--font-mono);
-  font-size:    0.82em;
-  background:   rgba(139, 69, 19, 0.07);
-  color:        var(--color-accent);
-  padding:      0.1em 0.4em;
+  font-family:   var(--font-mono);
+  font-size:     0.82em;
+  background:    rgba(139, 69, 19, 0.07);
+  color:         var(--color-accent);
+  padding:       0.1em 0.4em;
   border-radius: 2px;
 }
 
@@ -329,20 +334,20 @@
 }
 
 [data-theme="basic"] .post-content pre code {
-  background:   transparent;
-  color:        #d9cfc2;
-  padding:      0;
-  font-size:    0.82rem;
-  line-height:  1.7;
+  background:  transparent;
+  color:       #d9cfc2;
+  padding:     0;
+  font-size:   0.82rem;
+  line-height: 1.7;
 }
 
 /* Figcaption */
 [data-theme="basic"] .post-content figcaption {
-  font-family:  var(--font-mono);
-  font-size:    14px;
-  color:        var(--color-text-subtle);
-  text-align:   center;
-  margin-top:   0.6rem;
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  color:          var(--color-text-subtle);
+  text-align:     center;
+  margin-top:     0.6rem;
   letter-spacing: 0.04em;
 }
 
@@ -364,6 +369,7 @@
 
 [data-theme="basic"] .post-content figure img {
   width:         100%;
+  height:        auto;
   display:       block;
   border-radius: 2px;
 }
@@ -384,9 +390,9 @@
 }
 
 [data-theme="basic"] .post-content .img-pair {
-  display:   grid;
+  display:               grid;
   grid-template-columns: 1fr 1fr;
-  gap:       0.75rem;
+  gap:                   0.75rem;
 }
 
 /* Image treatments */
@@ -396,39 +402,155 @@
 [data-theme="basic"] .photo-soft img   { filter: contrast(0.85) brightness(1.05) saturate(0.85); }
 
 /* -------------------------------------------------------------
-   8. Essays index page
+   8. Sidebar
+   ------------------------------------------------------------- */
+[data-theme="basic"] .post-sidebar {
+  align-self:     start;
+  position:       sticky;
+  top:            2rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            2rem;
+}
+
+[data-theme="basic"] .sidebar-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+[data-theme="basic"] .sidebar-label {
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-subtle);
+}
+
+[data-theme="basic"] .sidebar-author {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.75rem;
+}
+
+[data-theme="basic"] .sidebar-avatar {
+  width:         72px;
+  height:        72px;
+  border-radius: 50%;
+  object-fit:    cover;
+  display:       block;
+}
+
+[data-theme="basic"] .sidebar-author-name {
+  font-family:  var(--font-display);
+  font-size:    1rem;
+  font-weight:  500;
+  color:        var(--color-text);
+  margin:       0 0 0.2rem;
+  line-height:  1.2;
+}
+
+[data-theme="basic"] .sidebar-author-bio {
+  font-size:   0.9rem;
+  font-style:  italic;
+  color:       var(--color-text-muted);
+  line-height: 1.55;
+  margin:      0;
+}
+
+[data-theme="basic"] .sidebar-tags {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       0.4rem;
+}
+
+[data-theme="basic"] .sidebar-tag {
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  color:          var(--color-accent);
+  background:     var(--color-accent-muted);
+  padding:        0.2em 0.6em;
+  border-radius:  2px;
+  text-decoration: none;
+}
+
+[data-theme="basic"] .sidebar-date {
+  font-family: var(--font-mono);
+  font-size:   15px;
+  color:       var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* -------------------------------------------------------------
+   9. Post navigation (prev / next)
+   ------------------------------------------------------------- */
+[data-theme="basic"] .post-nav {
+  display:         flex;
+  justify-content: space-between;
+  gap:             1.5rem;
+  margin-top:      3.5rem;
+}
+
+[data-theme="basic"] .post-nav-link {
+  text-decoration: none;
+  color:           inherit;
+  max-width:       46%;
+}
+
+[data-theme="basic"] .post-nav-link:hover .post-nav-title {
+  color: var(--color-accent);
+}
+
+[data-theme="basic"] .post-nav-dir {
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color:          var(--color-text-subtle);
+  margin-bottom:  0.3rem;
+}
+
+[data-theme="basic"] .post-nav-title {
+  font-family:  var(--font-display);
+  font-size:    1rem;
+  font-weight:  500;
+  color:        var(--color-text);
+  line-height:  1.35;
+  transition:   color 0.15s;
+}
+
+[data-theme="basic"] .post-nav-next {
+  text-align: right;
+}
+
+/* -------------------------------------------------------------
+   10. Essays index page
    ------------------------------------------------------------- */
 [data-theme="basic"] .index-shell {
-  max-width:  calc(var(--col-read) + var(--gutter) * 2);
-  margin:     0 auto;
-  padding:    3rem var(--gutter) 5rem;
+  max-width: calc(var(--col-read) + var(--gutter) * 2);
+  margin:    0 auto;
+  padding:   3rem var(--gutter) 5rem;
 }
 
 [data-theme="basic"] .index-heading {
-  font-family:  var(--font-display);
-  font-size:    1.75rem;
-  font-weight:  600;
-  color:        var(--color-text);
-  margin:       0 0 0.35rem;
-}
-
-[data-theme="basic"] .index-rule {
-  border:        none;
-  border-top:    2px solid var(--color-text);
-  margin:        1.25rem 0 1.75rem;
+  font-family:   var(--font-display);
+  font-size:     2rem;
+  font-weight:   600;
+  color:         var(--color-text);
+  margin:        0 0 2rem;
 }
 
 /* Tag chips */
 [data-theme="basic"] .tags-section {
-  display:     flex;
-  flex-wrap:   wrap;
-  gap:         0.5rem;
+  display:       flex;
+  flex-wrap:     wrap;
+  gap:           0.5rem;
   margin-bottom: 2rem;
 }
 
 [data-theme="basic"] .tag-chip {
   font-family:     var(--font-mono);
-  font-size:       14px;
+  font-size:       15px;
   letter-spacing:  0.06em;
   color:           var(--color-text-muted);
   border:          1px solid var(--color-border);
@@ -446,16 +568,16 @@
 
 /* Tag filter bar */
 [data-theme="basic"] .tag-filter-bar {
-  font-family:  var(--font-mono);
-  font-size:    14px;
-  color:        var(--color-text-muted);
-  background:   var(--color-accent-muted);
-  padding:      0.6rem 1rem;
+  font-family:   var(--font-mono);
+  font-size:     15px;
+  color:         var(--color-text-muted);
+  background:    var(--color-accent-muted);
+  padding:       0.6rem 1rem;
   border-radius: 2px;
   margin-bottom: 1.5rem;
-  display:      flex;
-  align-items:  center;
-  gap:          0.5rem;
+  display:       flex;
+  align-items:   center;
+  gap:           0.5rem;
 }
 
 [data-theme="basic"] .tag-filter-clear {
@@ -472,15 +594,13 @@
 }
 
 [data-theme="basic"] .post-list-item {
-  display:       block;
-  padding:       1.5rem 0;
-  border-bottom: 1px solid var(--color-border);
+  display:         block;
+  padding:         1.75rem 0;
   text-decoration: none;
-  color:         inherit;
-  transition:    background 0.15s;
+  color:           inherit;
 }
 
-[data-theme="basic"] .post-list-item:first-child {
+[data-theme="basic"] .post-list-item + .post-list-item {
   border-top: 1px solid var(--color-border);
 }
 
@@ -489,59 +609,57 @@
 }
 
 [data-theme="basic"] .post-list-date {
-  font-family:  var(--font-mono);
-  font-size:    14px;
-  color:        var(--color-text-subtle);
+  font-family:   var(--font-mono);
+  font-size:     15px;
+  color:         var(--color-text-subtle);
   margin-bottom: 0.3rem;
 }
 
 [data-theme="basic"] .post-list-title {
-  font-family:  var(--font-display);
-  font-size:    1.15rem;
-  font-weight:  500;
-  color:        var(--color-text);
-  line-height:  1.35;
-  margin-bottom: 0.35rem;
-  transition:   color 0.15s;
+  font-family:   var(--font-display);
+  font-size:     1.3rem;
+  font-weight:   500;
+  color:         var(--color-text);
+  line-height:   1.35;
+  margin-bottom: 0.4rem;
+  transition:    color 0.15s;
 }
 
 [data-theme="basic"] .post-list-excerpt {
-  font-size:   0.9rem;
+  font-size:   1rem;
   color:       var(--color-text-muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* -------------------------------------------------------------
-   9. Homepage
+   11. Homepage
    ------------------------------------------------------------- */
 [data-theme="basic"] .home-shell {
-  max-width:  calc(var(--col-read) + var(--gutter) * 2);
-  margin:     0 auto;
-  padding:    4rem var(--gutter) 5rem;
+  max-width: calc(var(--col-read) + var(--gutter) * 2);
+  margin:    0 auto;
+  padding:   4rem var(--gutter) 5rem;
 }
 
 [data-theme="basic"] .home-intro {
   margin-bottom: 3.5rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 2px solid var(--color-text);
 }
 
 [data-theme="basic"] .home-name {
   font-family:  var(--font-display);
-  font-size:    clamp(2rem, 5vw, 3.25rem);
+  font-size:    clamp(2rem, 5vw, 3.5rem);
   font-weight:  600;
   color:        var(--color-text);
-  margin:       0 0 0.5rem;
+  margin:       0 0 0.6rem;
   line-height:  1.1;
 }
 
 [data-theme="basic"] .home-bio {
-  font-size:    1.05rem;
-  font-style:   italic;
-  color:        var(--color-text-muted);
-  max-width:    540px;
-  line-height:  1.7;
-  margin:       0;
+  font-size:   1.1rem;
+  font-style:  italic;
+  color:       var(--color-text-muted);
+  max-width:   540px;
+  line-height: 1.7;
+  margin:      0;
 }
 
 /* Featured post */
@@ -550,12 +668,12 @@
 }
 
 [data-theme="basic"] .home-section-label {
-  font-family:     var(--font-mono);
-  font-size:       14px;
-  letter-spacing:  0.1em;
-  text-transform:  uppercase;
-  color:           var(--color-text-subtle);
-  margin-bottom:   1rem;
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--color-text-subtle);
+  margin-bottom:  1rem;
 }
 
 [data-theme="basic"] .home-featured-link {
@@ -575,7 +693,7 @@
 
 [data-theme="basic"] .home-featured-title {
   font-family:  var(--font-display);
-  font-size:    clamp(1.4rem, 3vw, 2rem);
+  font-size:    clamp(1.5rem, 3vw, 2.2rem);
   font-weight:  600;
   color:        var(--color-text);
   line-height:  1.25;
@@ -588,7 +706,7 @@
 }
 
 [data-theme="basic"] .home-featured-dek {
-  font-size:   1rem;
+  font-size:   1.05rem;
   font-style:  italic;
   color:       var(--color-text-muted);
   line-height: 1.6;
@@ -596,10 +714,10 @@
 }
 
 [data-theme="basic"] .home-featured-cta {
-  font-family:     var(--font-mono);
-  font-size:       14px;
-  letter-spacing:  0.06em;
-  color:           var(--color-accent);
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  letter-spacing: 0.06em;
+  color:          var(--color-accent);
 }
 
 /* Recent posts grid */
@@ -619,15 +737,15 @@
 }
 
 [data-theme="basic"] .home-recent-date {
-  font-family:  var(--font-mono);
-  font-size:    14px;
-  color:        var(--color-text-subtle);
+  font-family:   var(--font-mono);
+  font-size:     15px;
+  color:         var(--color-text-subtle);
   margin-bottom: 0.3rem;
 }
 
 [data-theme="basic"] .home-recent-title {
   font-family:  var(--font-display);
-  font-size:    1rem;
+  font-size:    1.1rem;
   font-weight:  500;
   color:        var(--color-text);
   line-height:  1.4;
@@ -662,33 +780,33 @@
 }
 
 [data-theme="basic"] .home-card-kicker {
-  font-family:     var(--font-mono);
-  font-size:       14px;
-  letter-spacing:  0.1em;
-  text-transform:  uppercase;
-  color:           var(--color-text-subtle);
-  margin-bottom:   0.4rem;
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--color-text-subtle);
+  margin-bottom:  0.4rem;
 }
 
 [data-theme="basic"] .home-card-title {
-  font-family:  var(--font-display);
-  font-size:    1rem;
-  font-weight:  500;
-  color:        var(--color-text);
-  line-height:  1.35;
+  font-family:   var(--font-display);
+  font-size:     1.05rem;
+  font-weight:   500;
+  color:         var(--color-text);
+  line-height:   1.35;
   margin-bottom: 0.6rem;
 }
 
 [data-theme="basic"] .home-card-link {
-  font-family:  var(--font-mono);
-  font-size:    14px;
-  color:        var(--color-accent);
+  font-family:    var(--font-mono);
+  font-size:      15px;
+  color:          var(--color-accent);
   letter-spacing: 0.04em;
 }
 
 /* Inverted card */
 [data-theme="basic"] .home-card.invert {
-  background: var(--color-text);
+  background:  var(--color-text);
   border-color: var(--color-text);
 }
 
@@ -698,36 +816,30 @@
 }
 
 [data-theme="basic"] .home-card.invert .home-card-link {
-  color: var(--color-accent-muted);
+  color: #d4845a;
 }
 
 /* -------------------------------------------------------------
-   10. Notes page
+   12. Notes page
    ------------------------------------------------------------- */
 [data-theme="basic"] .notes-shell {
-  max-width:  calc(var(--col-read) + var(--gutter) * 2);
-  margin:     0 auto;
-  padding:    3rem var(--gutter) 5rem;
+  max-width: calc(var(--col-read) + var(--gutter) * 2);
+  margin:    0 auto;
+  padding:   3rem var(--gutter) 5rem;
 }
 
 [data-theme="basic"] .notes-heading {
   font-family:  var(--font-display);
-  font-size:    1.75rem;
+  font-size:    2rem;
   font-weight:  600;
   color:        var(--color-text);
-  margin:       0 0 1.25rem;
-}
-
-[data-theme="basic"] .notes-rule {
-  border:     none;
-  border-top: 2px solid var(--color-text);
-  margin:     0 0 2.5rem;
+  margin:       0 0 2rem;
 }
 
 [data-theme="basic"] .note-item {
   margin-bottom: 2.5rem;
   padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom:  1px solid var(--color-border);
 }
 
 [data-theme="basic"] .note-item:last-child {
@@ -736,16 +848,16 @@
 
 [data-theme="basic"] .note-date {
   font-family:   var(--font-mono);
-  font-size:     14px;
+  font-size:     15px;
   color:         var(--color-text-subtle);
   margin-bottom: 0.6rem;
 }
 
 [data-theme="basic"] .note-title {
-  font-family:  var(--font-display);
-  font-size:    1.1rem;
-  font-weight:  500;
-  color:        var(--color-text);
+  font-family:   var(--font-display);
+  font-size:     1.2rem;
+  font-weight:   500;
+  color:         var(--color-text);
   margin-bottom: 0.5rem;
 }
 
@@ -759,7 +871,7 @@
 }
 
 [data-theme="basic"] .note-body {
-  font-size:   0.95rem;
+  font-size:   1rem;
   line-height: 1.75;
   color:       var(--color-text-muted);
 }
@@ -776,144 +888,57 @@
 
 [data-theme="basic"] .note-tag {
   font-family:    var(--font-mono);
-  font-size:      14px;
+  font-size:      15px;
   letter-spacing: 0.06em;
   color:          var(--color-text-subtle);
 }
 
 /* -------------------------------------------------------------
-   11. CMS pages (About, Now, etc.)
+   13. CMS pages (About, Now, etc.)
    ------------------------------------------------------------- */
 [data-theme="basic"] .page-shell {
-  max-width:  calc(var(--col-read) + var(--gutter) * 2);
-  margin:     0 auto;
-  padding:    3rem var(--gutter) 5rem;
+  max-width: calc(var(--col-read) + var(--gutter) * 2);
+  margin:    0 auto;
+  padding:   3rem var(--gutter) 5rem;
 }
 
 [data-theme="basic"] .page-title {
   font-family:  var(--font-display);
-  font-size:    clamp(1.75rem, 4vw, 2.5rem);
+  font-size:    clamp(1.9rem, 4vw, 2.75rem);
   font-weight:  600;
   color:        var(--color-text);
-  margin:       0 0 1.25rem;
+  margin:       0 0 2rem;
   line-height:  1.2;
-}
-
-[data-theme="basic"] .page-rule {
-  border:     none;
-  border-top: 2px solid var(--color-text);
-  margin:     0 0 2.5rem;
-}
-
-
-/* -------------------------------------------------------------
-   12. Author card (post footer)
-   ------------------------------------------------------------- */
-[data-theme="basic"] .author-card {
-  display:       flex;
-  gap:           1.25rem;
-  align-items:   flex-start;
-  margin-top:    3rem;
-  padding-top:   2rem;
-  border-top:    1px solid var(--color-border);
-}
-
-[data-theme="basic"] .author-avatar {
-  width:         56px;
-  height:        56px;
-  border-radius: 50%;
-  object-fit:    cover;
-  flex-shrink:   0;
-}
-
-[data-theme="basic"] .author-name {
-  font-family:  var(--font-display);
-  font-size:    1rem;
-  font-weight:  500;
-  color:        var(--color-text);
-  margin:       0 0 0.25rem;
-}
-
-[data-theme="basic"] .author-bio {
-  font-size:   0.88rem;
-  color:       var(--color-text-muted);
-  line-height: 1.6;
-  font-style:  italic;
-  margin:      0;
-}
-
-/* -------------------------------------------------------------
-   13. Post navigation (prev / next)
-   ------------------------------------------------------------- */
-[data-theme="basic"] .post-nav {
-  display:        flex;
-  justify-content: space-between;
-  gap:            1.5rem;
-  margin-top:     3rem;
-  padding-top:    2rem;
-  border-top:     1px solid var(--color-border);
-}
-
-[data-theme="basic"] .post-nav-link {
-  text-decoration: none;
-  color:           inherit;
-  max-width:       46%;
-}
-
-[data-theme="basic"] .post-nav-link:hover .post-nav-title {
-  color: var(--color-accent);
-}
-
-[data-theme="basic"] .post-nav-dir {
-  font-family:    var(--font-mono);
-  font-size:      14px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color:          var(--color-text-subtle);
-  margin-bottom:  0.3rem;
-}
-
-[data-theme="basic"] .post-nav-title {
-  font-family:  var(--font-display);
-  font-size:    0.95rem;
-  font-weight:  500;
-  color:        var(--color-text);
-  line-height:  1.35;
-  transition:   color 0.15s;
-}
-
-[data-theme="basic"] .post-nav-next {
-  text-align: right;
 }
 
 /* -------------------------------------------------------------
    14. Footer
    ------------------------------------------------------------- */
 [data-theme="basic"] .basic-footer {
-  border-top:  1px solid var(--color-border);
-  padding:     2rem var(--gutter);
-  display:     flex;
+  padding:         2rem var(--gutter);
+  display:         flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap:   wrap;
-  gap:         0.75rem;
+  align-items:     center;
+  flex-wrap:       wrap;
+  gap:             0.75rem;
+  border-top:      1px solid var(--color-border);
 }
 
 [data-theme="basic"] .basic-footer-copy {
-  font-family:  var(--font-mono);
-  font-size:    14px;
-  color:        var(--color-text-subtle);
+  font-family: var(--font-mono);
+  font-size:   15px;
+  color:       var(--color-text-subtle);
 }
 
 [data-theme="basic"] .basic-footer-nav {
-  display:  flex;
-  gap:      1.25rem;
+  display:   flex;
+  gap:       1.25rem;
   flex-wrap: wrap;
 }
 
 [data-theme="basic"] .basic-footer-nav a {
   font-family:    var(--font-mono);
-  font-size:      14px;
+  font-size:      15px;
   letter-spacing: 0.04em;
   color:          var(--color-text-muted);
   text-decoration: none;
@@ -934,42 +959,67 @@
 
 [data-theme="basic"] .photos-heading {
   font-family:  var(--font-display);
-  font-size:    1.75rem;
+  font-size:    2rem;
   font-weight:  600;
   color:        var(--color-text);
-  margin:       0 0 1.25rem;
+  margin:       0 0 1.5rem;
   max-width:    calc(var(--col-read) + var(--gutter) * 2);
   margin-left:  auto;
   margin-right: auto;
 }
 
 /* -------------------------------------------------------------
-   16. Surface invert (light column on dark, or vice versa)
+   16. Surface invert
    ------------------------------------------------------------- */
 [data-theme="basic"] .surface-invert {
-  --color-bg:          #1c160e;
-  --color-surface:     #251e14;
-  --color-text:        #f0ebe3;
-  --color-text-muted:  #b8a892;
-  --color-text-subtle: #9a8878;
-  --color-border:      #3a3020;
+  --color-bg:           #1c160e;
+  --color-surface:      #251e14;
+  --color-text:         #f0ebe3;
+  --color-text-muted:   #b8a892;
+  --color-text-subtle:  #9a8878;
+  --color-border:       #3a3020;
   --color-border-strong: #4e4132;
-  --color-accent:      #d4845a;
+  --color-accent:       #d4845a;
   --color-accent-muted: rgba(212, 132, 90, 0.15);
-  --color-accent-fg:   #1c160e;
-  background:          var(--color-bg);
-  color:               var(--color-text);
+  --color-accent-fg:    #1c160e;
+  background:           var(--color-bg);
+  color:                var(--color-text);
 }
 
 /* -------------------------------------------------------------
    17. Responsive
    ------------------------------------------------------------- */
+@media (max-width: 900px) {
+  [data-theme="basic"] .post-layout {
+    grid-template-columns: 1fr;
+    padding-top: 2.5rem;
+  }
+
+  [data-theme="basic"] .post-sidebar {
+    position:       static;
+    flex-direction: row;
+    flex-wrap:      wrap;
+    gap:            2rem;
+    padding-top:    2.5rem;
+    margin-top:     2.5rem;
+    border-top:     1px solid var(--color-border);
+  }
+
+  [data-theme="basic"] .sidebar-block {
+    flex: 1 1 160px;
+  }
+}
+
 @media (max-width: 640px) {
-  [data-theme="basic"] .post-shell,
   [data-theme="basic"] .index-shell,
   [data-theme="basic"] .home-shell,
   [data-theme="basic"] .notes-shell,
   [data-theme="basic"] .page-shell {
+    padding-left:  1rem;
+    padding-right: 1rem;
+  }
+
+  [data-theme="basic"] .post-layout {
     padding-left:  1rem;
     padding-right: 1rem;
   }
