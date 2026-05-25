@@ -281,7 +281,11 @@ The client-side tag filter script expects these IDs and classes to exist on the 
 </div>
 <!-- Each essay card must carry data-tags: -->
 <a class="post-list-item" data-tags="theatre,writing" href="…">…</a>
+<!-- Featured hero (if present) must also carry data-tags and id="featured-hero": -->
+<section id="featured-hero" data-tags="theatre,writing">…</section>
 ```
+
+If your `buildIndex` includes a featured/hero section at the top of the listing, it **must** have `id="featured-hero"` and a `data-tags` attribute containing the featured post's tags (comma-separated). `blog.js` uses this ID to show or hide the featured section when a tag filter is active. Any other ID will cause the featured hero to remain visible when it doesn't match the selected tag.
 
 Style: `tag-filter-bar`, `tag-filter-clear`, `tags-section`, `tag-chip`, `post-list-item`.
 
