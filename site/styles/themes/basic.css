@@ -184,9 +184,7 @@
 /* Cover image */
 [data-theme="basic"] .post-cover {
   width:         100%;
-  aspect-ratio:  16 / 7;
-  object-fit:    cover;
-  object-position: center;
+  height:        auto;
   display:       block;
   margin-bottom: 2.5rem;
   border-radius: 2px;
@@ -568,8 +566,7 @@
 
 [data-theme="basic"] .home-featured-img {
   width:         100%;
-  aspect-ratio:  16 / 7;
-  object-fit:    cover;
+  height:        auto;
   display:       block;
   border-radius: 2px;
   margin-bottom: 1rem;
