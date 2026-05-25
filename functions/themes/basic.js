@@ -164,7 +164,7 @@ export function buildPage(data) {
   <main class="page-shell">
     <h1 class="page-title">${esc(title)}</h1>
     <hr class="page-rule">
-    <div class="page-content">
+    <div class="post-content">
       ${contentHtml}
     </div>
   </main>

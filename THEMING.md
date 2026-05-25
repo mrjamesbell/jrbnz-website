@@ -252,6 +252,19 @@ Signal writes these class names into the markdown. Your CSS must define all of t
 
 All 4 × 4 combinations are valid. Define each layout and each treatment independently so they compose freely.
 
+**Do not set `aspect-ratio` or fixed heights on `<figure>` or `<img>` elements.** Images in posts have varying proportions — a portrait, a landscape, and a square can all appear in the same article. Forcing an aspect ratio will crop or distort any image that doesn't match it. Use `width: 100%; height: auto` to preserve natural proportions:
+
+```css
+/* ✗ Distorts images that don't match the ratio */
+[data-theme="x"] .post-content figure { aspect-ratio: 16 / 9; overflow: hidden; }
+
+/* ✓ Each image renders at its natural proportions */
+[data-theme="x"] .post-content figure { width: 100%; }
+[data-theme="x"] .post-content figure img { width: 100%; height: auto; display: block; }
+```
+
+The exception is cover images, where you control the source and can guarantee the ratio. Even then, use `object-fit: cover` with `object-position` (focal point is passed via inline style) rather than cropping with `overflow: hidden` on the container.
+
 Your theme JS must also export an `imageRoles` object so Signal knows which options to show. See [`imageRoles` export](#imageroles-export) in the renderer reference.
 
 ### From `blog.js` — tag filtering on the essays index
@@ -325,13 +338,42 @@ Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked ru
 [data-theme="x"] .article-col { max-width: 680px; }
 ```
 
-### 5. Minimum font size is 14px
+### 5. Minimum font size is 14px — use `px` for small labels, not `rem`
+
+**The site owner is sight-impaired. These are not design targets — they are absolute floors. Aim higher.**
 
 No rendered text — body, captions, labels, metadata, fine print — should be set below `14px`. This applies to every element in every state, including `:hover` and inside compressed layouts on mobile. If something feels too large at 14px, reconsider the surrounding spacing or weight rather than dropping the size.
 
-### 6. No muted colours — always maintain contrast
+**If your body font size is larger than 16px, `rem` values for small text will fall below the floor.** `rem` is relative to the root font size, which your theme sets on `body`. At `font-size: 18px`, `0.72rem` is only 13px — below the minimum, and not obvious from the value alone. Set all small labels explicitly in `px`:
 
-Do not use low-contrast or muted text colours as a design move. `--color-text-muted` and `--color-text-subtle` exist in the token system, but their values must still pass WCAG AA contrast against the background they sit on (4.5:1 for normal text, 3:1 for large text). This applies to every foreground value: body text, captions, labels, dates, placeholders, icon fills, and link colours in all states.
+```css
+/* ✗ Dangerous — depends on body size; 0.72rem at 18px body = 12.96px */
+.post-date { font-size: 0.72rem; }
+
+/* ✓ Safe — always 13px regardless of body size */
+.post-date { font-size: 13px; }
+```
+
+The safe pattern: use `rem` for body text and headings (which scale together), use `px` for labels, captions, metadata, and fine print (which have a hard floor).
+
+### 6. All three text tokens must independently pass WCAG AA — including `--color-text-subtle`
+
+**The site owner is sight-impaired. WCAG AA (4.5:1) is the floor, not the goal. Where the design allows, target AAA (7:1) for body text and AA for secondary text. When in doubt, go higher.**
+
+All three text tokens — `--color-text`, `--color-text-muted`, and `--color-text-subtle` — must pass WCAG AA contrast (4.5:1 for normal text, 3:1 for large text ≥ 18px or bold ≥ 14px) against the background they sit on. This applies inside `.surface-invert` sections too, where the background changes.
+
+`--color-text-subtle` is the most likely to fail. It's tempting to set it faint — low opacity, a desaturated hue, a near-background grey — as a visual move. Don't. If something needs to feel less prominent, achieve that through size or weight, not reduced contrast:
+
+```css
+/* ✗ Fails WCAG AA — fine as a design intention, fails as text */
+--color-text-subtle: rgba(255, 255, 255, 0.3);
+
+/* ✓ Still passes — 11px caps at 0.09em letter-spacing reads lighter without dropping contrast */
+--color-text-subtle: rgba(255, 255, 255, 0.72);
+.post-kicker { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+```
+
+Verify all three tokens with a contrast checker. The check must pass on every background they appear against — `--color-bg`, `--color-surface`, and inside `.surface-invert`.
 
 ---
 
@@ -487,6 +529,18 @@ Renders a CMS page (About, Now, etc.).
 ```js
 buildSiteNav(menuPages, `/${slug}/`)
 ```
+
+**The content wrapper must use `post-content`** (and optionally `e-content`). This is not optional — image layout classes (`img-wide`, `img-break`, `img-pair`), treatment classes (`photo-muted`, etc.), snippet blocks, blockquote styles, and all prose typography are defined under `.post-content` descendant selectors. A custom wrapper class will silently lose all of them:
+
+```js
+// ✓ Correct — all image layouts, treatments, and prose styles apply
+`<div class="post-content e-content">${contentHtml}</div>`
+
+// ✗ Wrong — images and prose render unstyled or broken
+`<div class="page-body">${contentHtml}</div>`
+```
+
+This applies to `buildPage` specifically. `buildPost` already passes `contentHtml` into `.post-content` by convention, but `buildPage` is where theme authors most often reach for a custom class name.
 
 ---
 
