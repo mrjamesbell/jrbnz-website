@@ -768,6 +768,7 @@
   flex-wrap: wrap;
   gap: 1.25rem;
   margin-top: 1.5rem;
+  border-bottom: none;
 }
 
 [data-theme="wow-signal"] .post-meta a {

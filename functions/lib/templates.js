@@ -49,8 +49,7 @@ export function buildHead({ title, theme = 'dark', accent = '', snippetCss = '',
 ${fontsUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="${fontsUrl}" rel="stylesheet">` : ''}
-<link rel="stylesheet" href="/styles/main.css">
-<link rel="stylesheet" href="/styles/blog.css">
+<link rel="stylesheet" href="/styles/site.css">
 <link rel="stylesheet" href="/styles/themes/${esc(theme)}.css">
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
