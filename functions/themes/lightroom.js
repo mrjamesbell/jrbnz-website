@@ -238,6 +238,7 @@ export function buildIndex(data) {
   ${lrFooter(menuPages, '/posts/')}
 
 </main>
+<script src="/scripts/blog.js"></script>
 </body></html>`;
 }
 

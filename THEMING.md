@@ -269,21 +269,32 @@ Your theme JS must also export an `imageRoles` object so Signal knows which opti
 
 ### From `blog.js` — tag filtering on the essays index
 
-The client-side tag filter script expects these IDs and classes to exist on the essays index page. If your `buildIndex` renderer doesn't produce them, tag filtering silently does nothing.
+The client-side tag filter script (`/scripts/blog.js`) reads `?tag=` from the URL on page load, shows and populates the filter bar, hides non-matching posts, and intercepts tag chip clicks to filter in place without a full reload.
 
-```html
-<div class="tag-filter-bar" id="tag-filter-bar" hidden>
-  Essays tagged <strong id="tag-filter-label"></strong>
-  <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
-</div>
-<div class="tags-section">
-  <a href="/posts/?tag=theatre" class="tag-chip">#theatre</a>
-</div>
-<!-- Each essay card must carry data-tags: -->
-<a class="post-list-item" data-tags="theatre,writing" href="…">…</a>
-<!-- Featured hero (if present) must also carry data-tags and id="featured-hero": -->
-<section id="featured-hero" data-tags="theatre,writing">…</section>
-```
+**Your `buildIndex` renderer must do two things:**
+
+1. Include the script tag immediately before `</body>`:
+   ```html
+   <script src="/scripts/blog.js"></script>
+   </body></html>
+   ```
+
+2. Produce the expected HTML structure (IDs and classes the script targets):
+   ```html
+   <div class="tag-filter-bar" id="tag-filter-bar" hidden>
+     Essays tagged <strong id="tag-filter-label"></strong>
+     <a href="/posts/" class="tag-filter-clear">× Clear filter</a>
+   </div>
+   <div class="tags-section">
+     <a href="/posts/?tag=theatre" class="tag-chip">#theatre</a>
+   </div>
+   <!-- Each essay card must carry data-tags: -->
+   <a class="post-list-item" data-tags="theatre,writing" href="…">…</a>
+   <!-- Featured hero (if present) must also carry data-tags and id="featured-hero": -->
+   <section id="featured-hero" data-tags="theatre,writing">…</section>
+   ```
+
+If either the script tag or the HTML structure is missing, the filter bar stays permanently hidden or permanently visible and tag clicks do nothing. This failure is silent — there are no console errors to catch it.
 
 If your `buildIndex` includes a featured/hero section at the top of the listing, it **must** have `id="featured-hero"` and a `data-tags` attribute containing the featured post's tags (comma-separated). `blog.js` uses this ID to show or hide the featured section when a tag filter is active. Any other ID will cause the featured hero to remain visible when it doesn't match the selected tag.
 
@@ -584,6 +595,23 @@ Renders the `/photos/` page. No photo data is passed — photos are static HTML 
   theme: string,
 }
 ```
+
+**The photo gallery requires CSS and JS that must be injected by your renderer.** Without them the lightbox and category filtering do not work.
+
+Pass the CSS via `extraHead`:
+```js
+const extraHead = [
+  '<meta name="description" content="…">',
+  '<link rel="stylesheet" href="/photos/styles/gallery.css">',
+  '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">',
+].join('\n');
+return `${buildHead({ title: 'Photos', theme, accent, snippetCss, extraHead })}
+  …
+  <script src="/photos/scripts/gallery.js"></script>
+</body></html>`;
+```
+
+Both the CSS and the script tag are required. Omitting either silently breaks the gallery — images load but the lightbox and category filter do nothing.
 
 ---
 

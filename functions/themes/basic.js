@@ -177,6 +177,7 @@ export function buildIndex(data) {
   </main>
 
   ${buildBasicFooter(menuPages, year)}
+  <script src="/scripts/blog.js"></script>
   </body></html>`;
 }
 
