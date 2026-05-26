@@ -8,8 +8,11 @@ import { initSnippetsView } from './snippets-ui.js';
 import { initHomepageView } from './homepage.js';
 import { BUILD } from './build.js';
 import { openMediaPicker } from './media-picker.js';
+import { esc } from './utils.js';
+import { showConfirm } from './confirm-modal.js';
 
 export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
+export { showConfirm } from './confirm-modal.js';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
@@ -117,13 +120,6 @@ export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
   document.getElementById('btn-app-logout').addEventListener('click', logout);
   document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
   document.getElementById('btn-deploy-site').addEventListener('click', deploySite);
-  document.getElementById('btn-show-apikey').addEventListener('click', () => {
-    const inp = document.getElementById('app-settings-apikey');
-    const btn = document.getElementById('btn-show-apikey');
-    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
-    else { inp.type = 'password'; btn.textContent = 'Show'; }
-  });
-
   // Default cover image in settings
   document.getElementById('btn-default-cover-media')?.addEventListener('click', () =>
     openMediaPicker({ insertLabel: 'Use as default cover', onSelect: item => {
@@ -247,8 +243,11 @@ function _updateDefaultCoverFocusBtns(focus) {
 
 function navigate(hash) {
   const h = String(hash).replace(/^#/, '');
-  location.hash = h;
-  _route(h);
+  if (location.hash.slice(1) === h) {
+    _route(h);
+  } else {
+    location.hash = h;
+  }
 }
 
 function _route(hash) {
@@ -434,16 +433,17 @@ function renderList(posts) {
     btn.addEventListener('click', async e => {
       e.stopPropagation();
       const slug = btn.dataset.slug;
-      if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
-      try {
-        const res = await fetch(`/api/posts/${slug}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error(await res.text());
-        showToast('Post deleted');
-        invalidatePostCache();
-        await loadPosts();
-      } catch (err) {
-        showToast('Delete failed: ' + err.message, 'error');
-      }
+      showConfirm(`Delete "${slug}"? This cannot be undone.`, async () => {
+        try {
+          const res = await fetch(`/api/posts/${slug}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error(await res.text());
+          showToast('Post deleted');
+          invalidatePostCache();
+          await loadPosts();
+        } catch (err) {
+          showToast('Delete failed: ' + err.message, 'error');
+        }
+      });
     });
   });
 }
@@ -518,16 +518,17 @@ function renderPageList(pages) {
     btn.addEventListener('click', async e => {
       e.stopPropagation();
       const slug = btn.dataset.slug;
-      if (!confirm(`Delete page "${slug}"? This cannot be undone.`)) return;
-      try {
-        const res = await fetch(`/api/pages/${slug}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error(await res.text());
-        showToast('Page deleted');
-        invalidatePageCache();
-        await loadPages();
-      } catch (err) {
-        showToast('Delete failed: ' + err.message, 'error');
-      }
+      showConfirm(`Delete page "${slug}"? This cannot be undone.`, async () => {
+        try {
+          const res = await fetch(`/api/pages/${slug}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error(await res.text());
+          showToast('Page deleted');
+          invalidatePageCache();
+          await loadPages();
+        } catch (err) {
+          showToast('Delete failed: ' + err.message, 'error');
+        }
+      });
     });
   });
 }
@@ -830,11 +831,6 @@ async function logout() {
 // ── Settings page ─────────────────────────────────────────────────────────────
 
 function openSettingsView() {
-  const savedKey = localStorage.getItem('signal-apikey') || '';
-  document.getElementById('app-settings-apikey').value = savedKey;
-  document.getElementById('app-settings-apikey').type = 'password';
-  document.getElementById('btn-show-apikey').textContent = 'Show';
-
   fetch('/api/site/accent').then(r => r.ok ? r.json() : {}).then(d => {
     _updateAccentButtons('signal-swatch-row', d.signalAccent || '');
     _updateAccentButtons('live-swatch-row', d.accent || '');
@@ -878,10 +874,6 @@ function _loadThemePicker(activeTheme) {
 }
 
 async function saveAppSettings() {
-  const apiKey = document.getElementById('app-settings-apikey').value.trim();
-  if (apiKey) localStorage.setItem('signal-apikey', apiKey);
-  else localStorage.removeItem('signal-apikey');
-
   const defaultCoverImage = document.getElementById('site-default-cover')?.value.trim() || null;
   const activeDefaultFocusBtn = document.querySelector('.default-cover-focus-btn.active');
   const defaultCoverImageFocus = activeDefaultFocusBtn ? activeDefaultFocusBtn.dataset.focus : 'center';
@@ -1015,8 +1007,3 @@ function _initAccentPickers() {
   }).catch(() => {});
 }
 
-// ── Util ──────────────────────────────────────────────────────────────────────
-
-function esc(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}

@@ -3,14 +3,12 @@ let savePip = null;
 let saveDot = null;
 let saveText = null;
 let saveStatus = null;
-let railPip = null;
 
 export function initAutosave() {
   savePip = document.getElementById('rail-pip');
   saveDot = document.getElementById('topbar-save-dot');
   saveText = document.getElementById('topbar-save-text');
   saveStatus = document.getElementById('topbar-save-status');
-  railPip = document.getElementById('rail-pip');
 }
 
 export function scheduleSave(getPayload, onSave, onError) {

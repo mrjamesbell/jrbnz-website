@@ -1,4 +1,4 @@
-// Unified media picker modal — single implementation used by all callers
+import { esc as _esc, fmtBytes as _fmtBytes } from './utils.js';
 
 export async function openMediaPicker({ insertLabel = 'Insert image', onSelect }) {
   const modal = document.getElementById('media-picker-modal');
@@ -92,12 +92,3 @@ function _pickerItemHtml(item) {
   </div>`;
 }
 
-function _esc(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function _fmtBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
-}

@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="/signal/css/youtube-block.css">
 <link rel="stylesheet" href="/signal/css/image-block.css">
 <link rel="stylesheet" href="/signal/css/mobile.css">
-<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js" defer></script>
 </head>
 <body>
 
@@ -685,18 +685,6 @@ const x = 1;
           </div>
 
           <div class="settings-page-section">
-            <div class="settings-page-section-title">AI</div>
-            <div class="settings-page-field">
-              <label class="field-label">Anthropic API key</label>
-              <div style="display:flex;gap:8px">
-                <input class="field-input" type="password" id="app-settings-apikey" placeholder="sk-ant-api03-…" autocomplete="off" style="font-family:monospace;font-size:12px;flex:1">
-                <button class="btn btn-secondary btn-sm" id="btn-show-apikey">Show</button>
-              </div>
-              <p class="field-hint">Used for AI review and excerpt generation. Stored locally only.</p>
-            </div>
-          </div>
-
-          <div class="settings-page-section">
             <div class="settings-page-section-title">Publishing</div>
             <div class="settings-page-field">
               <label class="field-label">Default cover image</label>
@@ -1163,6 +1151,19 @@ const x = 1;
       <span class="media-picker-selected-info" id="picker-selected-info"></span>
       <button class="btn btn-secondary" id="media-picker-cancel">Cancel</button>
       <button class="btn btn-teal" id="media-picker-insert" disabled>Insert image</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic confirm modal -->
+<div class="modal-backdrop" id="confirm-modal" style="display:none">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-body">
+      <p id="confirm-modal-msg"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="confirm-modal-cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-modal-ok">Delete</button>
     </div>
   </div>
 </div>

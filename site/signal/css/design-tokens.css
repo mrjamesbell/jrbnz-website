@@ -51,6 +51,7 @@
   --font-mono:     'SF Mono', 'Fira Mono', 'Consolas', monospace;
 
   /* Type scale */
+  --text-label: 14px; /* minimum accessible size — small labels, status chips, hints */
   --text-xs:   16px;  /* labels, pills, hints, format bar buttons   */
   --text-sm:   18px;  /* meta dates, captions, secondary chrome      */
   --text-base: 20px;  /* primary chrome text, inputs, sheet labels   */

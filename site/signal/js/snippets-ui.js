@@ -1,5 +1,6 @@
 import { SNIPPETS } from './snippets.js';
 import { showToast } from './toast.js';
+import { showConfirm } from './confirm-modal.js';
 
 let _snippets = [];
 let _editingId = null;
@@ -18,9 +19,9 @@ export async function initSnippetsView() {
 async function _loadSnippets() {
   try {
     const res = await fetch('/api/snippets');
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    _snippets = data.length ? data : SNIPPETS.map(s => ({ id: s.id, label: s.label, css: s.css, html: s.html }));
+    _snippets = Array.isArray(data) && data.length ? data : SNIPPETS.map(s => ({ id: s.id, label: s.label, css: s.css, html: s.html }));
   } catch {
     _snippets = SNIPPETS.map(s => ({ id: s.id, label: s.label, css: s.css, html: s.html }));
   }
@@ -114,17 +115,19 @@ function _bindActions() {
     }
   });
 
-  document.getElementById('btn-snippet-delete')?.addEventListener('click', async () => {
+  document.getElementById('btn-snippet-delete')?.addEventListener('click', () => {
     if (!_editingId) return;
-    if (!confirm('Delete this snippet?')) return;
-    _snippets = _snippets.filter(s => s.id !== _editingId);
-    try {
-      await _save();
-      showToast('Deleted', 'default');
-      _hideForm();
-      _renderList();
-    } catch {
-      showToast('Delete failed', 'error');
-    }
+    const id = _editingId;
+    showConfirm('Delete this snippet?', async () => {
+      _snippets = _snippets.filter(s => s.id !== id);
+      try {
+        await _save();
+        showToast('Deleted', 'default');
+        _hideForm();
+        _renderList();
+      } catch {
+        showToast('Delete failed', 'error');
+      }
+    });
   });
 }

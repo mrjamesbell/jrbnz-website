@@ -1,5 +1,7 @@
 import { uploadToR2, openCropModal } from './image-upload.js';
 import { showToast } from './toast.js';
+import { showConfirm } from './confirm-modal.js';
+import { esc as _esc, fmtBytes as _fmtBytes } from './utils.js';
 
 let mediaInitialized = false;
 let nextMediaCursor = null;
@@ -17,11 +19,12 @@ let _pendingUploadFile = null;
 let _uploadedResult = null;
 
 export function initMedia() {
+  if (!mediaInitialized) {
+    mediaInitialized = true;
+    _setupListeners();
+  }
   _showMediaScreen('library');
   loadMediaItems();
-  if (mediaInitialized) return;
-  mediaInitialized = true;
-  _setupListeners();
 }
 
 // ── Screen navigation ─────────────────────────────────────────────────────────
@@ -197,14 +200,8 @@ async function _submitUpload() {
   const progressLabel = document.getElementById('media-upload-progress-label');
   const subLabel = document.getElementById('media-upload-progress-sub');
   if (subLabel) subLabel.textContent = `${file.name} · ${_fmtBytes(file.size)}`;
-  if (progressBar) progressBar.style.width = '0%';
-
-  let pct = 0;
-  const interval = setInterval(() => {
-    pct = Math.min(88, pct + Math.random() * 15 + 5);
-    if (progressBar) progressBar.style.width = `${pct}%`;
-    if (progressLabel) progressLabel.textContent = `${Math.round(pct)}%`;
-  }, 300);
+  if (progressBar) { progressBar.style.width = ''; progressBar.classList.add('is-indeterminate'); }
+  if (progressLabel) progressLabel.textContent = 'Uploading…';
 
   try {
     const originalSlug = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -213,10 +210,8 @@ async function _submitUpload() {
       : file;
 
     const result = await uploadToR2(uploadFile);
-    clearInterval(interval);
-
-    if (progressBar) progressBar.style.width = '100%';
-    if (progressLabel) progressLabel.textContent = '100%';
+    if (progressBar) { progressBar.classList.remove('is-indeterminate'); progressBar.style.width = '100%'; }
+    if (progressLabel) progressLabel.textContent = 'Done';
 
     if (result) {
       if (altVal || captionVal) {
@@ -245,7 +240,7 @@ async function _submitUpload() {
       }, 350);
     }
   } catch (e) {
-    clearInterval(interval);
+    if (progressBar) { progressBar.classList.remove('is-indeterminate'); progressBar.style.width = '0%'; }
     showToast('Upload failed: ' + e.message, 'error');
     _showUploadStep('drop');
   }
@@ -407,17 +402,20 @@ async function _saveEditMetadata() {
   }
 }
 
-async function _deleteEditingImage() {
+function _deleteEditingImage() {
   if (!_editingKey) return;
   const displayName = document.getElementById('media-edit-name')?.value || _editingKey;
-  if (!confirm(`Delete "${displayName}"? This cannot be undone and will break any posts using this image.`)) return;
-  try {
-    await fetch(`/api/media/${encodeURIComponent(_editingKey)}`, { method: 'DELETE' });
-    document.querySelector(`#media-grid .media-item[data-key="${CSS.escape(_editingKey)}"]`)?.remove();
-    _editingKey = null;
-    _showMediaScreen('library');
-    showToast('Deleted');
-  } catch { showToast('Delete failed', 'error'); }
+  const key = _editingKey;
+  showConfirm(`Delete "${displayName}"? This cannot be undone and will break any posts using this image.`, async () => {
+    try {
+      const res = await fetch(`/api/media/${encodeURIComponent(key)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await res.text());
+      document.querySelector(`#media-grid .media-item[data-key="${CSS.escape(key)}"]`)?.remove();
+      _editingKey = null;
+      _showMediaScreen('library');
+      showToast('Deleted');
+    } catch (err) { showToast('Delete failed: ' + err.message, 'error'); }
+  });
 }
 
 async function _cropFromEditScreen() {
@@ -545,27 +543,26 @@ function _updateSelectBar() {
   if (deleteBtn) deleteBtn.disabled = count === 0;
 }
 
-async function _deleteSelected() {
+function _deleteSelected() {
   const count = _selectedKeys.size;
   if (!count) return;
   const noun = count === 1 ? 'image' : 'images';
-  if (!confirm(`Delete ${count} ${noun}? This cannot be undone.`)) return;
-
-  const keys = [..._selectedKeys];
-  const grid = document.getElementById('media-grid');
-
-  try {
-    await Promise.all(keys.map(key =>
+  showConfirm(`Delete ${count} ${noun}? This cannot be undone.`, async () => {
+    const keys = [..._selectedKeys];
+    const grid = document.getElementById('media-grid');
+    const results = await Promise.allSettled(keys.map(key =>
       fetch(`/api/media/${encodeURIComponent(key)}`, { method: 'DELETE' })
+        .then(res => { if (!res.ok) throw new Error(res.status); return key; })
     ));
+    const succeeded = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+    const failed = results.filter(r => r.status === 'rejected').length;
     grid?.querySelectorAll('.media-item').forEach(el => {
-      if (keys.includes(el.dataset.key)) el.remove();
+      if (succeeded.includes(el.dataset.key)) el.remove();
     });
-    showToast(`Deleted ${count} ${noun}`, 'success');
-    _exitSelectMode();
-  } catch {
-    showToast('Some deletes failed', 'error');
-  }
+    _selectedKeys = new Set(keys.filter(k => !succeeded.includes(k)));
+    if (failed) showToast(`${failed} delete${failed > 1 ? 's' : ''} failed`, 'error');
+    else { showToast(`Deleted ${count} ${noun}`, 'success'); _exitSelectMode(); }
+  });
 }
 
 // ── Load / render ──────────────────────────────────────────────────────────────
@@ -633,12 +630,3 @@ function _createProgressItem(filename) {
   return el;
 }
 
-function _fmtBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
-}
-
-function _esc(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
