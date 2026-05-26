@@ -36,9 +36,10 @@ function siteAccentFg(color) {
 
 export function buildHead({ title, theme = 'dark', accent = '', snippetCss = '', extraHead = '' }) {
   const fontsUrl = THEME_FONTS[theme];
-  const accentFg = accent ? siteAccentFg(accent) : '';
-  const accentStyle = accent
-    ? `<style>:root{--color-accent:${accent.replace(/<\/style>/gi, '')};--color-accent-fg:${accentFg};--accent-color:${accent.replace(/<\/style>/gi, '')};--accent-fg:${accentFg}}</style>`
+  const safeAccent = /^#[0-9a-fA-F]{3,8}$|^oklch\([^)]{1,80}\)$/.test(accent ?? '') ? accent : '';
+  const accentFg = safeAccent ? siteAccentFg(safeAccent) : '';
+  const accentStyle = safeAccent
+    ? `<style>:root{--color-accent:${safeAccent};--color-accent-fg:${accentFg};--accent-color:${safeAccent};--accent-fg:${accentFg}}</style>`
     : '';
   return `<!DOCTYPE html>
 <html lang="en" data-theme="${esc(theme)}">

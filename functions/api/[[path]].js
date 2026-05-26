@@ -258,6 +258,17 @@ async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss
 
 // ── Index helpers ─────────────────────────────────────────────────────────────
 
+async function listAll(env, prefix) {
+  const objects = [];
+  let cursor;
+  do {
+    const r = await env.BLOG.list({ prefix, cursor });
+    objects.push(...r.objects);
+    cursor = r.list_complete ? undefined : r.cursor;
+  } while (cursor);
+  return objects;
+}
+
 async function getIndex(env) {
   const obj = await env.BLOG.get('posts/index.json');
   if (!obj) return [];
@@ -268,8 +279,8 @@ async function saveIndex(env, posts) {
   await env.BLOG.put('posts/index.json', JSON.stringify(posts), { httpMetadata: { contentType: 'application/json' } });
 }
 
-async function rebuildIndexHtml(env, posts) {
-  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig, theme } = await loadSiteContext(env);
+async function rebuildIndexHtml(env, posts, ctx = null) {
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig, theme } = ctx ?? await loadSiteContext(env);
   const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme);
   const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme);
   const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme);
@@ -282,14 +293,14 @@ async function rebuildIndexHtml(env, posts) {
   ]);
 }
 
-async function rebuildPostHtml(env, slug, posts) {
+async function rebuildPostHtml(env, slug, posts, ctx = null) {
   const post = posts.find(p => p.slug === slug);
   if (!post || post.status !== 'published') return;
 
   const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
   const contentHtml = mdToHtml(body);
-  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, theme } = await loadSiteContext(env);
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, theme } = ctx ?? await loadSiteContext(env);
   const html = buildPostHtml({ ...post, body, contentHtml, author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus }, theme);
   await env.BLOG.put(`posts/${slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
 }
@@ -389,9 +400,12 @@ async function handleGetSiteSettings(env) {
 }
 
 async function handleSaveSiteSettings(request, env) {
-  const data = await request.json();
+  const { theme, defaultCoverImage, defaultCoverImageFocus } = await request.json();
   const existing = await env.BLOG.get('settings/site.json').then(o => o ? o.json() : {}).catch(() => ({}));
-  const updated = { ...existing, ...data };
+  const updated = { ...existing };
+  if (theme !== undefined) updated.theme = theme;
+  if (defaultCoverImage !== undefined) updated.defaultCoverImage = defaultCoverImage;
+  if (defaultCoverImageFocus !== undefined) updated.defaultCoverImageFocus = defaultCoverImageFocus;
   await env.BLOG.put('settings/site.json', JSON.stringify(updated), { httpMetadata: { contentType: 'application/json' } });
   return json(updated);
 }
@@ -466,7 +480,7 @@ export async function onRequest(context) {
     return json(Object.keys(THEMES).filter(k => k !== 'dark'));
   }
 
-  // Internal build export — token auth, no session required
+  // Internal build export — intentionally unauthenticated; returns pre-rendered published HTML only
   if (resource === 'internal' && slug === 'export' && method === 'GET') {
     return handleExport(request, env);
   }
@@ -1149,7 +1163,7 @@ ${body}`;
 async function handlePublish(env, slug, request) {
   const reqData = request ? await request.json().catch(() => ({})) : {};
 
-  const posts = await getIndex(env);
+  const [posts, ctx] = await Promise.all([getIndex(env), loadSiteContext(env)]);
   const idx = posts.findIndex(p => p.slug === slug);
   if (idx === -1) return json({ error: 'Not found' }, 404);
 
@@ -1160,8 +1174,8 @@ async function handlePublish(env, slug, request) {
 
   await Promise.all([
     saveIndex(env, posts),
-    rebuildPostHtml(env, slug, posts),
-    rebuildIndexHtml(env, posts),
+    rebuildPostHtml(env, slug, posts, ctx),
+    rebuildIndexHtml(env, posts, ctx),
   ]);
 
   return json({ ...posts[idx], url: `/posts/${slug}/` });
@@ -1192,8 +1206,8 @@ async function handleDeletePost(env, slug) {
   const updated = posts.filter(p => p.slug !== slug);
   if (updated.length === posts.length) return json({ error: 'Not found' }, 404);
 
-  const listed = await env.BLOG.list({ prefix: `posts/${slug}/` });
-  await Promise.all(listed.objects.map(o => env.BLOG.delete(o.key)));
+  const objects = await listAll(env, `posts/${slug}/`);
+  await Promise.all(objects.map(o => env.BLOG.delete(o.key)));
 
   await saveIndex(env, updated);
   await rebuildIndexHtml(env, updated);
@@ -1213,8 +1227,8 @@ async function handleRename(request, env, oldSlug) {
   if (idx === -1) return json({ error: 'Not found' }, 404);
 
   // Copy all R2 objects
-  const listed = await env.BLOG.list({ prefix: `posts/${oldSlug}/` });
-  await Promise.all(listed.objects.map(async o => {
+  const listed = await listAll(env, `posts/${oldSlug}/`);
+  await Promise.all(listed.map(async o => {
     const obj = await env.BLOG.get(o.key);
     if (!obj) return;
     const newKey = o.key.replace(`posts/${oldSlug}/`, `posts/${newSlug}/`);
@@ -1247,8 +1261,8 @@ async function handleRenamePage(request, env, oldSlug) {
   if (idx === -1) return json({ error: 'Not found' }, 404);
 
   // Copy all R2 objects under old slug to new slug, then delete old
-  const listed = await env.BLOG.list({ prefix: `pages/${oldSlug}/` });
-  await Promise.all(listed.objects.map(async o => {
+  const listed = await listAll(env, `pages/${oldSlug}/`);
+  await Promise.all(listed.map(async o => {
     const obj = await env.BLOG.get(o.key);
     if (!obj) return;
     const newKey = o.key.replace(`pages/${oldSlug}/`, `pages/${newSlug}/`);
@@ -1658,8 +1672,8 @@ async function handleDeletePage(env, slug) {
   const updated = pages.filter(p => p.slug !== slug);
   if (updated.length === pages.length) return json({ error: 'Not found' }, 404);
 
-  const listed = await env.BLOG.list({ prefix: `pages/${slug}/` });
-  await Promise.all(listed.objects.map(o => env.BLOG.delete(o.key)));
+  const objects = await listAll(env, `pages/${slug}/`);
+  await Promise.all(objects.map(o => env.BLOG.delete(o.key)));
 
   await savePagesIndex(env, updated);
   return json({ ok: true });
@@ -1679,12 +1693,17 @@ async function handlePublishPage(env, slug) {
   pages[idx].updatedAt = new Date().toISOString();
   await savePagesIndex(env, pages);
 
-  const { author, accent, snippetCss, defaultCoverImage, defaultCoverImageFocus, theme } = await loadSiteContext(env);
-  const menuPages = pages;
-  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages, accent, snippetCss, theme });
+  const ctx = await loadSiteContext(env);
+  const { accent, snippetCss, theme } = ctx;
+  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages: pages, accent, snippetCss, theme });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
 
-  return json({ ...pages[idx], url: `/${slug}/`, needsRebuild: pages[idx].include_in_menu });
+  if (pages[idx].include_in_menu) {
+    const posts = await getIndex(env);
+    await rebuildIndexHtml(env, posts, { ...ctx, menuPages: pages });
+  }
+
+  return json({ ...pages[idx], url: `/${slug}/` });
 }
 
 async function handleUnpublishPage(env, slug) {
