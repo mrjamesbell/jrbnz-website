@@ -8,12 +8,13 @@ import * as cinematicTheme from '../themes/cinematic.js';
 import * as lightroomTheme from '../themes/lightroom.js';
 import * as basicTheme from '../themes/basic.js';
 import * as archiveFuturismTheme from '../themes/archivefuturism.js';
+import * as commonplacebookTheme from '../themes/commonplacebook.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { base: baseTheme, cinematic: cinematicTheme, lightroom: lightroomTheme, basic: basicTheme, archivefuturism: archiveFuturismTheme };
+const THEMES = { base: baseTheme, cinematic: cinematicTheme, lightroom: lightroomTheme, basic: basicTheme, archivefuturism: archiveFuturismTheme, commonplacebook: commonplacebookTheme };
 
 function themeRenderer(name) {
   if (!THEMES[name]) throw new Error(`Unknown theme: "${name}"`);
