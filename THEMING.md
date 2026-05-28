@@ -762,11 +762,22 @@ Renders the site homepage (`/`). This is the most theme-specific renderer — mo
   snippetCss: string | null,
   theme: string,
   defaultCoverImage: string | null,
-  homepageConfig: HomepageConfig | null,  // from settings/homepage.json
+  homepageConfig: HomepageConfig | null,  // from settings/homepage.json — ignore if your design doesn't need it
 }
 ```
 
-#### HomepageConfig shape
+**`homepageConfig` is one possible content model, not the homepage format.** The cinematic theme uses it. Your theme does not have to. `recentPosts` gives you the full post list — use it however your design calls for, or not at all. Some homepage structures that work:
+
+- **Just a statement**: author identity + three topic categories + one link. No posts visible.
+- **The full index**: every essay listed chronologically by year. No hero, no featured post.
+- **The commonplace**: pull-quotes from recent essays surface as the primary content — readers encounter the writing before the list.
+- **Topic-first**: posts grouped by tag/category, not by recency.
+- **The stream**: flat chronological list starting immediately — no hierarchy, no featured treatment.
+- **Photography-led**: a grid or sequence of images, with essay titles secondary.
+
+The question to ask first is: *what do you want a first-time visitor to encounter?* The answer shapes the structure. It does not have to be "the most recent piece, then a sample of others."
+
+#### HomepageConfig shape (used by cinematic theme — optional for yours)
 
 ```json
 {
