@@ -1084,7 +1084,7 @@ async function handleGenerateExcerpt(env, slug, request) {
   const apiKey = env.ANTHROPIC_API_KEY;
   if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
-  const prompt = `Write a 1–2 sentence plain-text excerpt for the following blog post, written in first person from the author's perspective (use "I", "my", "we" etc.). Maximum 280 characters total. Write in complete sentences only — never end mid-sentence or mid-thought. No quotes, no commentary, just the excerpt itself.
+  const prompt = `Write a short plain-text description of this blog post — like a simple, natural title for a collection of thoughts. Think "What to do if you are given some flyers" or "Notes from a trip to England" or "Some things my father taught me". One phrase or sentence, no more than 12 words. No full stop at the end. No quotes, no commentary, nothing except the description itself.
 
 Title: ${post.title}
 
@@ -1099,7 +1099,7 @@ ${body}`;
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 150,
+      max_tokens: 40,
       messages: [{ role: 'user', content: prompt }]
     })
   });
