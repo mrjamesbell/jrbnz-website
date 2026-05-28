@@ -4,12 +4,7 @@
   starting point and an honest fallback when a renderer is not implemented.
 */
 
-import { esc, buildHead, buildSiteNav, buildNavLinks } from '../lib/templates.js';
-
-function baseFooter(menuPages) {
-  const links = buildNavLinks(menuPages).map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`).join(' · ');
-  return `<footer class="base-footer">${links}${links ? ' · ' : ''}<a href="/feed.xml">RSS</a></footer>`;
-}
+import { esc, buildHead, buildSiteNav, buildFooter } from '../lib/templates.js';
 
 function head(data) {
   const { title, theme, accent, snippetCss, extraHead } = data;
@@ -27,7 +22,7 @@ ${buildSiteNav(menuPages, '/posts/')}
   <div class="post-content">${contentHtml}</div>
   ${prevPost || nextPost ? `<p class="base-meta">${prevPost ? `← <a href="/posts/${esc(prevPost.slug)}/">${esc(prevPost.title)}</a>` : ''}${prevPost && nextPost ? ' &nbsp; ' : ''}${nextPost ? `<a href="/posts/${esc(nextPost.slug)}/">${esc(nextPost.title)}</a> →` : ''}</p>` : ''}
 </div>
-${baseFooter(menuPages)}
+${buildFooter(new Date().getFullYear())}
 </body>
 </html>`;
 }
@@ -45,7 +40,7 @@ ${buildSiteNav(menuPages, '/posts/')}
   <h1>Essays</h1>
   <ul class="base-post-list">${items}</ul>
 </div>
-${baseFooter(menuPages)}
+${buildFooter(new Date().getFullYear())}
 </body>
 </html>`;
 }
@@ -58,7 +53,7 @@ ${buildSiteNav(menuPages, `/${data.slug}/`)}
   <h1>${esc(title)}</h1>
   <div class="post-content">${contentHtml}</div>
 </div>
-${baseFooter(menuPages)}
+${buildFooter(new Date().getFullYear())}
 </body>
 </html>`;
 }
@@ -71,7 +66,7 @@ ${buildSiteNav(menuPages, '/photos/')}
   <h1>Photos</h1>
   <p>Photo gallery.</p>
 </div>
-${baseFooter(menuPages)}
+${buildFooter(new Date().getFullYear())}
 </body>
 </html>`;
 }
@@ -92,7 +87,7 @@ ${buildSiteNav(menuPages, '/')}
   <h2>Recent essays</h2>
   <ul class="base-post-list">${items}</ul>
 </div>
-${baseFooter(menuPages)}
+${buildFooter(new Date().getFullYear())}
 </body>
 </html>`;
 }
@@ -110,7 +105,7 @@ ${buildSiteNav(menuPages, '/notes/')}
   <h1>Notes</h1>
   ${items}
 </div>
-${baseFooter(menuPages)}
+${buildFooter(new Date().getFullYear())}
 </body>
 </html>`;
 }
