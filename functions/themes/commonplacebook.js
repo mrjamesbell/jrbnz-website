@@ -52,6 +52,14 @@ function postMeta(post) {
   return [date, read, tags].filter(Boolean).join('<br>');
 }
 
+function sortPostsNewestFirst(posts = []) {
+  return [...posts].sort((a, b) => {
+    const ad = Date.parse(a.date || a.dateFormatted || '') || 0;
+    const bd = Date.parse(b.date || b.dateFormatted || '') || 0;
+    return bd - ad;
+  });
+}
+
 function groupByYear(posts = []) {
   return posts.reduce((acc, post) => {
     const year = String(post.date || '').slice(0, 4) || 'Archive';
@@ -62,7 +70,8 @@ function groupByYear(posts = []) {
 }
 
 function archiveList(posts = [], { compact = false, excludeFirst = false } = {}) {
-  const source = excludeFirst ? posts.slice(1) : posts;
+  const ordered = sortPostsNewestFirst(posts);
+  const source = excludeFirst ? ordered.slice(1) : ordered;
   const limited = compact ? source.slice(0, 3) : source;
   const grouped = groupByYear(limited);
 
@@ -96,7 +105,8 @@ function tagChips(tags = []) {
 function authorBox(author = {}) {
   const name = author.name || 'James Bell';
   const bio = author.bio || 'James writes about theatre, technology, memory, landscapes, and the odd systems people build around themselves.';
-  const avatar = author.avatar ? `<img class="cb-author-avatar" src="${esc(author.avatar)}" alt="${esc(name)}">` : `<div class="cb-author-avatar" aria-hidden="true"></div>`;
+  const avatarUrl = author.avatar || author.image || author.photo || author.avatarUrl || author.avatar_url;
+  const avatar = avatarUrl ? `<img class="cb-author-avatar" src="${esc(avatarUrl)}" alt="${esc(name)}">` : `<div class="cb-author-avatar" aria-hidden="true"></div>`;
 
   return `<footer class="cb-author-box">
     <div class="cb-author-inner">
@@ -140,7 +150,8 @@ export function buildHomepage(data) {
 
   const title = homepageConfig?.title || DEFAULT_HOME_TITLE;
   const dek = homepageConfig?.dek || homepageConfig?.description || DEFAULT_HOME_DEK;
-  const latest = recentPosts[0];
+  const orderedPosts = sortPostsNewestFirst(recentPosts);
+  const latest = orderedPosts[0];
 
   return `${buildHead({ title: author?.name || 'JRBNZ', theme, accent, snippetCss })}
   <main class="cb-shell h-card">
@@ -161,7 +172,7 @@ export function buildHomepage(data) {
         </a>
       </div>
     </section>` : ''}
-    <section class="cb-section"><div class="cb-section-inner">${archiveList(recentPosts, { compact: true, excludeFirst: true })}</div></section>
+    <section class="cb-section"><div class="cb-section-inner">${archiveList(orderedPosts, { compact: true, excludeFirst: true })}</div></section>
     <section class="cb-section"><div class="cb-section-inner cb-home-cards">
       <a class="cb-home-card" href="/posts/"><div class="cb-kicker">Essays</div><p>Longer pieces about theatre, memory, places, systems, and small obsessions.</p></a>
       <a class="cb-home-card" href="/notes/"><div class="cb-kicker">Notes</div><p>Short fragments, stray thoughts, and things that do not need to become essays.</p></a>
@@ -272,9 +283,8 @@ export function buildPage(data) {
     ${nav(menuPages, `/${slug}/`)}
     <article class="h-entry">
       <header class="cb-page-head">
-        <div class="cb-page-head-inner">
-          <div class="cb-kicker">Page</div>
-          <div><h1 class="p-name cb-page-title">${esc(title)}</h1></div>
+        <div class="cb-page-head-inner cb-page-head-inner-single">
+          <h1 class="p-name cb-page-title">${esc(title)}</h1>
         </div>
       </header>
       <div class="post-content e-content">${contentHtml}</div>

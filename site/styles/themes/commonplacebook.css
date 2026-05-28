@@ -31,9 +31,7 @@
 }
 
 [data-theme="commonplacebook"] a:hover {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
+  text-decoration: none;
 }
 
 [data-theme="commonplacebook"] .cb-shell {
@@ -166,6 +164,16 @@
   font-weight: 400;
 }
 
+[data-theme="commonplacebook"] .cb-home-card:hover p {
+  text-decoration: none;
+}
+
+[data-theme="commonplacebook"] .cb-latest a:hover .cb-latest-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
 [data-theme="commonplacebook"] .cb-summary {
   margin-top: 22px;
   max-width: 690px;
@@ -194,6 +202,10 @@
   display: grid;
   grid-template-columns: 0.65fr 1.35fr;
   gap: 40px;
+}
+
+[data-theme="commonplacebook"] .cb-page-head-inner-single {
+  display: block;
 }
 
 [data-theme="commonplacebook"] .cb-page-title {
@@ -273,6 +285,10 @@
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 32px;
+}
+
+[data-theme="commonplacebook"] .cb-year-group:has(.post-list-item[hidden]):not(:has(.post-list-item:not([hidden]))) {
+  display: none;
 }
 
 [data-theme="commonplacebook"] .cb-year {
@@ -426,6 +442,18 @@
   letter-spacing: -0.035em;
 }
 
+[data-theme="commonplacebook"] .post-content blockquote p {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+[data-theme="commonplacebook"] .post-content blockquote p + p {
+  margin-top: 0.85em;
+}
+
 [data-theme="commonplacebook"] .pull-quote {
   margin: clamp(56px, 7vw, 84px) calc(var(--gutter) * -1);
   padding: clamp(36px, 5vw, 52px) var(--gutter);
@@ -440,6 +468,15 @@
   font-size: clamp(48px, 7vw, 78px);
   line-height: 1.04;
   letter-spacing: -0.05em;
+  color: var(--color-text);
+}
+
+[data-theme="commonplacebook"] .pull-quote blockquote p {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
 }
 
 [data-theme="commonplacebook"] .quote-interlude {
@@ -454,6 +491,15 @@
   border: 0;
   font-size: clamp(38px, 5vw, 64px);
   line-height: 1.12;
+  color: var(--color-text);
+}
+
+[data-theme="commonplacebook"] .quote-interlude blockquote p {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
 }
 
 [data-theme="commonplacebook"] .snippet {
