@@ -1464,11 +1464,27 @@ async function handleMicropubMedia(request, env) {
   const file = formData?.get('file');
   if (!file || typeof file === 'string') return json({ error: 'file required' }, 400);
 
-  const safeName = file.name.replace(/[^a-z0-9.\-_]/gi, '_').toLowerCase();
-  const key = `media/${Date.now()}-${safeName}`;
-  await env.BLOG.put(key, file.stream(), { httpMetadata: { contentType: file.type || 'application/octet-stream' } });
+  const imageId = generateImageId(slugifyMedia(file.name || 'upload'));
+  const ct = file.type || 'application/octet-stream';
+  const buffer = await file.arrayBuffer();
+  if (!buffer.byteLength) return json({ error: 'empty file' }, 400);
 
-  const location = `https://jrbnz.com/${key}`;
+  await uploadToCFImages(env, buffer, ct, imageId);
+
+  const meta = {
+    displayName: slugifyMedia(file.name || imageId),
+    alt:        '',
+    caption:    '',
+    focalX:     0.5,
+    focalY:     0.5,
+    w:          null,
+    h:          null,
+    size:       buffer.byteLength,
+    uploadedAt: new Date().toISOString(),
+  };
+  await putMeta(env, imageId, meta);
+
+  const location = `https://jrbnz.com/img/${imageId}/public`;
   return new Response(null, { status: 202, headers: { Location: location } });
 }
 
