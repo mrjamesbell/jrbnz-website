@@ -240,7 +240,7 @@ These are the only things you cannot change:
 | `post-content` wrapper on article body | Image layout classes and prose styles are defined under `.post-content` descendants |
 | `tag-filter-bar`, `tag-filter-clear`, `tags-section`, `tag-chip`, `post-list-item`, `data-tags` attribute, `id="featured-hero"` | `blog.js` reads these at runtime for tag filtering |
 | `data-theme="<name>"` on `<html>` | Set by `buildHead()` — how the CSS cascade activates your theme |
-| Minimum 14px text, WCAG AA contrast on all text tokens | Accessibility floor — non-negotiable |
+| Minimum 16px text, WCAG AA contrast on all text tokens | Accessibility floor — non-negotiable |
 
 ### Completely yours — redesign freely
 
@@ -467,23 +467,36 @@ Every rule in your theme CSS must be scoped to `[data-theme="<name>"]`. Naked ru
 [data-theme="x"] .article-col { max-width: 680px; }
 ```
 
-### 5. Minimum font size is 14px — use `px` for small labels, not `rem`
+### 5. Minimum font size is 16px — use `px` for labels, not `rem`
 
 **The site owner is sight-impaired. These are not design targets — they are absolute floors. Aim higher.**
 
-No rendered text — body, captions, labels, metadata, fine print — should be set below `14px`. This applies to every element in every state, including `:hover` and inside compressed layouts on mobile. If something feels too large at 14px, reconsider the surrounding spacing or weight rather than dropping the size.
+No rendered text — body, captions, labels, metadata, kickers, dates, word counts, fine print — should be set below `16px`. This applies to every element in every state: `:hover`, inside compressed mobile layouts, inside sidebars, inside cards. If something feels too large at 16px, reconsider surrounding spacing or weight rather than dropping the size.
 
-**If your body font size is larger than 16px, `rem` values for small text will fall below the floor.** `rem` is relative to the root font size, which your theme sets on `body`. At `font-size: 18px`, `0.72rem` is only 13px — below the minimum, and not obvious from the value alone. Set all small labels explicitly in `px`:
+**`rem` and `em` values for small text are dangerous** because they resolve relative to the body font size, which varies per theme. At `font-size: 18px` body, `0.9rem` is only 16.2px — borderline — and `0.8rem` is 14.4px, firmly below the floor. The math is not obvious from the value alone. Set all labels, metadata, and captions explicitly in `px`:
 
 ```css
-/* ✗ Dangerous — depends on body size; 0.72rem at 18px body = 12.96px */
-.post-date { font-size: 0.72rem; }
+/* ✗ Dangerous — 0.8rem at 18px body = 14.4px. Looks fine, reads wrong. */
+.post-date { font-size: 0.8rem; }
 
-/* ✓ Safe — always 13px regardless of body size */
-.post-date { font-size: 13px; }
+/* ✓ Safe — always 16px regardless of body size */
+.post-date { font-size: 16px; }
 ```
 
-The safe pattern: use `rem` for body text and headings (which scale together), use `px` for labels, captions, metadata, and fine print (which have a hard floor).
+Also watch out for:
+
+- **`font` shorthand** — `font: 500 14px/1.4 var(--f-mono)` sets size to 14px and is easy to miss when scanning
+- **Nested `em`** — inside a component already reduced in size, `0.9em` compounds downward
+- **Responsive reductions** — a `font-size: clamp(14px, 2vw, 18px)` has a 14px floor; change to `clamp(16px, …)`
+- **`calc()` expressions** — verify the minimum value, not just the expression
+
+**The safe pattern:** use `rem` for body text and headings (they scale together), use `px` for everything with a hard floor: labels, captions, dates, kickers, word counts, nav links, metadata of any kind.
+
+**Grep to catch violations before shipping:**
+```bash
+grep -E 'font-size:\s*(([0-9]|1[0-5])px|0\.[0-9]+rem)' site/styles/themes/mytheme.css
+```
+This matches any `px` value below 16 and any `rem` value below `1rem`. Resolve each hit — either raise it to `16px` or confirm it's a heading that will never render small.
 
 ### 6. Post links must use `/posts/{slug}/` — never `/{slug}/`
 
@@ -509,24 +522,56 @@ This applies everywhere a renderer links to a post: prev/next nav in `buildPost`
 
 CMS page slugs (`buildPage`, `buildSiteNav` active href) correctly use `/${slug}/` — that's right because pages live at `dist/{slug}/index.html`.
 
-### 7. All three text tokens must independently pass WCAG AA — including `--color-text-subtle`
+### 7. All text must pass WCAG AA contrast — hierarchy through size and weight, not contrast reduction
 
-**The site owner is sight-impaired. WCAG AA (4.5:1) is the floor, not the goal. Where the design allows, target AAA (7:1) for body text and AA for secondary text. When in doubt, go higher.**
+**The site owner is sight-impaired. WCAG AA (4.5:1) is the floor, not the goal. Target AAA (7:1) for body text wherever the palette allows. When in doubt, go higher.**
 
-All three text tokens — `--color-text`, `--color-text-muted`, and `--color-text-subtle` — must pass WCAG AA contrast (4.5:1 for normal text, 3:1 for large text ≥ 18px or bold ≥ 14px) against the background they sit on. This applies inside `.surface-invert` sections too, where the background changes.
+#### Contrast targets by role
 
-`--color-text-subtle` is the most likely to fail. It's tempting to set it faint — low opacity, a desaturated hue, a near-background grey — as a visual move. Don't. If something needs to feel less prominent, achieve that through size or weight, not reduced contrast:
+| Text role | Minimum | Target |
+|---|---|---|
+| Body text (`--color-text`) | 4.5:1 (AA) | 7:1 (AAA) |
+| Secondary text (`--color-text-muted`) | 4.5:1 (AA) | 5.5:1+ |
+| Metadata, labels (`--color-text-subtle`) | 4.5:1 (AA) | 4.5:1 |
+| Large text ≥ 24px regular, or ≥ 19px bold | 3:1 (AA Large) | 4.5:1 |
+
+These ratios must hold against every background the text sits on: `--color-bg`, `--color-surface`, inside `.surface-invert`, inside any custom surface class your theme defines. Check each combination independently — a token that passes on a dark background may fail on a card with a slightly lighter surface.
+
+#### The contrast reduction trap
+
+`--color-text-subtle` is the most common failure point. Reducing contrast is a natural design instinct for hierarchy — faint = unimportant. **Don't.** Achieve hierarchy through size, weight, letter-spacing, and case instead:
 
 ```css
-/* ✗ Fails WCAG AA — fine as a design intention, fails as text */
+/* ✗ Fails — rgba(255,255,255,0.3) on #0e0f0c = 1.9:1. Invisible to low-vision readers. */
 --color-text-subtle: rgba(255, 255, 255, 0.3);
 
-/* ✓ Still passes — 11px caps at 0.09em letter-spacing reads lighter without dropping contrast */
+/* ✗ Also fails — rgba(255,255,255,0.5) on #0e0f0c ≈ 3.4:1. Below AA. */
+--color-text-subtle: rgba(255, 255, 255, 0.5);
+
+/* ✓ Passes AA — rgba(255,255,255,0.72) on #0e0f0c ≈ 5.1:1. Feels lighter via spacing. */
 --color-text-subtle: rgba(255, 255, 255, 0.72);
-.post-kicker { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.post-kicker {
+  font-size: 16px;          /* never below 16px even for kickers */
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
 ```
 
-Verify all three tokens with a contrast checker. The check must pass on every background they appear against — `--color-bg`, `--color-surface`, and inside `.surface-invert`.
+The same logic applies to light themes — a `#999` label on `#fff` is only 2.8:1, which fails AA. Use `#767676` (4.5:1 exactly) as an absolute floor for grey-on-white text, and prefer darker.
+
+#### `rgba` opacity is background-dependent
+
+An rgba colour doesn't have a fixed contrast ratio — it depends on what's behind it. `rgba(0, 0, 0, 0.5)` on `#ffffff` is 5.3:1, but the same value on `#e0e0e0` drops to 3.8:1. If your theme uses semi-transparent text colours, verify the ratio against every surface it appears on, not just the main background.
+
+#### Verify before shipping
+
+Use [Colour Contrast Checker](https://colourcontrast.cc) or the browser DevTools accessibility panel. Test every combination:
+
+- Each text token × `--color-bg`
+- Each text token × `--color-surface` (if different)
+- Each text token × every named surface zone in your theme (`.surface-invert`, etc.)
+- Any decorative text used over photography or coloured backgrounds
 
 ---
 
