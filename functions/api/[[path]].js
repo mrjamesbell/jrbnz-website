@@ -1084,7 +1084,7 @@ async function handleGenerateExcerpt(env, slug, request) {
   const apiKey = env.ANTHROPIC_API_KEY;
   if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY not configured' }, 503);
 
-  const prompt = `Write a short plain-text description of this blog post — like a simple, natural title for a collection of thoughts. Think "What to do if you are given some flyers" or "Notes from a trip to England" or "Some things my father taught me". One phrase or sentence, no more than 12 words. No full stop at the end. No quotes, no commentary, nothing except the description itself.
+  const prompt = `Write a short plain-text description of this blog post. Tone: dry, understated, mildly self-deprecating — the voice of someone sharing something without overselling it. Not sarcastic, not earnest. Think "What to do with those theatre flyers you got stuck with" or "I keep forgetting the timings so I wrote them down" or "Some things my dad taught me before he died". Quietly wry. No more than 15 words. No full stop at the end. No quotes, no commentary, nothing except the description itself.
 
 Title: ${post.title}
 
