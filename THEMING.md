@@ -45,9 +45,9 @@ Because `site.css` makes no visual decisions, themes start from a clean slate. T
 
 The active theme name is stored in `settings/site.json` in R2 (key `theme`). `loadSiteContext()` reads it on every render. The Worker writes `data-theme="<name>"` onto the `<html>` element and loads `/styles/themes/<name>.css`. The active theme can be changed from **Settings → Appearance → Theme** in Signal — no code change needed.
 
-### The `.surface-invert` pattern
+### The `.surface-invert` pattern (optional)
 
-Many designs have sections that invert the palette — a light reading surface inside a dark page, or vice versa. Rather than hardcoding colours for that surface, wrap it in a `<div class="surface-invert">`. The theme's `.surface-invert` block re-declares the same token names with inverted values, so every component inside automatically renders correctly.
+One approach to palette inversion — a light reading surface inside a dark page, or vice versa — is to wrap a section in `<div class="surface-invert">`. The theme's `.surface-invert` block re-declares the token names with inverted values, so components inside automatically render correctly.
 
 ```html
 <!-- Dark page background, then a light reading column -->
@@ -56,9 +56,80 @@ Many designs have sections that invert the palette — a light reading surface i
 </div>
 ```
 
+This pattern is entirely optional. Themes that don't invert the palette don't need it at all. Themes that use multiple colour zones can define their own named surface classes instead — `surface-warm`, `surface-ink`, `surface-accent` — anything scoped to `[data-theme="x"]` works fine.
+
 ### Runtime accent override
 
 `--color-accent` (and its legacy alias `--accent-color`) can be overridden at runtime via an inline `<style>` injected by the Worker when a site has a custom accent colour configured. This sits on top of whatever the theme file sets and takes precedence via cascade order.
+
+---
+
+## Creative range
+
+The theming system has a very small fixed contract (detailed in [What is fixed vs what is yours](#what-is-fixed-vs-what-is-yours) below). Everything else is open. This section exists because AI-generated themes tend to default to the same structure — horizontal nav, hero section, content list, footer — regardless of the brief. That pattern is not required or even implied by this system. Here is what is actually possible.
+
+### Layouts that are fully supported
+
+**Vertical sidebar nav**
+```js
+// In your renderer — no buildSiteNav() call at all
+const links = buildNavLinks(menuPages);
+return `${buildHead({ title, theme, accent, snippetCss })}
+  <div class="page-shell">
+    <nav class="sidebar">
+      <a href="/" class="wordmark">JRBNZ</a>
+      ${links.map(l => `<a href="${l.href}">${esc(l.label)}</a>`).join('')}
+    </nav>
+    <main class="main-col">…</main>
+  </div>
+</body></html>`;
+```
+
+**Full-screen section homepage with no traditional nav**
+```js
+// Nav embedded in a full-viewport hero — no top bar
+return `${buildHead({ title, theme, accent, snippetCss })}
+  <section class="cover">
+    <div class="cover-nav">
+      ${links.map(l => `<a href="${l.href}">${esc(l.label)}</a>`).join('')}
+    </div>
+    <h1 class="cover-title">${esc(author.name)}</h1>
+  </section>
+  <section class="essay-stream">…</section>
+</body></html>`;
+```
+
+**Magazine-style overlapping grid** — use CSS grid with named areas, negative margins, `z-index` layering. The renderer writes whatever HTML your grid needs; the CSS lays it out.
+
+**Immersive post reading** — no persistent nav on article pages, a fixed scroll-progress bar instead, drop caps, full-bleed pull quotes that break out of the column, custom `@keyframes` animations injected via `extraHead`.
+
+**Dark-to-light transition at scroll** — use `IntersectionObserver` or scroll-driven CSS animations to shift the page between surface modes as the reader scrolls into the article body.
+
+**Per-section accent colours** — define multiple accent custom properties (`--accent-theatre`, `--accent-tech`, `--accent-memory`) and apply them via `data-tag` attributes on post cards. Each category can have its own colour.
+
+### What a "breaking" theme looks like
+
+The cinematic theme uses `buildSiteNav()` and a conventional nav bar. A genuinely different theme would not:
+
+```
+cinematic (conventional):             radical alternative:
+┌─────────────────────────┐           ┌─────────────────────────┐
+│ JRBNZ    Essays  About  │  ← nav    │                         │
+├─────────────────────────┤           │  J  ← vertical wordmark │
+│ [hero image]            │           │  R                      │
+│ Hero title              │           │  B                      │
+│ Excerpt                 │           │  N    RECENT ESSAY      │
+│ Read more →             │           │  Z                      │
+├─────────────────────────┤           │       Title here        │
+│ Post  Post  Post        │           │  ─    Excerpt…          │
+└─────────────────────────┘           └─────────────────────────┘
+```
+
+The fixed contract — nav classes, post-content, image layout classes, tag filter classes — applies in both. The HTML structure and page composition are entirely different.
+
+### Constraints that are genuinely immovable
+
+If a design idea would require renaming `post-content`, removing `img-break` from the CSS, or restructuring how `tag-filter-bar` and `post-list-item` work — that is a real constraint. Everything else is design freedom.
 
 ---
 
@@ -155,13 +226,45 @@ That's it. No other files need to change.
 
 ---
 
+## What is fixed vs what is yours
+
+Before designing a theme, be clear about what the system actually constrains. Most of it is yours.
+
+### Truly fixed — do not rename or remove
+
+These are the only things you cannot change:
+
+| What | Why it's fixed |
+|---|---|
+| Class names Signal writes into post markdown: `img-wide`, `img-break`, `img-small`, `img-pair`, `photo-muted`, `photo-mono`, `photo-colour`, `photo-soft`, `pull-quote`, `quote-interlude`, `snippet` | Signal's image editor and markdown renderer produce these — your CSS must handle them |
+| `post-content` wrapper on article body | Image layout classes and prose styles are defined under `.post-content` descendants |
+| `tag-filter-bar`, `tag-filter-clear`, `tags-section`, `tag-chip`, `post-list-item`, `data-tags` attribute, `id="featured-hero"` | `blog.js` reads these at runtime for tag filtering |
+| `data-theme="<name>"` on `<html>` | Set by `buildHead()` — how the CSS cascade activates your theme |
+| Minimum 14px text, WCAG AA contrast on all text tokens | Accessibility floor — non-negotiable |
+
+### Completely yours — redesign freely
+
+Everything else is under your control:
+
+- **Nav structure** — `buildSiteNav()` is a convenience helper, not a requirement. Write any nav HTML you want: vertical sidebar, overlay menu, bottom bar, no persistent nav at all, a full-bleed masthead with nav embedded.
+- **Page composition** — full-screen heroes, overlapping grid sections, split-scroll layouts, asymmetric columns, text-as-background, anything.
+- **What image layout classes mean visually** — `img-break` must be *styled*, but nothing says it has to be a simple full-width block. It could be a pull-out to the right, a rotated overlay, a full-viewport pause. The class name is a hook, not a prescription.
+- **Colour architecture** — `surface-invert` is one approach. Define as many or as few surface zones as your design needs, with whatever class names you choose.
+- **Typography scale** — the token names (`--font-body`, `--font-display`, `--font-mono`) suggest three roles, but a theme can load six typefaces, use variable fonts, mix display sizes, set headline sizes at 200px. The tokens are starting points.
+- **Animation, scroll effects, custom properties** — inject anything via `extraHead` in `buildHead()`. View transitions, scroll-driven animations, CSS `@keyframes`, third-party font loading — all valid.
+- **Every HTML structure in every renderer** — homepage, post, index, notes, pages. Your JS writes the HTML; write whatever HTML your design needs.
+
+---
+
 ## Shared class contract
 
-These class names are required by the system — `blog.js` tag filtering, Signal's image editor, and the template helpers produce or depend on them. Your CSS must style them; your renderer must not rename them.
+These class names are required by the system — `blog.js` tag filtering, Signal's image editor, and the markdown renderer produce or depend on them. Your CSS must style them; your renderer must not rename them.
 
 Use this as a checklist when finishing a new theme CSS file.
 
-### From `buildSiteNav()` — always produced by the template helper
+### Nav — `buildSiteNav()` or custom
+
+`buildSiteNav()` is a convenience helper that produces this structure:
 
 ```html
 <nav class="site-nav">
@@ -172,9 +275,20 @@ Use this as a checklist when finishing a new theme CSS file.
 </nav>
 ```
 
-Style all of: `site-nav`, `nav-logo`, `nav-links`, `nav-links a`, `nav-links a.active`.
+**You can use it or bypass it entirely.** If you call `buildSiteNav()`, your CSS must style `site-nav`, `nav-logo`, `nav-links`, `nav-links a`, and `nav-links a.active`. `site.css` gives these elements structural layout (flex, gap, list-style) but no visual properties.
 
-`site.css` gives these elements structural layout (flex, gap, list-style) but no visual properties — your theme must supply all colours, typography, and borders.
+If your design calls for a different nav structure — sidebar, overlay, masthead, bottom bar — write the nav HTML directly in your renderer instead. Use `buildNavLinks(menuPages)` to get the `[{ href, label }]` array and build whatever markup you need:
+
+```js
+const links = buildNavLinks(menuPages);
+// → [{ href: '/about/', label: 'About' }, …]
+
+// Then build any structure you want:
+const verticalNav = `
+  <aside class="sidebar-nav">
+    ${links.map(l => `<a href="${l.href}">${esc(l.label)}</a>`).join('\n')}
+  </aside>`;
+```
 
 ### Footer — each theme writes its own
 
@@ -460,34 +574,54 @@ A theme renderer is an ES module at `functions/themes/<name>.js`. It can export 
 
 ### Template helpers (from `functions/lib/templates.js`)
 
-All renderers import from here. Never hardcode nav, footer, or `<head>` HTML directly.
+Import what you need. `buildHead` is required (it writes `data-theme` and injects the accent override). Everything else is optional — use the helpers where convenient, or write your own HTML when your design needs a different structure.
 
 ```js
 import { esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard, SITE_URL } from '../lib/templates.js';
 ```
 
-| Helper | Signature | Returns |
-|---|---|---|
-| `esc(str)` | `esc(value: any) → string` | HTML-escaped string |
-| `SITE_URL` | constant | `'https://jrbnz.com'` |
-| `buildHead({ title, theme, accent, snippetCss, extraHead })` | all optional | Full `<!doctype html><html data-theme="…"><head>…</head><body>` opener |
-| `buildSiteNav(menuPages, activeHref)` | positional args | `<nav class="site-nav">…</nav>` |
-| `buildNavLinks(menuPages)` | `menuPages: Page[]` | `[{ href, label }]` — for building custom nav markup |
-| `buildFooter(menuPages, year)` | positional args | `<footer class="footer">…</footer>` (structural only — theme provides visual styles) |
-| `buildPostMeta({ title, postUrl, metaDesc, ogImage, date, authorName })` | all optional | OG/meta tags HTML string for `<head>` |
-| `buildAuthorCard(author)` | `author: Author` | HTML string for the author bio card |
+| Helper | Required? | Signature | Returns |
+|---|---|---|---|
+| `esc(str)` | Yes, always | `esc(value: any) → string` | HTML-escaped string — use on every user-supplied value |
+| `SITE_URL` | — | constant | `'https://jrbnz.com'` |
+| `buildHead(…)` | **Yes** | see below | Full `<!doctype html><html data-theme="…"><head>…</head><body>` opener |
+| `buildSiteNav(menuPages, activeHref)` | Optional | positional args | `<nav class="site-nav">…</nav>` — or skip and write your own nav |
+| `buildNavLinks(menuPages)` | Optional | `menuPages: Page[]` | `[{ href, label }]` — raw nav data for building custom markup |
+| `buildFooter(menuPages, year)` | Optional | positional args | `<footer class="footer">…</footer>` — structural only, rarely used by themes |
+| `buildPostMeta(…)` | Recommended | see below | OG/meta tags HTML string for `<head>` |
+| `buildAuthorCard(author)` | Optional | `author: Author` | Pre-rendered author bio HTML |
 
-**`buildHead` detail:**
+**`buildHead` — required, and your main creative injection point:**
+
 ```js
 buildHead({
-  title,       // string | null — null omits <title> (homepage uses site name from CSS)
+  title,       // string | null — null omits <title>
   theme,       // string — written to data-theme="…" on <html>
-  accent,      // string | null — hex colour; injected as inline style override for --color-accent
-  snippetCss,  // string | null — additional CSS for snippet blocks
-  extraHead,   // string | null — arbitrary HTML appended inside <head>
+  accent,      // string | null — hex/oklch; injected as inline :root override for --color-accent
+  snippetCss,  // string | null — additional CSS for code snippet blocks
+  extraHead,   // string | null — ANY HTML appended inside <head>, before </head>
 })
 // → '<!doctype html>\n<html lang="en" data-theme="cinematic">\n<head>…</head>\n<body>'
 ```
+
+**`extraHead` is the hook for everything unusual.** Use it to load custom fonts, inject per-theme animation CSS, enable scroll-driven effects, add view transition rules, or set any `<meta>` tags your design needs:
+
+```js
+const extraHead = `
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&display=swap" rel="stylesheet">
+  <style>
+    @keyframes reveal { from { opacity: 0; translate: 0 12px } to { opacity: 1; translate: none } }
+    [data-theme="mytheme"] .hero-title { animation: reveal 600ms ease-out both }
+    @media (prefers-reduced-motion: reduce) {
+      [data-theme="mytheme"] .hero-title { animation: none }
+    }
+  </style>
+`;
+return `${buildHead({ title, theme, accent, snippetCss, extraHead })}…`;
+```
+
+Anything in `extraHead` lands inside `<head>` after the theme stylesheet — so injected `<style>` rules have higher cascade priority than the theme CSS file. This is also where you'd add `@view-transition { navigation: auto }` for cross-page transitions.
 
 ---
 
