@@ -675,11 +675,22 @@
   flex-wrap: wrap;
   gap: 24px;
   justify-content: space-between;
+  align-items: center;
   font-family: var(--font-mono);
   font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--color-text-subtle);
+}
+
+[data-theme="commonplacebook"] .cb-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+[data-theme="commonplacebook"] .cb-footer-signal img {
+  display: block;
 }
 
 @media (max-width: 800px) {

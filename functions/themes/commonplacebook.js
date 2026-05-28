@@ -34,7 +34,7 @@ function footer(year = new Date().getFullYear()) {
       <div class="cb-footer-links">
         <a href="/feed.xml" class="cb-footer-rss">RSS</a>
         <a href="/signal/" class="cb-footer-signal" title="Made with Signal" aria-label="Signal">
-          <img src="/signal/signal-logo.png" alt="" width="20" height="20">
+          <img src="/signal/signal-logo.png" alt="" width="50" height="50">
         </a>
       </div>
     </div>
@@ -76,7 +76,7 @@ function archiveList(posts = [], { compact = false, excludeFirst = false } = {})
   const grouped = groupByYear(limited);
 
   return `<div class="cb-archive-list">
-    ${Object.entries(grouped).map(([year, items]) => `<section class="cb-year-group">
+    ${Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a)).map(([year, items]) => `<section class="cb-year-group">
       <div class="cb-year">${esc(year)}</div>
       <div class="cb-year-posts">
         ${items.map((post) => {
