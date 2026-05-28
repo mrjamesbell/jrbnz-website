@@ -945,6 +945,42 @@ If your theme uses different layout or treatment classes, update the `className`
 
 ---
 
+## Footer
+
+The footer is theme-owned. Each theme builds its own footer HTML — there is no shared `buildFooter` helper that themes are required to call.
+
+### What the footer must contain
+
+| Element | Notes |
+|---|---|
+| Copyright line | `©{year} James Bell` — use the `year` value passed in `data.year` |
+| RSS link | `<a href="/feed.xml">RSS</a>` |
+| Signal logo | `<img src="/signal/signal-logo.png" alt="" width="20" height="20">` wrapped in an `<a href="/signal/">` with `title="Made with Signal"` and `aria-label="Signal"` |
+
+### What the footer must NOT contain
+
+- A navigation menu. Menus live in the site header only. Repeating them in the footer adds noise and is unnecessary given the site's scale.
+
+### Structure convention
+
+Keep the footer minimal: copyright left, RSS + Signal logo right (or inline). No taglines, no secondary nav, no social links.
+
+```html
+<footer class="[theme]-footer">
+  <div class="[theme]-footer-inner">
+    <span class="[theme]-footer-copy">©2026 James Bell</span>
+    <div class="[theme]-footer-links">
+      <a href="/feed.xml">RSS</a>
+      <a href="/signal/" title="Made with Signal" aria-label="Signal">
+        <img src="/signal/signal-logo.png" alt="" width="20" height="20">
+      </a>
+    </div>
+  </div>
+</footer>
+```
+
+---
+
 ## Static build notes
 
 HTML is pre-rendered to R2 at publish time and exported to `dist/` at deploy time (see `scripts/build.mjs`). Theme changes require a full **Rebuild site** in Signal to re-render all posts and pages with the updated templates, then a **Deploy** to push the new HTML to CDN.

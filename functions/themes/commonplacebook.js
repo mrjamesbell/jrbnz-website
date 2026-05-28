@@ -27,14 +27,16 @@ function nav(menuPages = [], activeHref = '') {
   </header>`;
 }
 
-function footer(menuPages = [], year = new Date().getFullYear()) {
-  const links = buildNavLinks(menuPages)
-    .map((l) => `<a href="${esc(l.href)}">${esc(l.label)}</a>`)
-    .join('');
+function footer(year = new Date().getFullYear()) {
   return `<footer class="cb-footer">
     <div class="cb-footer-inner">
-      <span>©${esc(year)} JRBNZ</span>
-      <nav aria-label="Footer">${links}<a href="/feed.xml">RSS</a></nav>
+      <span class="cb-footer-copy">©${esc(year)} James Bell</span>
+      <div class="cb-footer-links">
+        <a href="/feed.xml" class="cb-footer-rss">RSS</a>
+        <a href="/signal/" class="cb-footer-signal" title="Made with Signal" aria-label="Signal">
+          <img src="/signal/signal-logo.png" alt="" width="20" height="20">
+        </a>
+      </div>
     </div>
   </footer>`;
 }
@@ -165,7 +167,7 @@ export function buildHomepage(data) {
       <a class="cb-home-card" href="/notes/"><div class="cb-kicker">Notes</div><p>Short fragments, stray thoughts, and things that do not need to become essays.</p></a>
       <a class="cb-home-card" href="/photos/"><div class="cb-kicker">Photos</div><p>Images from travel, theatre, weather, backstage corners, and ordinary light.</p></a>
     </div></section>
-    ${footer(menuPages, data.year)}
+    ${footer(data.year)}
   </main>
   </body></html>`;
 }
@@ -199,7 +201,7 @@ export function buildIndex(data) {
         ${archiveList(posts)}
       </div>
     </section>
-    ${footer(menuPages, data.year)}
+    ${footer(data.year)}
     <script src="/scripts/blog.js"></script>
   </main>
   </body></html>`;
@@ -249,7 +251,7 @@ export function buildPost(data) {
       <div class="post-content e-content">${contentHtml}</div>
       ${authorBox(author)}
     </article>
-    ${footer(menuPages, data.year)}
+    ${footer(data.year)}
   </main>
   </body></html>`;
 }
@@ -277,7 +279,7 @@ export function buildPage(data) {
       </header>
       <div class="post-content e-content">${contentHtml}</div>
     </article>
-    ${footer(menuPages, data.year)}
+    ${footer(data.year)}
   </main>
   </body></html>`;
 }
@@ -298,7 +300,7 @@ export function buildNotes(data) {
     ${nav(menuPages, '/notes/')}
     <section class="cb-page-head"><div class="cb-page-head-inner"><div class="cb-kicker">Notes</div><div><h1 class="cb-page-title">Fragments and passing thoughts.</h1></div></div></section>
     <section class="cb-section"><div class="cb-section-inner">${archiveList(notePosts)}</div></section>
-    ${footer(menuPages, data.year)}
+    ${footer(data.year)}
   </main>
   </body></html>`;
 }
@@ -316,7 +318,7 @@ export function buildPhotos(data) {
     ${nav(menuPages, '/photos/')}
     <section class="cb-page-head"><div class="cb-page-head-inner"><div class="cb-kicker">Photos</div><div><h1 class="cb-page-title">Photographs and visual notes.</h1></div></div></section>
     <div class="post-content"><p>The static photo gallery loads below using the existing gallery CSS and JavaScript.</p></div>
-    ${footer(menuPages, year)}
+    ${footer(year)}
     <script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
     <script src="/photos/scripts/gallery.js"></script>
   </main>
