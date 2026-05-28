@@ -4,19 +4,16 @@ import { SITE_URL, esc, buildHead, buildSiteNav, buildFooter, buildPostMeta, bui
 import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as baseTheme from '../themes/base.js';
-import * as darkTheme from '../themes/dark.js';
 import * as cinematicTheme from '../themes/cinematic.js';
-import * as brashEditorialTheme from '../themes/brash-editorial.js';
-import * as manifestoTheme from '../themes/manifesto.js';
 import * as lightroomTheme from '../themes/lightroom.js';
-import * as wowSignalTheme from '../themes/wow-signal.js';
 import * as basicTheme from '../themes/basic.js';
+import * as archiveFuturismTheme from '../themes/archivefuturism.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { base: baseTheme, dark: darkTheme, cinematic: cinematicTheme, 'brash-editorial': brashEditorialTheme, manifesto: manifestoTheme, lightroom: lightroomTheme, 'wow-signal': wowSignalTheme, basic: basicTheme };
+const THEMES = { base: baseTheme, cinematic: cinematicTheme, lightroom: lightroomTheme, basic: basicTheme, archivefuturism: archiveFuturismTheme };
 
 function themeRenderer(name) {
   if (!THEMES[name]) throw new Error(`Unknown theme: "${name}"`);
