@@ -297,6 +297,8 @@ export function closeEditor() {
   if (editorEl) editorEl.style.display = 'none';
   const titleEl = document.getElementById('topbar-title');
   if (titleEl) titleEl.textContent = '';
+  const previewBtn = document.getElementById('btn-preview-post');
+  if (previewBtn) previewBtn.style.display = 'none';
   const viewPostBtn = document.getElementById('btn-view-post');
   if (viewPostBtn) viewPostBtn.style.display = 'none';
 }
@@ -321,6 +323,13 @@ function _populateEditor() {
   _autoResizeTitle();
   _autoResizeTextarea();
   _updatePublishButton();
+
+  const previewBtn = document.getElementById('btn-preview-post');
+  if (previewBtn && currentSlug !== 'new') {
+    const base = currentType === 'page' ? '/api/pages' : '/api/posts';
+    previewBtn.href = `${base}/${currentSlug}/preview`;
+    previewBtn.style.display = '';
+  }
 
   const viewPostBtn = document.getElementById('btn-view-post');
   if (viewPostBtn) {
@@ -1103,6 +1112,8 @@ async function _confirmPublish() {
     const viewBtn = document.getElementById('btn-view-post');
     const defaultUrl = currentType === 'page' ? `/${slug}/` : `/posts/${slug}/`;
     if (viewBtn) { viewBtn.href = data.url || defaultUrl; viewBtn.style.display = ''; }
+    const previewBtn2 = document.getElementById('btn-preview-post');
+    if (previewBtn2) previewBtn2.href = `${_getApiBase()}/${slug}/preview`;
 
     setTimeout(() => _closePublishModal(), 1200);
   } catch (e) {
@@ -1243,6 +1254,8 @@ async function _saveSettings() {
       }
       originalSlug = newSlug;
       currentSlug = newSlug;
+      const previewBtnR = document.getElementById('btn-preview-post');
+      if (previewBtnR) previewBtnR.href = `${_getApiBase()}/${newSlug}/preview`;
       navigate(isPage ? `#edit-page/${newSlug}` : `#edit/${newSlug}`);
     } catch (e) {
       showToast('Rename failed: ' + e.message, 'error');

@@ -313,6 +313,31 @@ async function rebuildIndexHtml(env, posts, ctx = null) {
   ]);
 }
 
+async function handlePreviewPost(env, slug) {
+  const [posts, ctx] = await Promise.all([getIndex(env), loadSiteContext(env)]);
+  const post = posts.find(p => p.slug === slug);
+  if (!post) return new Response('Not found', { status: 404 });
+  const obj = await env.BLOG.get(`posts/${slug}/draft.md`);
+  const body = obj ? await obj.text() : '';
+  const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, theme } = ctx;
+  const html = buildPostHtml({
+    ...post, body, contentHtml: mdToHtml(body),
+    author, accent, menuPages, snippetCss, allPosts: posts, defaultCoverImage, defaultCoverImageFocus,
+  }, theme);
+  return new Response(html, { headers: { 'Content-Type': 'text/html;charset=utf-8', 'X-Robots-Tag': 'noindex' } });
+}
+
+async function handlePreviewPage(env, slug) {
+  const [pages, ctx] = await Promise.all([getPagesIndex(env), loadSiteContext(env)]);
+  const page = pages.find(p => p.slug === slug);
+  if (!page) return new Response('Not found', { status: 404 });
+  const obj = await env.BLOG.get(`pages/${slug}/draft.md`);
+  const body = obj ? await obj.text() : '';
+  const { accent, menuPages, snippetCss, theme } = ctx;
+  const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss, theme });
+  return new Response(html, { headers: { 'Content-Type': 'text/html;charset=utf-8', 'X-Robots-Tag': 'noindex' } });
+}
+
 async function rebuildPostHtml(env, slug, posts, ctx = null) {
   const post = posts.find(p => p.slug === slug);
   if (!post || post.status !== 'published') return;
@@ -589,6 +614,7 @@ export async function onRequest(context) {
       if (action === 'rename' && method === 'POST') return handleRename(request, env, slug);
       if (action === 'review' && method === 'POST') return handleReviewPost(env, slug);
       if (action === 'generate-excerpt' && method === 'POST') return handleGenerateExcerpt(env, slug, request);
+      if (action === 'preview' && method === 'GET') return handlePreviewPost(env, slug);
     }
   }
 
@@ -606,6 +632,7 @@ export async function onRequest(context) {
       if (action === 'unpublish' && method === 'POST') return handleUnpublishPage(env, slug);
       if (action === 'rename' && method === 'POST') return handleRenamePage(request, env, slug);
       if (action === 'review' && method === 'POST') return handleReviewPage(env, slug);
+      if (action === 'preview' && method === 'GET') return handlePreviewPage(env, slug);
     }
   }
 
