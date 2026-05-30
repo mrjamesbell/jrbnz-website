@@ -220,7 +220,7 @@ A theme is two files: a CSS file that styles your design, and a JS renderer that
    ```
 
 4. **Activate in Signal** — go to **Settings → Appearance → Theme**, select the new theme, click Save.
-   Then **Rebuild site** and **Deploy** to apply it to the live site.
+   Then **Publish site** to rebuild and deploy in one step.
 
 That's it. No other files need to change.
 
@@ -939,7 +939,7 @@ If your theme uses different layout or treatment classes, update the `className`
 {
   name: string,
   bio: string,
-  avatar: string,   // URL
+  headshotUrl: string,   // URL
 }
 
 // Page (from pages/index.json — menu pages)
@@ -1008,7 +1008,7 @@ Keep the footer minimal: copyright left, RSS + Signal logo right (or inline). No
 
 ## Static build notes
 
-HTML is pre-rendered to R2 at publish time and exported to `dist/` at deploy time (see `scripts/build.mjs`). Theme changes require a full **Rebuild site** in Signal to re-render all posts and pages with the updated templates, then a **Deploy** to push the new HTML to CDN.
+HTML is pre-rendered to R2 at publish time and exported to `dist/` at deploy time (see `scripts/build.mjs`). Theme changes require a full **Publish site** in Signal — this rebuilds all posts and pages with the updated templates and deploys to CDN in one step.
 
 CSS and JS changes in `site/` are picked up automatically on the next deploy — no Rebuild needed since they are copied directly from `site/` to `dist/`.
 
