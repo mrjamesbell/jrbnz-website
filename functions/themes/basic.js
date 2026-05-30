@@ -74,8 +74,8 @@ export function buildPost(data) {
     ? `<p class="post-subtitle">${esc(subtitle)}</p>`
     : '';
 
-  const avatarHtml = author && author.avatar
-    ? `<img class="sidebar-avatar" src="${esc(author.avatar)}" alt="${esc(author.name)}">`
+  const avatarHtml = author && author.headshotUrl
+    ? `<img class="sidebar-avatar" src="${esc(author.headshotUrl)}" alt="${esc(author.name)}">`
     : '';
 
   const prevHtml = prevPost

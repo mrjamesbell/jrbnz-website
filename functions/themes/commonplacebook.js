@@ -105,7 +105,7 @@ function tagChips(tags = []) {
 function authorBox(author = {}) {
   const name = author.name || 'James Bell';
   const bio = author.bio || 'James writes about theatre, technology, memory, landscapes, and the odd systems people build around themselves.';
-  const avatarUrl = author.avatar || author.image || author.photo || author.avatarUrl || author.avatar_url;
+  const avatarUrl = author.headshotUrl || '';
   const avatar = avatarUrl ? `<img class="cb-author-avatar" src="${esc(avatarUrl)}" alt="${esc(name)}">` : `<div class="cb-author-avatar" aria-hidden="true"></div>`;
 
   return `<footer class="cb-author-box">

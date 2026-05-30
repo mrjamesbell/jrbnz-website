@@ -76,7 +76,7 @@ function renderPostCard(post, index = 0, featured = false) {
 function renderAuthorBox(author = {}, menuPages = []) {
   const name = author.name || 'James Bell';
   const bio = author.bio || '';
-  const avatar = author.avatar || '';
+  const avatar = author.headshotUrl || '';
   return `<footer class="af-author-box">
     <div class="af-author-inner">
       ${avatar ? `<img class="af-author-avatar" src="${esc(avatar)}" alt="${esc(name)}">` : `<div class="af-author-avatar" aria-hidden="true"></div>`}
