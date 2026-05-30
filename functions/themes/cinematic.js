@@ -137,107 +137,39 @@ ${buildCinematicFooter(menuPages)}
 }
 
 export function buildHomepage(data) {
-  const { author, recentPosts, menuPages, accent, snippetCss, theme, defaultCoverImage, homepageConfig } = data;
-  const cfg = homepageConfig || {};
-  const essays = (recentPosts || []).filter(p => !(p.tags || []).includes('note'));
+  const {
+    author, featuredEssay = null, recentEssays = [], menuPages, accent, snippetCss, theme,
+    defaultCoverImage, heroImage = null, heroDescription = null, quote = null,
+  } = data;
 
-  // ── Featured ────────────────────────────────────────────────────────────────
-  let featured = essays[0];
-  if (cfg.featured?.slug) {
-    const found = essays.find(p => p.slug === cfg.featured.slug);
-    if (found) featured = found;
-  }
-  const featuredTitle = cfg.featured?.titleOverride || featured?.title || '';
-  const featuredDek = cfg.featured?.dekOverride || featured?.subtitle || featured?.excerpt || '';
-  const featuredImage = cfg.featured?.imageOverride || featured?.coverImage || defaultCoverImage;
-  const featuredFocus = featured?.coverImageFocus || 'center';
-  const featuredCta = cfg.featured?.ctaLabel || 'Read the essay →';
+  const featuredImg   = featuredEssay?.coverImage || null;
+  const featuredFocus = featuredEssay?.coverImageFocus || 'center';
 
-  const homeFeatured = featured ? `
+  const homeFeatured = featuredEssay ? `
 <section class="featured-hero" id="home-featured">
-  ${featuredImage ? `<img class="featured-hero-img" src="${esc(featuredImage)}" alt="${esc(featured.coverImageAlt || '')}" style="object-position:${esc(featuredFocus)} center" loading="eager">` : ''}
+  ${featuredImg ? `<img class="featured-hero-img" src="${esc(featuredImg)}" alt="${esc(featuredEssay.coverImageAlt || '')}" style="object-position:${esc(featuredFocus)} center" loading="eager">` : ''}
   <div class="featured-hero-overlay">
     <div class="featured-hero-inner">
-      <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featured.date))}</p>
-      <h2 class="featured-hero-title"><a href="/posts/${esc(featured.slug)}/">${esc(featuredTitle)}</a></h2>
-      ${featuredDek ? `<p class="featured-hero-excerpt">${esc(featuredDek)}</p>` : ''}
-      <a href="/posts/${esc(featured.slug)}/" class="read-link">${esc(featuredCta)}</a>
+      <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featuredEssay.date))}</p>
+      <h2 class="featured-hero-title"><a href="/posts/${esc(featuredEssay.slug)}/">${esc(featuredEssay.title)}</a></h2>
+      ${featuredEssay.subtitle ? `<p class="featured-hero-excerpt">${esc(featuredEssay.subtitle)}</p>` : ''}
+      <a href="/posts/${esc(featuredEssay.slug)}/" class="read-link">${esc(featuredEssay.ctaLabel)}</a>
     </div>
   </div>
 </section>` : '';
 
-  // ── Cards ───────────────────────────────────────────────────────────────────
-  const cmsPages = (menuPages || []).filter(p => p.include_in_menu && p.status === 'published' && p.slug !== 'now');
-  const thirdPage = cmsPages[0];
-
-  let cardsHtml;
-  if (cfg.cards && cfg.cards.length) {
-    cardsHtml = cfg.cards.map(card => {
-      const cls = ['home-block', card.style === 'invert' ? 'home-block-invert' : ''].filter(Boolean).join(' ');
-      return `<a class="${cls}" href="${esc(card.href || '#')}">
-    <div>
-      ${card.kicker ? `<p class="home-block-kicker">${esc(card.kicker)}</p>` : ''}
-      <h2 class="home-block-title">${esc(card.title || '')}</h2>
-    </div>
-    <span class="home-block-link">${esc(card.linkLabel || 'View →')}</span>
-  </a>`;
-    }).join('\n    ');
-  } else {
-    const thirdBlock = thirdPage
-      ? `<a class="home-block" href="${esc(thirdPage.nav_url || `/${thirdPage.slug}/`)}">
-    <div>
-      <p class="home-block-kicker">${esc(thirdPage.title)}</p>
-      <h2 class="home-block-title">${esc(thirdPage.title)}</h2>
-    </div>
-    <span class="home-block-link">View ${esc(thirdPage.title.toLowerCase())} →</span>
-  </a>` : '';
-    cardsHtml = `<a class="home-block" href="/posts/">
-    <div>
-      <p class="home-block-kicker">Essays</p>
-      <h2 class="home-block-title">Long-form pieces that behave more like scenes than posts.</h2>
-    </div>
-    <span class="home-block-link">Read essays →</span>
-  </a>
-  <a class="home-block home-block-invert" href="/photos/">
-    <div>
-      <p class="home-block-kicker">Photographs</p>
-      <h2 class="home-block-title">Theatre, travel, lake and the odd quiet corner.</h2>
-    </div>
-    <span class="home-block-link">View photographs →</span>
-  </a>
-  ${thirdBlock}`;
-  }
-
-  // ── Interlude ───────────────────────────────────────────────────────────────
-  const interludeText = cfg.interlude?.text || 'Theatre, memory, technology, photographs, and the odd quiet corner.';
-  const interludeImage = cfg.interlude?.image;
-  const interludeTreatment = cfg.interlude?.treatment || 'photo-muted';
-  const interludeHref = cfg.interlude?.href;
-
-  const interludeTag = interludeHref ? 'a' : 'section';
-  const interludeExtra = interludeHref ? ` href="${esc(interludeHref)}"` : '';
-  const interludeCls = ['home-interlude', interludeImage ? 'home-interlude--image' : ''].filter(Boolean).join(' ');
-  const interludeImgHtml = interludeImage
-    ? `<img class="home-interlude-img ${esc(interludeTreatment)}" src="${esc(interludeImage)}" alt="" loading="lazy">`
+  const interludeText = heroDescription || quote || 'Theatre, memory, technology, photographs, and the odd quiet corner.';
+  const interludeCls = ['home-interlude', heroImage ? 'home-interlude--image' : ''].filter(Boolean).join(' ');
+  const interludeImgHtml = heroImage
+    ? `<img class="home-interlude-img photo-muted" src="${esc(heroImage)}" alt="" loading="lazy">`
     : '';
-
   const interlude = `
-<${interludeTag} class="${interludeCls}"${interludeExtra}>
+<section class="${interludeCls}">
   ${interludeImgHtml}
   <p class="home-interlude-text">${esc(interludeText)}</p>
-</${interludeTag}>`;
+</section>`;
 
-  // ── Archive ─────────────────────────────────────────────────────────────────
-  const archiveTitle = cfg.archive?.title || 'From the Archive';
-  let archivePosts;
-  if (cfg.archive?.posts?.length) {
-    archivePosts = cfg.archive.posts
-      .map(slug => essays.find(p => p.slug === slug))
-      .filter(Boolean);
-  } else {
-    archivePosts = essays.filter(p => p.slug !== featured?.slug).slice(0, 3);
-  }
-
+  const archivePosts = recentEssays.slice(0, 3);
   const archiveItems = archivePosts.map(p => {
     const tag = (p.tags || []).find(t => t !== 'note') || 'Essay';
     return `<a href="/posts/${esc(p.slug)}/" class="home-archive-item">
@@ -248,7 +180,7 @@ export function buildHomepage(data) {
 
   const archiveSection = archivePosts.length ? `
 <section class="home-archive">
-  <div class="home-archive-label">${esc(archiveTitle)}</div>
+  <div class="home-archive-label">From the Archive</div>
   <div class="home-archive-list">
     ${archiveItems}
   </div>
@@ -266,9 +198,6 @@ ${buildSiteNav(menuPages, '/')}
 <main class="h-card">
   <span class="p-name" hidden>${esc(author?.name || 'James Bell')}</span>
   ${homeFeatured}
-  <section class="home-blocks">
-    ${cardsHtml}
-  </section>
   ${interlude}
   ${archiveSection}
 </main>
@@ -279,11 +208,8 @@ ${buildCinematicFooter(menuPages)}
 
 export function buildIndex(data) {
   const { posts, tagChips, menuPages, accent, snippetCss, year, theme, defaultCoverImage } = data;
-  const essays = (posts || []).filter(p => !(p.tags || []).includes('note'));
-  const notes  = (posts || []).filter(p =>  (p.tags || []).includes('note'));
-
-  const featured = essays[0];
-  const rest = essays.slice(1);
+  const featured = (posts || [])[0] || null;
+  const rest = (posts || []).slice(1);
 
   const featuredCard = featured ? `
 <section class="featured-hero" id="featured-hero" data-tags="${esc((featured.tags || []).join(','))}">

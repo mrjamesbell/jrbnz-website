@@ -177,12 +177,12 @@ function buildPostHtml(args, theme) {
 }
 
 function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme) {
-  const published = posts
-    .filter(p => p.status === 'published')
+  const essays = posts
+    .filter(p => p.status === 'published' && !(p.tags || []).includes('note'))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const items = published.map(p => {
-    const tagsText = (p.tags || []).map(t => `#${esc(t)}`).join(' · ');
+  const items = essays.map(p => {
+    const tagsText = (p.tags || []).filter(t => t !== 'note').map(t => `#${esc(t)}`).join(' · ');
     const readTime = calcReadingTime(p.wordCount);
     return `
   <li class="post-list-item" data-tags="${esc((p.tags || []).join(','))}">
@@ -197,14 +197,13 @@ function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage,
   </li>`;
   }).join('');
 
-  const essays = published.filter(p => !(p.tags || []).includes('note'));
   const allTags = [...new Set(essays.flatMap(p => (p.tags || []).filter(t => t !== 'note')))].sort();
   const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
   const year = new Date().getFullYear();
 
   const t = theme;
   return themeRenderer(t).buildIndex({
-    items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: published, defaultCoverImage,
+    items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: essays, defaultCoverImage,
   });
 }
 
@@ -225,12 +224,43 @@ function buildPhotosHtml(menuPages, accent, theme) {
 }
 
 function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme) {
-  const allPosts = (posts || [])
+  const published = (posts || [])
     .filter(p => p.status === 'published')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const isNote = p => (p.tags || []).includes('note');
+  const allEssays = published.filter(p => !isNote(p));
+  const allNotes  = published.filter(p =>  isNote(p));
+
+  const cfg = homepageConfig || {};
+
+  let featuredEssay = allEssays[0] || null;
+  if (cfg.featured?.slug) {
+    const found = allEssays.find(p => p.slug === cfg.featured.slug);
+    if (found) featuredEssay = found;
+  }
+  if (featuredEssay) {
+    featuredEssay = {
+      ...featuredEssay,
+      title:    cfg.featured?.titleOverride || featuredEssay.title,
+      subtitle: cfg.featured?.dekOverride   || featuredEssay.subtitle || featuredEssay.excerpt || '',
+      ctaLabel: cfg.featured?.ctaLabel      || 'Read the essay →',
+    };
+  }
+
+  const recentEssays = allEssays.filter(p => p.slug !== featuredEssay?.slug).slice(0, 4);
+  const recentNotes  = allNotes.slice(0, 5);
+
   const t = theme;
   return themeRenderer(t).buildHomepage?.({
-    author, recentPosts: allPosts, menuPages, accent, snippetCss, theme: t, defaultCoverImage, homepageConfig,
+    author,
+    featuredEssay,
+    recentEssays,
+    recentNotes,
+    heroImage:       cfg.heroImage       || null,
+    heroDescription: cfg.heroDescription || null,
+    quote:           cfg.quote           || null,
+    menuPages, accent, snippetCss, theme: t, defaultCoverImage, homepageConfig: cfg,
   }) ?? '';
 }
 

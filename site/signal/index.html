@@ -422,7 +422,7 @@
           <!-- Featured article -->
           <div class="settings-page-section">
             <div class="settings-page-section-title">Featured article</div>
-            <p class="field-hint" style="margin-bottom:16px">The large hero image and title at the top of the homepage.</p>
+            <p class="field-hint" style="margin-bottom:16px">The essay shown prominently at the top of the homepage. Defaults to the most recent essay.</p>
             <div class="settings-page-field">
               <label class="field-label" for="hp-featured-slug">Article</label>
               <select class="field-select" id="hp-featured-slug">
@@ -438,79 +438,40 @@
               <input class="field-input" type="text" id="hp-featured-dek" placeholder="Leave blank to use the post subtitle/excerpt">
             </div>
             <div class="settings-page-field">
-              <label class="field-label" for="hp-featured-image">Image override URL</label>
-              <input class="field-input" type="url" id="hp-featured-image" placeholder="Leave blank to use the post cover image">
-            </div>
-            <div class="settings-page-field">
               <label class="field-label" for="hp-featured-cta">CTA label</label>
               <input class="field-input" type="text" id="hp-featured-cta" placeholder="Read the essay →">
             </div>
           </div>
 
-          <!-- Three cards -->
+          <!-- Hero image -->
           <div class="settings-page-section">
-            <div class="settings-page-section-title">Three cards</div>
-            <p class="field-hint" style="margin-bottom:16px">Leave all three blank to use the default cards (Essays / Photographs / third nav page).</p>
-            <div id="hp-cards-container">
-              <!-- JS populates 3 card blocks here -->
-            </div>
-          </div>
-
-          <!-- Interlude -->
-          <div class="settings-page-section">
-            <div class="settings-page-section-title">Interlude</div>
-            <p class="field-hint" style="margin-bottom:16px">A full-width atmospheric moment between the cards and the archive. Can be text-only or image + text.</p>
+            <div class="settings-page-section-title">Hero image</div>
+            <p class="field-hint" style="margin-bottom:16px">A page-level image available to all themes — used as a homepage background, decorative image, or feature visual.</p>
             <div class="settings-page-field">
-              <label class="field-label" for="hp-interlude-text">Text</label>
-              <input class="field-input" type="text" id="hp-interlude-text" placeholder="Theatre, memory, technology…">
-            </div>
-            <div class="settings-page-field">
-              <label class="field-label" for="hp-interlude-image">Image URL (optional)</label>
+              <label class="field-label">Image</label>
               <div class="cover-input-row">
-                <input class="field-input" type="url" id="hp-interlude-image" placeholder="Leave blank for text-only">
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-hp-interlude-media">Browse R2</button>
+                <input class="field-input" type="url" id="hp-hero-image" placeholder="No image selected" readonly>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-hp-hero-media">Browse media</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-hp-hero-clear">Clear</button>
               </div>
             </div>
+          </div>
+
+          <!-- Hero description -->
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Hero description</div>
+            <p class="field-hint" style="margin-bottom:16px">Short text shown in the homepage hero area. Themes may use this as a tagline, intro, or interlude.</p>
             <div class="settings-page-field">
-              <label class="field-label" for="hp-interlude-treatment">Image treatment</label>
-              <select class="field-select" id="hp-interlude-treatment">
-                <option value="photo-muted">Muted (default)</option>
-                <option value="photo-mono">Mono</option>
-                <option value="photo-soft">Soft</option>
-                <option value="photo-colour">Colour</option>
-              </select>
-            </div>
-            <div class="settings-page-field">
-              <label class="field-label" for="hp-interlude-href">Link URL (optional)</label>
-              <input class="field-input" type="url" id="hp-interlude-href" placeholder="/posts/ or https://…">
+              <textarea class="field-input" id="hp-hero-description" rows="3" placeholder="Theatre, memory, technology, photographs, and the odd quiet corner."></textarea>
             </div>
           </div>
 
-          <!-- Archive -->
+          <!-- Quote -->
           <div class="settings-page-section">
-            <div class="settings-page-section-title">Archive section</div>
-            <p class="field-hint" style="margin-bottom:16px">A short list of curated older posts. Leave all three blank to auto-select recent essays.</p>
+            <div class="settings-page-section-title">Quote</div>
+            <p class="field-hint" style="margin-bottom:16px">An optional quote available to themes as a pull quote, interlude, or secondary text element.</p>
             <div class="settings-page-field">
-              <label class="field-label" for="hp-archive-title">Section title</label>
-              <input class="field-input" type="text" id="hp-archive-title" placeholder="From the Archive">
-            </div>
-            <div class="settings-page-field">
-              <label class="field-label" for="hp-archive-post-0">Post 1</label>
-              <select class="field-select" id="hp-archive-post-0">
-                <option value="">— Auto —</option>
-              </select>
-            </div>
-            <div class="settings-page-field">
-              <label class="field-label" for="hp-archive-post-1">Post 2</label>
-              <select class="field-select" id="hp-archive-post-1">
-                <option value="">— Auto —</option>
-              </select>
-            </div>
-            <div class="settings-page-field">
-              <label class="field-label" for="hp-archive-post-2">Post 3</label>
-              <select class="field-select" id="hp-archive-post-2">
-                <option value="">— Auto —</option>
-              </select>
+              <textarea class="field-input" id="hp-quote" rows="3" placeholder="Leave blank to omit"></textarea>
             </div>
           </div>
 
@@ -593,12 +554,12 @@
 
           <div class="help-section">
             <h2 class="help-heading">Homepage</h2>
-            <p>The homepage has four curated sections. Go to the <strong>Homepage</strong> view in the rail to edit them.</p>
+            <p>The homepage has four settings available to all themes. Go to the <strong>Homepage</strong> view in the rail to edit them.</p>
             <ul class="help-list">
-              <li><strong>Featured article</strong> — a large hero at the top. Defaults to the most recent essay. You can pin a specific post and override its title, deck, image, and CTA label.</li>
-              <li><strong>Three cards</strong> — links to the major site sections (Essays, Photographs, and a third destination). You can configure title, kicker, link, and style for each. Leave all three blank for the defaults.</li>
-              <li><strong>Interlude</strong> — a full-width atmospheric moment, text-only or with a background image. Used to establish mood and editorial voice.</li>
-              <li><strong>Archive section</strong> — a short list of curated older posts. Pin up to three by slug, or leave blank to auto-select recent essays.</li>
+              <li><strong>Featured article</strong> — the essay shown prominently at the top. Defaults to the most recent essay. You can pin a specific post and override its title, deck, and CTA label.</li>
+              <li><strong>Hero image</strong> — a page-level image available to all themes, used as a background, decorative image, or feature visual. Selected from the media library.</li>
+              <li><strong>Hero description</strong> — short text shown in the hero area. Themes may use this as a tagline, intro, or interlude.</li>
+              <li><strong>Quote</strong> — an optional quote for themes to display as a pull quote or secondary text element.</li>
             </ul>
             <p>Clicking <strong>Save &amp; publish</strong> rebuilds the homepage immediately — no full site rebuild needed.</p>
           </div>

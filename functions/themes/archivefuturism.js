@@ -116,7 +116,8 @@ function renderSectionTeasers() {
 export function buildHomepage(data) {
   const {
     author = {},
-    recentPosts = [],
+    featuredEssay = null,
+    recentEssays = [],
     menuPages = [],
     accent = null,
     snippetCss = null,
@@ -125,7 +126,7 @@ export function buildHomepage(data) {
   } = data;
 
   const intro = author.bio || 'Essays and transmissions from theatre, memory, technology, and the edge of Auckland.';
-  const visiblePosts = recentPosts.slice(0, 4);
+  const visiblePosts = [featuredEssay, ...recentEssays].filter(Boolean).slice(0, 4);
 
   return `${buildHead({ title: author.name || 'JRBNZ', theme, accent, snippetCss })}
     ${renderHeader(menuPages, '/')}

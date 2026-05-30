@@ -7,56 +7,20 @@ let _allPosts = [];
 export async function initHomepageView() {
   if (!_initialized) {
     _initialized = true;
-    _buildCardBlocks();
     document.getElementById('btn-homepage-save')?.addEventListener('click', _save);
-    document.getElementById('btn-hp-interlude-media')?.addEventListener('click', () =>
-      openMediaPicker({ insertLabel: 'Use as interlude image', onSelect: item => {
+    document.getElementById('btn-hp-hero-media')?.addEventListener('click', () =>
+      openMediaPicker({ insertLabel: 'Use as hero image', onSelect: item => {
         const url = item.urls?.hero || item.publicUrl;
-        const inp = document.getElementById('hp-interlude-image');
-        if (inp) inp.value = url;
+        const inp = document.getElementById('hp-hero-image');
+        if (inp) { inp.value = url; inp.readOnly = false; }
       }})
     );
+    document.getElementById('btn-hp-hero-clear')?.addEventListener('click', () => {
+      const inp = document.getElementById('hp-hero-image');
+      if (inp) inp.value = '';
+    });
   }
   await _load();
-}
-
-// ── Card blocks (built once) ─────────────────────────────────────────────────
-
-function _buildCardBlocks() {
-  const container = document.getElementById('hp-cards-container');
-  if (!container) return;
-  container.innerHTML = [0, 1, 2].map(i => `
-    <div class="settings-page-field" style="border:1px solid var(--color-cream-border);border-radius:var(--radius-md);padding:16px;margin-bottom:12px">
-      <p class="field-label" style="margin-bottom:12px">Card ${i + 1}</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div>
-          <label class="field-label" style="font-size:11px" for="hp-card-${i}-kicker">Kicker</label>
-          <input class="field-input" type="text" id="hp-card-${i}-kicker" placeholder="Essays">
-        </div>
-        <div>
-          <label class="field-label" style="font-size:11px" for="hp-card-${i}-style">Style</label>
-          <select class="field-select" id="hp-card-${i}-style">
-            <option value="">Dark (default)</option>
-            <option value="invert">Inverted (warm)</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-bottom:8px">
-        <label class="field-label" style="font-size:11px" for="hp-card-${i}-title">Title / description</label>
-        <input class="field-input" type="text" id="hp-card-${i}-title" placeholder="Long-form pieces that behave more like scenes than posts.">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div>
-          <label class="field-label" style="font-size:11px" for="hp-card-${i}-href">Link URL</label>
-          <input class="field-input" type="url" id="hp-card-${i}-href" placeholder="/posts/">
-        </div>
-        <div>
-          <label class="field-label" style="font-size:11px" for="hp-card-${i}-linklabel">Link label</label>
-          <input class="field-input" type="text" id="hp-card-${i}-linklabel" placeholder="Read essays →">
-        </div>
-      </div>
-    </div>
-  `).join('');
 }
 
 // ── Load ─────────────────────────────────────────────────────────────────────
@@ -73,11 +37,11 @@ async function _load() {
 
   const cfg = cfgRes?.ok ? await cfgRes.json() : {};
 
-  _populatePostSelects();
+  _populateFeaturedSelect();
   _applyConfig(cfg);
 }
 
-function _populatePostSelects() {
+function _populateFeaturedSelect() {
   const essays = _allPosts
     .filter(p => p.status === 'published' && !(p.tags || []).includes('note'))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -90,44 +54,16 @@ function _populatePostSelects() {
     featuredSel.innerHTML = `<option value="">— Auto (most recent essay) —</option>${opts}`;
     featuredSel.value = current;
   }
-
-  for (let i = 0; i < 3; i++) {
-    const sel = document.getElementById(`hp-archive-post-${i}`);
-    if (sel) {
-      const current = sel.value;
-      sel.innerHTML = `<option value="">— Auto —</option>${opts}`;
-      sel.value = current;
-    }
-  }
 }
 
 function _applyConfig(cfg) {
-  _setVal('hp-featured-slug', cfg.featured?.slug || '');
-  _setVal('hp-featured-title', cfg.featured?.titleOverride || '');
-  _setVal('hp-featured-dek', cfg.featured?.dekOverride || '');
-  _setVal('hp-featured-image', cfg.featured?.imageOverride || '');
-  _setVal('hp-featured-cta', cfg.featured?.ctaLabel || '');
-
-  const cards = cfg.cards || [];
-  for (let i = 0; i < 3; i++) {
-    const c = cards[i] || {};
-    _setVal(`hp-card-${i}-kicker`, c.kicker || '');
-    _setVal(`hp-card-${i}-title`, c.title || '');
-    _setVal(`hp-card-${i}-href`, c.href || '');
-    _setVal(`hp-card-${i}-linklabel`, c.linkLabel || '');
-    _setVal(`hp-card-${i}-style`, c.style || '');
-  }
-
-  _setVal('hp-interlude-text', cfg.interlude?.text || '');
-  _setVal('hp-interlude-image', cfg.interlude?.image || '');
-  _setVal('hp-interlude-treatment', cfg.interlude?.treatment || 'photo-muted');
-  _setVal('hp-interlude-href', cfg.interlude?.href || '');
-
-  _setVal('hp-archive-title', cfg.archive?.title || '');
-  const archivePosts = cfg.archive?.posts || [];
-  for (let i = 0; i < 3; i++) {
-    _setVal(`hp-archive-post-${i}`, archivePosts[i] || '');
-  }
+  _setVal('hp-featured-slug',    cfg.featured?.slug          || '');
+  _setVal('hp-featured-title',   cfg.featured?.titleOverride || '');
+  _setVal('hp-featured-dek',     cfg.featured?.dekOverride   || '');
+  _setVal('hp-featured-cta',     cfg.featured?.ctaLabel      || '');
+  _setVal('hp-hero-image',       cfg.heroImage               || '');
+  _setVal('hp-hero-description', cfg.heroDescription         || '');
+  _setVal('hp-quote',            cfg.quote                   || '');
 }
 
 // ── Save ─────────────────────────────────────────────────────────────────────
@@ -136,37 +72,16 @@ async function _save() {
   const btn = document.getElementById('btn-homepage-save');
   if (btn) btn.disabled = true;
 
-  const cards = [0, 1, 2].map(i => ({
-    kicker: _getVal(`hp-card-${i}-kicker`),
-    title: _getVal(`hp-card-${i}-title`),
-    href: _getVal(`hp-card-${i}-href`),
-    linkLabel: _getVal(`hp-card-${i}-linklabel`),
-    style: _getVal(`hp-card-${i}-style`),
-  })).filter(c => c.title || c.href);
-
-  const archivePosts = [0, 1, 2]
-    .map(i => _getVal(`hp-archive-post-${i}`))
-    .filter(Boolean);
-
   const cfg = {
     featured: {
-      slug: _getVal('hp-featured-slug'),
+      slug:          _getVal('hp-featured-slug'),
       titleOverride: _getVal('hp-featured-title'),
-      dekOverride: _getVal('hp-featured-dek'),
-      imageOverride: _getVal('hp-featured-image'),
-      ctaLabel: _getVal('hp-featured-cta'),
+      dekOverride:   _getVal('hp-featured-dek'),
+      ctaLabel:      _getVal('hp-featured-cta'),
     },
-    cards,
-    interlude: {
-      text: _getVal('hp-interlude-text'),
-      image: _getVal('hp-interlude-image'),
-      treatment: _getVal('hp-interlude-treatment') || 'photo-muted',
-      href: _getVal('hp-interlude-href'),
-    },
-    archive: {
-      title: _getVal('hp-archive-title'),
-      posts: archivePosts,
-    },
+    heroImage:       _getVal('hp-hero-image'),
+    heroDescription: _getVal('hp-hero-description'),
+    quote:           _getVal('hp-quote'),
   };
 
   try {

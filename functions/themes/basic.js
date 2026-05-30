@@ -208,66 +208,42 @@ export function buildPage(data) {
    ------------------------------------------------------------------ */
 export function buildHomepage(data) {
   const {
-    author, recentPosts = [], menuPages, accent, snippetCss, theme,
-    defaultCoverImage, homepageConfig,
+    author, featuredEssay = null, recentEssays = [], menuPages, accent, snippetCss, theme,
   } = data;
 
   const year = new Date().getFullYear();
-  const cfg     = homepageConfig || {};
-  const featCfg = cfg.featured || {};
-  const featured = recentPosts.find(p => p.slug === featCfg.slug) || recentPosts[0];
 
   let featuredHtml = '';
-  if (featured) {
-    const featTitle = featCfg.titleOverride || featured.title;
-    const featDek   = featCfg.dekOverride   || featured.subtitle || featured.excerpt;
-    const featImg   = featCfg.imageOverride || featured.coverImage || defaultCoverImage;
-    const featCta   = featCfg.ctaLabel      || 'Read the essay →';
-    const imgHtml   = featImg
-      ? `<img class="home-featured-img" src="${esc(featImg)}" alt="${esc(featured.coverImageAlt || featTitle)}">`
+  if (featuredEssay) {
+    const featImg = featuredEssay.coverImage || null;
+    const imgHtml = featImg
+      ? `<img class="home-featured-img" src="${esc(featImg)}" alt="${esc(featuredEssay.coverImageAlt || featuredEssay.title)}">`
       : '';
-    const dekHtml   = featDek ? `<p class="home-featured-dek">${esc(featDek)}</p>` : '';
+    const dekHtml = featuredEssay.subtitle ? `<p class="home-featured-dek">${esc(featuredEssay.subtitle)}</p>` : '';
 
     featuredHtml = `
     <section class="home-featured">
       <div class="home-section-label">Latest essay</div>
-      <a class="home-featured-link" href="/posts/${esc(featured.slug)}/">
+      <a class="home-featured-link" href="/posts/${esc(featuredEssay.slug)}/">
         ${imgHtml}
-        <h2 class="home-featured-title">${esc(featTitle)}</h2>
+        <h2 class="home-featured-title">${esc(featuredEssay.title)}</h2>
         ${dekHtml}
-        <span class="home-featured-cta">${esc(featCta)}</span>
+        <span class="home-featured-cta">${esc(featuredEssay.ctaLabel)}</span>
       </a>
     </section>`;
   }
 
-  const otherPosts = recentPosts.filter(p => p.slug !== (featured && featured.slug)).slice(0, 3);
-  const recentHtml = otherPosts.length ? `
+  const recentHtml = recentEssays.length ? `
     <section class="home-recent">
       <div class="home-section-label">More recent</div>
       <div class="home-recent-grid">
-        ${otherPosts.map(p => `
+        ${recentEssays.map(p => `
         <a class="home-recent-item" href="/posts/${esc(p.slug)}/">
           <div class="home-recent-date">${esc(p.date)}</div>
           <div class="home-recent-title">${esc(p.title)}</div>
         </a>`).join('')}
       </div>
     </section>` : '';
-
-  const defaultCards = [
-    { kicker: 'Essays',      title: 'Long-form pieces on theatre, memory, and technology', href: '/posts/',  linkLabel: 'Read essays →',    style: '' },
-    { kicker: 'Photographs', title: 'Theatre, travel, and the quiet sky',                  href: '/photos/', linkLabel: 'View photographs →', style: 'invert' },
-    { kicker: 'Now',         title: 'What I\'m doing right now',                           href: '/now/',    linkLabel: 'Read →',             style: '' },
-  ];
-  const cards = (cfg.cards && cfg.cards.length) ? cfg.cards : defaultCards;
-  const cardsHtml = `
-    <div class="home-cards">
-      ${cards.map(c => `
-      <a class="home-card${c.style === 'invert' ? ' invert' : ''}" href="${esc(c.href)}">
-        <div class="home-card-kicker">${esc(c.kicker)}</div>
-        <div class="home-card-title">${esc(c.title)}</div>
-        <div class="home-card-link">${esc(c.linkLabel)}</div>
-      </a>`).join('')}
-    </div>`;
 
   return `${buildHead({ title: null, theme, accent, snippetCss })}
   ${buildSiteNav(menuPages, '/')}
@@ -280,7 +256,6 @@ export function buildHomepage(data) {
 
     ${featuredHtml}
     ${recentHtml}
-    ${cardsHtml}
   </main>
 
   ${buildBasicFooter(menuPages, year)}

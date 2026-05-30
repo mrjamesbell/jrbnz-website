@@ -72,9 +72,9 @@ ${buildFooter(new Date().getFullYear())}
 }
 
 export function buildHomepage(data) {
-  const { author, recentPosts, menuPages } = data;
-  const posts = (recentPosts || []).filter(p => !(p.tags || []).includes('note')).slice(0, 5);
-  const items = posts.map(p => `
+  const { author, featuredEssay, recentEssays, menuPages } = data;
+  const essays = [featuredEssay, ...(recentEssays || [])].filter(Boolean);
+  const items = essays.map(p => `
   <li>
     <time>${esc(p.date)}</time>
     <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a>

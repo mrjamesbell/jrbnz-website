@@ -140,39 +140,38 @@ function coverBlock(post) {
 export function buildHomepage(data) {
   const {
     author,
-    recentPosts = [],
+    featuredEssay = null,
+    recentEssays = [],
     menuPages = [],
     accent,
     snippetCss,
     theme,
-    homepageConfig = {},
+    heroDescription = null,
+    quote = null,
   } = data;
 
-  const title = homepageConfig?.title || DEFAULT_HOME_TITLE;
-  const dek = homepageConfig?.dek || homepageConfig?.description || DEFAULT_HOME_DEK;
-  const orderedPosts = sortPostsNewestFirst(recentPosts);
-  const latest = orderedPosts[0];
+  const heroTitle = heroDescription || DEFAULT_HOME_TITLE;
 
   return `${buildHead({ title: author?.name || 'JRBNZ', theme, accent, snippetCss })}
   <main class="cb-shell h-card">
     ${nav(menuPages, '/')}
     <section class="cb-hero">
       <div class="cb-hero-inner">
-        <h1 class="cb-hero-title">${esc(title)}</h1>
-        <p class="cb-hero-dek">${esc(dek)}</p>
+        <h1 class="cb-hero-title">${esc(heroTitle)}</h1>
+        ${quote ? `<p class="cb-hero-dek">${esc(quote)}</p>` : ''}
       </div>
     </section>
-    ${latest ? `<section class="cb-latest">
+    ${featuredEssay ? `<section class="cb-latest">
       <div class="cb-latest-inner">
         <div class="cb-kicker">Latest</div>
-        <a href="${postHref(latest)}">
-          <div class="cb-meta">${postMeta(latest)}</div>
-          <h2 class="cb-latest-title">${esc(latest.title)}</h2>
-          ${(latest.excerpt || latest.subtitle) ? `<p class="cb-summary">${esc(latest.excerpt || latest.subtitle)}</p>` : ''}
+        <a href="${postHref(featuredEssay)}">
+          <div class="cb-meta">${postMeta(featuredEssay)}</div>
+          <h2 class="cb-latest-title">${esc(featuredEssay.title)}</h2>
+          ${featuredEssay.subtitle ? `<p class="cb-summary">${esc(featuredEssay.subtitle)}</p>` : ''}
         </a>
       </div>
     </section>` : ''}
-    <section class="cb-section"><div class="cb-section-inner">${archiveList(orderedPosts, { compact: true, excludeFirst: true })}</div></section>
+    <section class="cb-section"><div class="cb-section-inner">${archiveList(recentEssays, { compact: true })}</div></section>
     <section class="cb-section"><div class="cb-section-inner cb-home-cards">
       <a class="cb-home-card" href="/posts/"><div class="cb-kicker">Essays</div><p>Longer pieces about theatre, memory, places, systems, and small obsessions.</p></a>
       <a class="cb-home-card" href="/notes/"><div class="cb-kicker">Notes</div><p>Short fragments, stray thoughts, and things that do not need to become essays.</p></a>

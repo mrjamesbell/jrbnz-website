@@ -70,32 +70,23 @@ export function buildHomepage(data) {
   const {
     theme, accent, snippetCss, extraHead,
     menuPages = [],
-    recentPosts = [],
-    homepageConfig,
+    featuredEssay = null,
+    heroImage = null,
   } = data;
 
-  // pick featured post
-  const featured = (() => {
-    if (homepageConfig?.featured?.slug) {
-      const found = recentPosts.find(p => p.slug === homepageConfig.featured.slug);
-      if (found) return { ...found, ...homepageConfig.featured };
-    }
-    return recentPosts.find(p => p.status === 'published') || null;
-  })();
-
-  const title   = featured?.titleOverride || featured?.title || 'JRBNZ';
-  const deck    = featured?.dekOverride   || featured?.subtitle || featured?.excerpt || '';
-  const href    = featured ? `/posts/${featured.slug}/` : '/posts/';
-  const kicker  = [
-    featured?.tags?.[0],
-    featured?.date ? new Date(featured.date).toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' }) : null,
-    featured?.readTime ? `${featured.readTime} min` : null,
+  const title    = featuredEssay?.title    || 'JRBNZ';
+  const deck     = featuredEssay?.subtitle || '';
+  const href     = featuredEssay ? `/posts/${featuredEssay.slug}/` : '/posts/';
+  const kicker   = [
+    (featuredEssay?.tags || []).find(t => t !== 'note'),
+    featuredEssay?.date ? new Date(featuredEssay.date).toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' }) : null,
+    featuredEssay?.readTime ? `${featuredEssay.readTime} min` : null,
   ].filter(Boolean).join(' · ');
 
-  const imageUrl = homepageConfig?.featured?.imageOverride || '';
-  const imageAlt = homepageConfig?.featured?.imageAlt || title;
+  const imageUrl = heroImage || '';
+  const imageAlt = title;
 
-  const ctaLabel = homepageConfig?.featured?.ctaLabel || 'Read the essay';
+  const ctaLabel = featuredEssay?.ctaLabel || 'Read the essay';
 
   return `${buildHead({ title: null, theme, accent, snippetCss, extraHead })}
 <main class="lr-home h-card">
