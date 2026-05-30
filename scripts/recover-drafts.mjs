@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-// Recover lost draft content for published posts whose draft.md is empty.
+// Recover lost draft content for posts whose draft.md is empty.
 //
 // Phase 1 — extract (default):
 //   Reads posts/index.json from R2, finds published posts with empty draft.md,
 //   fetches each post's published HTML from the live site, extracts the prose,
 //   converts to Markdown, and saves to recovery/{slug}.md for review.
+//
+// Phase 1 — drafts (--drafts flag):
+//   Same as above but targets draft/unpublished posts. Fetches posts/{slug}/index.html
+//   directly from R2 (no live site required) instead of the public URL.
 //
 // Phase 2 — apply (--apply flag):
 //   Uploads every recovery/{slug}.md back to R2 as draft.md and clears
@@ -12,6 +16,7 @@
 //
 // Usage:
 //   CLOUDFLARE_API_TOKEN=<token> node scripts/recover-drafts.mjs
+//   CLOUDFLARE_API_TOKEN=<token> node scripts/recover-drafts.mjs --drafts
 //   CLOUDFLARE_API_TOKEN=<token> node scripts/recover-drafts.mjs --apply
 
 import { execSync } from 'child_process';
@@ -28,7 +33,8 @@ const BUCKET     = 'jrbnz-blog';
 const WRANGLER   = 'wrangler';
 const SITE_URL   = 'https://jrbnz.com';
 
-const APPLY = process.argv.includes('--apply');
+const APPLY  = process.argv.includes('--apply');
+const DRAFTS = process.argv.includes('--drafts');
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
 if (!API_TOKEN) {
@@ -240,6 +246,78 @@ async function extract() {
   console.log('\nReview the files, edit as needed, then run with --apply to upload.');
 }
 
+// ── Phase 1b: extract drafts ──────────────────────────────────────────────────
+
+function extractDrafts() {
+  console.log('Reading posts/index.json from R2…');
+  const indexRaw = r2Get('posts/index.json');
+  if (!indexRaw) { console.error('Could not read posts/index.json'); process.exit(1); }
+  const posts = JSON.parse(indexRaw);
+
+  const drafts = posts.filter(p => p.status !== 'published');
+  console.log(`Found ${drafts.length} unpublished post(s). Checking draft.md for each…\n`);
+
+  const empty = [];
+  for (const post of drafts) {
+    const draft = r2Get(`posts/${post.slug}/draft.md`);
+    const hasContent = draft && draft.trim().length > 0;
+    process.stdout.write(hasContent ? '.' : 'E');
+    if (!hasContent) empty.push(post);
+  }
+  console.log(`\n\n${empty.length} post(s) with empty draft.md:\n`);
+  empty.forEach(p => console.log(`  • ${p.slug} — "${p.title}" [${p.status}]`));
+
+  if (empty.length === 0) {
+    console.log('\nNothing to recover.');
+    return;
+  }
+
+  mkdirSync(RECOVERY_DIR, { recursive: true });
+
+  let recovered = 0, failed = 0;
+  for (const post of empty) {
+    process.stdout.write(`\nFetching R2 HTML for ${post.slug}… `);
+    const html = r2Get(`posts/${post.slug}/index.html`);
+    if (!html) {
+      console.log('No index.html in R2 — never rendered, cannot recover');
+      failed++;
+      continue;
+    }
+
+    const content = extractPostContent(html);
+    if (!content) {
+      console.log('Could not extract .post-content from stored HTML');
+      failed++;
+      continue;
+    }
+
+    const markdown = htmlToMarkdown(content);
+    if (!markdown.trim()) {
+      console.log('Extracted content was empty after conversion');
+      failed++;
+      continue;
+    }
+
+    const outPath = join(RECOVERY_DIR, `${post.slug}.md`);
+    if (existsSync(outPath)) {
+      console.log(`skipped — recovery/${post.slug}.md already exists`);
+      continue;
+    }
+
+    const header = `<!-- recovered from R2 draft HTML on ${new Date().toISOString().slice(0, 10)} -->\n\n`;
+    writeFileSync(outPath, header + markdown, 'utf8');
+    console.log(`saved (${markdown.length} chars)`);
+    recovered++;
+  }
+
+  console.log(`\n── Summary ──────────────────────────────────────────`);
+  console.log(`Recovered: ${recovered}  Failed: ${failed}`);
+  if (recovered > 0) {
+    console.log(`Files saved to: recovery/`);
+    console.log('\nReview the files, edit as needed, then run with --apply to upload.');
+  }
+}
+
 // ── Phase 2: apply ────────────────────────────────────────────────────────────
 
 function apply() {
@@ -292,6 +370,8 @@ function apply() {
 
 if (APPLY) {
   apply();
+} else if (DRAFTS) {
+  extractDrafts();
 } else {
   await extract();
 }
