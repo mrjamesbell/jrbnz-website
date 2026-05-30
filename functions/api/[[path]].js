@@ -239,14 +239,6 @@ function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, default
     const found = allEssays.find(p => p.slug === cfg.featured.slug);
     if (found) featuredEssay = found;
   }
-  if (featuredEssay) {
-    featuredEssay = {
-      ...featuredEssay,
-      title:    cfg.featured?.titleOverride || featuredEssay.title,
-      subtitle: cfg.featured?.dekOverride   || featuredEssay.subtitle || featuredEssay.excerpt || '',
-      ctaLabel: cfg.featured?.ctaLabel      || 'Read the essay →',
-    };
-  }
 
   const recentEssays = allEssays.filter(p => p.slug !== featuredEssay?.slug).slice(0, 4);
   const recentNotes  = allNotes.slice(0, 5);

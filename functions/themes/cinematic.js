@@ -153,7 +153,7 @@ export function buildHomepage(data) {
       <p class="post-kicker">Featured Essay · ${esc(_fmtDate(featuredEssay.date))}</p>
       <h2 class="featured-hero-title"><a href="/posts/${esc(featuredEssay.slug)}/">${esc(featuredEssay.title)}</a></h2>
       ${featuredEssay.subtitle ? `<p class="featured-hero-excerpt">${esc(featuredEssay.subtitle)}</p>` : ''}
-      <a href="/posts/${esc(featuredEssay.slug)}/" class="read-link">${esc(featuredEssay.ctaLabel)}</a>
+      <a href="/posts/${esc(featuredEssay.slug)}/" class="read-link">Read the essay →</a>
     </div>
   </div>
 </section>` : '';

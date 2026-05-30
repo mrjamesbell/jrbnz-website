@@ -57,13 +57,10 @@ function _populateFeaturedSelect() {
 }
 
 function _applyConfig(cfg) {
-  _setVal('hp-featured-slug',    cfg.featured?.slug          || '');
-  _setVal('hp-featured-title',   cfg.featured?.titleOverride || '');
-  _setVal('hp-featured-dek',     cfg.featured?.dekOverride   || '');
-  _setVal('hp-featured-cta',     cfg.featured?.ctaLabel      || '');
-  _setVal('hp-hero-image',       cfg.heroImage               || '');
-  _setVal('hp-hero-description', cfg.heroDescription         || '');
-  _setVal('hp-quote',            cfg.quote                   || '');
+  _setVal('hp-featured-slug',    cfg.featured?.slug  || '');
+  _setVal('hp-hero-image',       cfg.heroImage       || '');
+  _setVal('hp-hero-description', cfg.heroDescription || '');
+  _setVal('hp-quote',            cfg.quote           || '');
 }
 
 // ── Save ─────────────────────────────────────────────────────────────────────
@@ -74,10 +71,7 @@ async function _save() {
 
   const cfg = {
     featured: {
-      slug:          _getVal('hp-featured-slug'),
-      titleOverride: _getVal('hp-featured-title'),
-      dekOverride:   _getVal('hp-featured-dek'),
-      ctaLabel:      _getVal('hp-featured-cta'),
+      slug: _getVal('hp-featured-slug'),
     },
     heroImage:       _getVal('hp-hero-image'),
     heroDescription: _getVal('hp-hero-description'),

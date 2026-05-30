@@ -818,16 +818,9 @@ Renders the site homepage (`/`). This is the most theme-specific renderer — mo
 
 The dispatcher resolves and pre-processes all content before calling your renderer — you do not need to filter notes, resolve the featured post, or apply Signal overrides yourself.
 
-#### `featuredEssay` overrides are already applied
+#### `featuredEssay` is the post as-is
 
-Signal lets editors pin a specific essay and override its title, deck, and CTA label. By the time `featuredEssay` reaches your renderer, those overrides are already merged in:
-
-- `featuredEssay.title` — display title (override applied if set)
-- `featuredEssay.subtitle` — display deck (override applied if set)
-- `featuredEssay.ctaLabel` — call-to-action label, defaults to `'Read the essay →'`
-- `featuredEssay.coverImage` — the post's own cover image (not the page hero image — see below)
-
-Use these fields directly. Do not look at `homepageConfig.featured` to apply overrides yourself.
+`featuredEssay` is whichever essay is pinned in Signal, or the most recent essay if none is pinned. It is a plain `Post` object — no overrides are applied. Use its fields directly: `title`, `subtitle`, `excerpt`, `coverImage`, `date`, `tags`, `slug`.
 
 #### `heroImage` and `featuredEssay.coverImage` are not interchangeable
 
@@ -867,17 +860,14 @@ The question to ask first is: *what do you want a first-time visitor to encounte
 - **Topic-first**: posts grouped by tag/category, not by recency.
 - **Commonplace**: pull-quotes from recent essays surface before the list.
 
-#### HomepageConfig shape (for `homepageConfig.featured` fallback access only)
+#### HomepageConfig shape
 
-The raw config is passed as `homepageConfig` in case you need fields not already resolved. The resolved fields above are always preferred. The stored shape is:
+The raw config is passed as `homepageConfig` in case you need it, but the resolved fields above are always preferred.
 
 ```json
 {
   "featured": {
-    "slug": "optional-post-slug",
-    "titleOverride": "Optional override title",
-    "dekOverride": "Optional override deck",
-    "ctaLabel": "Read the essay →"
+    "slug": "optional-post-slug"
   },
   "heroImage": "https://… (optional)",
   "heroDescription": "Short text for the hero area",
@@ -976,14 +966,6 @@ If your theme uses different layout or treatment classes, update the `className`
   wordCount: number,
 }
 
-// FeaturedEssay — Post with Signal homepage overrides already applied
-// Only present on buildHomepage() data. Use these fields directly; do not re-apply overrides from homepageConfig.
-{
-  ...Post,
-  title: string,        // override applied if set in Signal
-  subtitle: string,     // override applied if set in Signal
-  ctaLabel: string,     // defaults to 'Read the essay →' if not overridden
-}
 ```
 
 ---

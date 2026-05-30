@@ -86,7 +86,7 @@ export function buildHomepage(data) {
   const imageUrl = heroImage || '';
   const imageAlt = title;
 
-  const ctaLabel = featuredEssay?.ctaLabel || 'Read the essay';
+  const ctaLabel = 'Read the essay';
 
   return `${buildHead({ title: null, theme, accent, snippetCss, extraHead })}
 <main class="lr-home h-card">

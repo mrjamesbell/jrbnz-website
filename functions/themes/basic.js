@@ -228,7 +228,7 @@ export function buildHomepage(data) {
         ${imgHtml}
         <h2 class="home-featured-title">${esc(featuredEssay.title)}</h2>
         ${dekHtml}
-        <span class="home-featured-cta">${esc(featuredEssay.ctaLabel)}</span>
+        <span class="home-featured-cta">Read the essay →</span>
       </a>
     </section>`;
   }
