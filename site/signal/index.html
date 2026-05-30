@@ -580,7 +580,7 @@ const x = 1;
           <div class="help-section">
             <h2 class="help-heading">Publishing</h2>
             <p>Hitting <strong>Publish</strong> on a post or page writes the HTML to R2 immediately — the live site updates within seconds. No deploy needed.</p>
-            <p>If you change navigation settings (adding/removing pages from the nav), use <strong>Rebuild site</strong> in Settings to regenerate all posts and pages with the updated nav.</p>
+            <p>If you change navigation settings (adding/removing pages from the nav), use <strong>Publish site</strong> in Settings to regenerate all posts and pages with the updated nav, then push to CDN.</p>
           </div>
 
           <div class="help-section">
@@ -662,20 +662,11 @@ const x = 1;
             <div class="settings-page-field">
               <div class="settings-action-row">
                 <div class="settings-action-info">
-                  <span class="settings-action-label">Rebuild site</span>
-                  <span class="settings-action-desc">Republish all posts with current author &amp; accent</span>
-                </div>
-                <button class="btn btn-secondary btn-sm" id="btn-rebuild-site">Rebuild</button>
-              </div>
-            </div>
-            <div class="settings-page-field">
-              <div class="settings-action-row">
-                <div class="settings-action-info">
-                  <span class="settings-action-label">Deploy site</span>
-                  <span class="settings-action-desc">Push published content to CDN</span>
+                  <span class="settings-action-label">Publish site</span>
+                  <span class="settings-action-desc">Rebuild all posts then deploy to CDN</span>
                 </div>
                 <div id="deploy-progress" class="deploy-progress" hidden></div>
-                <button class="btn btn-secondary btn-sm" id="btn-deploy-site">Deploy</button>
+                <button class="btn btn-secondary btn-sm" id="btn-publish-site">Publish site</button>
               </div>
             </div>
           </div>

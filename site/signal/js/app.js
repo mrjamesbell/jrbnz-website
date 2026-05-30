@@ -118,8 +118,7 @@ export { showConfirm } from './confirm-modal.js';
   // Settings page
   document.getElementById('app-settings-save').addEventListener('click', saveAppSettings);
   document.getElementById('btn-app-logout').addEventListener('click', logout);
-  document.getElementById('btn-rebuild-site').addEventListener('click', rebuildSite);
-  document.getElementById('btn-deploy-site').addEventListener('click', deploySite);
+  document.getElementById('btn-publish-site').addEventListener('click', publishSite);
   // Default cover image in settings
   document.getElementById('btn-default-cover-media')?.addEventListener('click', () =>
     openMediaPicker({ insertLabel: 'Use as default cover', onSelect: item => {
@@ -348,7 +347,7 @@ function _showView(view) {
   if (showSnippets && snippetsEl) _animateIn(snippetsEl);
   if (showHomepage && homepageEl) _animateIn(homepageEl);
   if (showHelp && helpEl) _animateIn(helpEl);
-  if (showSettings && settingsEl) _animateIn(settingsEl);
+  if (showSettings && settingsEl) { _animateIn(settingsEl); _restoreDeployStatus(); }
   // view-editor visibility managed by openEditor / closeEditor
 
   // Mobile tab bar: show/hide and update active tab
@@ -735,30 +734,28 @@ async function saveAuthor() {
   }
 }
 
-async function rebuildSite() {
-  const btn = document.getElementById('btn-rebuild-site');
+async function publishSite() {
+  const btn = document.getElementById('btn-publish-site');
+  const progress = document.getElementById('deploy-progress');
   btn.disabled = true;
+  progress.hidden = true;
+  progress.innerHTML = '';
+
+  // Step 1 — rebuild
   btn.textContent = 'Rebuilding…';
   try {
     const res = await fetch('/api/site/rebuild', { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
-    const data = await res.json();
-    showToast(`Rebuilt ${data.rebuilt} post${data.rebuilt === 1 ? '' : 's'}`, 'success');
   } catch (e) {
     showToast('Rebuild failed: ' + e.message, 'error');
-  } finally {
     btn.disabled = false;
-    btn.textContent = 'Rebuild site';
+    btn.textContent = 'Publish site';
+    return;
   }
-}
 
-async function deploySite() {
-  const btn = document.getElementById('btn-deploy-site');
-  const progress = document.getElementById('deploy-progress');
-  btn.disabled = true;
+  // Step 2 — deploy
   btn.textContent = 'Deploying…';
   progress.hidden = false;
-  progress.innerHTML = '';
   try {
     const res = await fetch('/api/site/deploy', { method: 'POST' });
     if (!res.ok) throw new Error(await res.text());
@@ -778,16 +775,42 @@ function _deployAddBox(progress) {
 function _deployFinish(btn, progress, success) {
   progress.innerHTML = '';
   const result = document.createElement('span');
+  const at = new Date();
   result.className = success ? 'deploy-result deploy-result--success' : 'deploy-result deploy-result--fail';
   result.textContent = success ? '✓' : '■';
+  result.title = at.toLocaleString('en-NZ', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   progress.appendChild(result);
+  progress.hidden = false;
   btn.disabled = false;
-  btn.textContent = success ? 'Deployed' : 'Deploy';
-  setTimeout(() => {
-    progress.hidden = true;
+  btn.textContent = 'Publish site';
+  if (success) {
+    localStorage.setItem('signal_deploy_status', JSON.stringify({ ok: true, at: at.toISOString() }));
+  } else {
+    setTimeout(() => {
+      progress.hidden = true;
+      progress.innerHTML = '';
+    }, 4000);
+  }
+}
+
+function _restoreDeployStatus() {
+  const progress = document.getElementById('deploy-progress');
+  if (!progress) return;
+  try {
+    const stored = localStorage.getItem('signal_deploy_status');
+    if (!stored) { progress.hidden = true; return; }
+    const { ok, at } = JSON.parse(stored);
+    if (!ok) { progress.hidden = true; return; }
     progress.innerHTML = '';
-    if (success) btn.textContent = 'Deploy';
-  }, 4000);
+    const result = document.createElement('span');
+    result.className = 'deploy-result deploy-result--success';
+    result.textContent = '✓';
+    result.title = new Date(at).toLocaleString('en-NZ', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    progress.appendChild(result);
+    progress.hidden = false;
+  } catch {
+    progress.hidden = true;
+  }
 }
 
 async function _pollDeployStatus(btn, progress) {
