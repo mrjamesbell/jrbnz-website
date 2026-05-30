@@ -719,7 +719,7 @@ Renders the essays list page (`/posts/`).
   snippetCss: string | null,
   year: number,
   theme: string,
-  posts: Post[],          // published posts, sorted newest-first
+  posts: Post[],          // essays only (notes excluded), sorted newest-first
   defaultCoverImage: string | null,
 }
 ```
@@ -801,57 +801,91 @@ Renders the site homepage (`/`). This is the most theme-specific renderer — mo
 ```js
 {
   author: Author,
-  recentPosts: Post[],       // all published posts, sorted newest-first
+  featuredEssay: Post | null,     // pinned essay (or most recent if none pinned) — overrides already applied
+  recentEssays: Post[],           // next 4 most recent essays, not including featuredEssay
+  recentNotes: Post[],            // 5 most recent notes
+  heroImage: string | null,       // page-level image from Signal homepage settings
+  heroDescription: string | null, // short text from Signal homepage settings
+  quote: string | null,           // quote from Signal homepage settings
   menuPages: Page[],
   accent: string | null,
   snippetCss: string | null,
   theme: string,
   defaultCoverImage: string | null,
-  homepageConfig: HomepageConfig | null,  // from settings/homepage.json — ignore if your design doesn't need it
+  homepageConfig: object,         // raw settings object — prefer the resolved fields above
 }
 ```
 
-**`homepageConfig` is one possible content model, not the homepage format.** The cinematic theme uses it. Your theme does not have to. `recentPosts` gives you the full post list — use it however your design calls for, or not at all. Some homepage structures that work:
+The dispatcher resolves and pre-processes all content before calling your renderer — you do not need to filter notes, resolve the featured post, or apply Signal overrides yourself.
 
-- **Just a statement**: author identity + three topic categories + one link. No posts visible.
-- **The full index**: every essay listed chronologically by year. No hero, no featured post.
-- **The commonplace**: pull-quotes from recent essays surface as the primary content — readers encounter the writing before the list.
+#### `featuredEssay` overrides are already applied
+
+Signal lets editors pin a specific essay and override its title, deck, and CTA label. By the time `featuredEssay` reaches your renderer, those overrides are already merged in:
+
+- `featuredEssay.title` — display title (override applied if set)
+- `featuredEssay.subtitle` — display deck (override applied if set)
+- `featuredEssay.ctaLabel` — call-to-action label, defaults to `'Read the essay →'`
+- `featuredEssay.coverImage` — the post's own cover image (not the page hero image — see below)
+
+Use these fields directly. Do not look at `homepageConfig.featured` to apply overrides yourself.
+
+#### `heroImage` and `featuredEssay.coverImage` are not interchangeable
+
+`heroImage` is a page-level image configured in Signal's homepage settings — it exists independently of any post. `featuredEssay.coverImage` belongs to the post. They serve different purposes and should not be used as fallbacks for each other.
+
+A theme might use `heroImage` as a full-bleed background, a decorative side panel, or an atmospheric interlude image. It might use `featuredEssay.coverImage` as the thumbnail or hero card for that essay. Or it might use one, both, or neither — that is a design decision, not a rule.
+
+**Do not write:** `heroImage || featuredEssay.coverImage`  
+**Do not write:** `featuredEssay.coverImage || heroImage`
+
+#### What to use and what to ignore
+
+All fields have safe null/empty defaults. Use only what your design calls for:
+
+```js
+// Minimal homepage — just the author bio and recent essay titles
+export function buildHomepage(data) {
+  const { author, featuredEssay, recentEssays, menuPages, accent, snippetCss, theme } = data;
+  // ...
+}
+
+// Image-led homepage — hero image prominently, featured essay text below
+export function buildHomepage(data) {
+  const { featuredEssay, heroImage, heroDescription, menuPages, accent, snippetCss, theme } = data;
+  // ...
+}
+```
+
+#### Homepage structures that work
+
+The question to ask first is: *what do you want a first-time visitor to encounter?* These are all valid:
+
+- **Statement page**: author identity + three topic categories + one link. No posts visible at all.
+- **Full index**: every essay listed chronologically by year. No hero, no featured post.
+- **Image-first**: `heroImage` fills the viewport; essay titles are secondary.
+- **Notes stream**: `recentNotes` as the primary content — notes as the visible public voice, essays linked below.
 - **Topic-first**: posts grouped by tag/category, not by recency.
-- **The stream**: flat chronological list starting immediately — no hierarchy, no featured treatment.
-- **Photography-led**: a grid or sequence of images, with essay titles secondary.
+- **Commonplace**: pull-quotes from recent essays surface before the list.
 
-The question to ask first is: *what do you want a first-time visitor to encounter?* The answer shapes the structure. It does not have to be "the most recent piece, then a sample of others."
+#### HomepageConfig shape (for `homepageConfig.featured` fallback access only)
 
-#### HomepageConfig shape (used by cinematic theme — optional for yours)
+The raw config is passed as `homepageConfig` in case you need fields not already resolved. The resolved fields above are always preferred. The stored shape is:
 
 ```json
 {
   "featured": {
     "slug": "optional-post-slug",
     "titleOverride": "Optional override title",
-    "dekOverride": "Optional override subtitle/deck",
-    "imageOverride": "https://… (optional)",
+    "dekOverride": "Optional override deck",
     "ctaLabel": "Read the essay →"
   },
-  "cards": [
-    { "kicker": "Essays", "title": "Long-form pieces…", "href": "/posts/", "linkLabel": "Read essays →", "style": "" },
-    { "kicker": "Photographs", "title": "Theatre, travel…", "href": "/photos/", "linkLabel": "View photographs →", "style": "invert" },
-    { "kicker": "Now", "title": "What I'm doing now", "href": "/now/", "linkLabel": "Read →", "style": "" }
-  ],
-  "interlude": {
-    "text": "Theatre, memory, technology…",
-    "image": "https://… (optional)",
-    "treatment": "photo-muted",
-    "href": "/posts/ (optional)"
-  },
-  "archive": {
-    "title": "From the Archive",
-    "posts": ["slug-one", "slug-two", "slug-three"]
-  }
+  "heroImage": "https://… (optional)",
+  "heroDescription": "Short text for the hero area",
+  "quote": "An optional quote"
 }
 ```
 
-Every field is optional. When absent, `featured` defaults to the most recent non-note post; `cards`, `interlude`, and `archive` fall back to hardcoded defaults. The config is edited via **Homepage** in Signal Admin — no full rebuild needed.
+All fields are optional. The config is edited via **Homepage** in Signal — no full site rebuild needed, just Save & publish.
 
 ---
 
@@ -933,13 +967,22 @@ If your theme uses different layout or treatment classes, update the `className`
   title: string,
   date: string,         // ISO e.g. '2025-01-01'
   status: 'published' | 'draft',
-  tags: string[],
+  tags: string[],       // notes are identified by 'note' in this array
   coverImage: string | null,
   coverImageAlt: string,
   coverImageFocus: string,
   excerpt: string,
   subtitle: string,
   wordCount: number,
+}
+
+// FeaturedEssay — Post with Signal homepage overrides already applied
+// Only present on buildHomepage() data. Use these fields directly; do not re-apply overrides from homepageConfig.
+{
+  ...Post,
+  title: string,        // override applied if set in Signal
+  subtitle: string,     // override applied if set in Signal
+  ctaLabel: string,     // defaults to 'Read the essay →' if not overridden
 }
 ```
 
