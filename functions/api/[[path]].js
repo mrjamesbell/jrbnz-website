@@ -313,6 +313,48 @@ async function rebuildIndexHtml(env, posts, ctx = null) {
   ]);
 }
 
+function _extractPostContent(html) {
+  // Find the post-content div using bracket counting to handle nested divs
+  const marker = html.indexOf('class="post-content');
+  if (marker === -1) return null;
+  const divOpen = html.lastIndexOf('<div', marker);
+  if (divOpen === -1) return null;
+  const contentStart = html.indexOf('>', divOpen) + 1;
+  let depth = 1, pos = contentStart;
+  while (pos < html.length && depth > 0) {
+    const nextOpen  = html.indexOf('<div',  pos);
+    const nextClose = html.indexOf('</div>', pos);
+    if (nextClose === -1) return null;
+    if (nextOpen !== -1 && nextOpen < nextClose) { depth++; pos = nextOpen + 4; }
+    else { depth--; if (depth === 0) return html.slice(contentStart, nextClose).trim(); pos = nextClose + 6; }
+  }
+  return null;
+}
+
+async function handleRecoverContent(env, slug) {
+  const posts = await getIndex(env);
+  const post = posts.find(p => p.slug === slug);
+  if (!post) return json({ error: 'Not found' }, 404);
+  if (post.status !== 'published') return json({ error: 'Post is not published — nothing to recover from' }, 400);
+
+  const draftObj = await env.BLOG.get(`posts/${slug}/draft.md`);
+  if (draftObj && (await draftObj.text()).trim()) return json({ error: 'Draft already has content — refusing to overwrite' }, 409);
+
+  const htmlObj = await env.BLOG.get(`posts/${slug}/index.html`);
+  if (!htmlObj) return json({ error: 'No published HTML found' }, 404);
+
+  const content = _extractPostContent(await htmlObj.text());
+  if (!content) return json({ error: 'Could not locate post-content div in published HTML' }, 422);
+
+  const idx = posts.findIndex(p => p.slug === slug);
+  await env.BLOG.put(`posts/${slug}/draft.md`, content, { httpMetadata: { contentType: 'text/markdown' } });
+  posts[idx].hasDraftChanges = true;
+  posts[idx].wordCount = content.split(/\s+/).filter(Boolean).length;
+  await saveIndex(env, posts);
+
+  return json({ ok: true, chars: content.length });
+}
+
 async function handlePreviewPost(env, slug) {
   const [posts, ctx] = await Promise.all([getIndex(env), loadSiteContext(env)]);
   const post = posts.find(p => p.slug === slug);
@@ -615,6 +657,7 @@ export async function onRequest(context) {
       if (action === 'review' && method === 'POST') return handleReviewPost(env, slug);
       if (action === 'generate-excerpt' && method === 'POST') return handleGenerateExcerpt(env, slug, request);
       if (action === 'preview' && method === 'GET') return handlePreviewPost(env, slug);
+      if (action === 'recover' && method === 'POST') return handleRecoverContent(env, slug);
     }
   }
 
@@ -1048,6 +1091,9 @@ async function handleSaveDraft(request, env, slug) {
 
   const now = new Date().toISOString();
   const isPublished = posts[idx].status === 'published';
+  const incomingBody = data.body ?? data.markdown ?? '';
+  const hasContent = incomingBody.trim().length > 0;
+
   posts[idx] = {
     ...posts[idx],
     title: data.title ?? posts[idx].title,
@@ -1061,12 +1107,16 @@ async function handleSaveDraft(request, env, slug) {
     wordCount: data.wordCount ?? posts[idx].wordCount,
     updatedAt: now,
     status: isPublished ? 'published' : 'draft',
-    hasDraftChanges: isPublished ? true : false,
+    // Only mark as having draft changes if there is actual body content to publish
+    hasDraftChanges: isPublished && hasContent,
   };
 
-  let body = data.body ?? data.markdown ?? '';
-  body = await migrateMediaToPost(env, slug, body);
-  await env.BLOG.put(`posts/${slug}/draft.md`, body, { httpMetadata: { contentType: 'text/markdown' } });
+  // Never overwrite draft.md with empty content — protects against editor
+  // saving before content is loaded, or metadata-only saves on published posts
+  if (hasContent) {
+    const body = await migrateMediaToPost(env, slug, incomingBody);
+    await env.BLOG.put(`posts/${slug}/draft.md`, body, { httpMetadata: { contentType: 'text/markdown' } });
+  }
   await saveIndex(env, posts);
   return json(posts[idx]);
 }

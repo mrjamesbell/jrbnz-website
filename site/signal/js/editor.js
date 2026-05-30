@@ -323,6 +323,7 @@ function _populateEditor() {
   _autoResizeTitle();
   _autoResizeTextarea();
   _updatePublishButton();
+  _updateRecoverBanner();
 
   const previewBtn = document.getElementById('btn-preview-post');
   if (previewBtn && currentSlug !== 'new') {
@@ -1369,3 +1370,37 @@ async function _runReview() {
     btn.textContent = '🔍 Review';
   }
 }
+
+// ── Content recovery ──────────────────────────────────────────────────────────
+
+function _updateRecoverBanner() {
+  const banner = document.getElementById('editor-recover-banner');
+  if (!banner) return;
+  const show = currentType === 'post'
+    && currentPost?.status === 'published'
+    && !currentPost?.body?.trim();
+  banner.hidden = !show;
+}
+
+document.getElementById('btn-recover-content')?.addEventListener('click', async () => {
+  const btn = document.getElementById('btn-recover-content');
+  if (!currentSlug || currentSlug === 'new') return;
+  btn.disabled = true;
+  btn.textContent = 'Recovering…';
+  try {
+    const res = await fetch(`/api/posts/${currentSlug}/recover`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+    // Reload the post so the editor shows the recovered content
+    const postRes = await fetch(`/api/posts/${currentSlug}`);
+    if (postRes.ok) {
+      currentPost = await postRes.json();
+      _populateEditor();
+    }
+    showToast(`Recovered ${data.chars} characters from published HTML`, 'success');
+  } catch (e) {
+    showToast('Recovery failed: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Recover from published HTML';
+  }
+});

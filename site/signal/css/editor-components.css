@@ -317,6 +317,19 @@
   color: var(--color-cream-text-secondary);
 }
 
+/* Recover banner */
+.editor-recover-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.editor-recover-banner [hidden] { display: none; }
+
 /* Markdown textarea (edit mode) */
 .editor-textarea {
   font-family: var(--font-serif);
