@@ -12,6 +12,7 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 // ── Theme registry ────────────────────────────────────────────────────────────
 
 const THEMES = { base: baseTheme, basic: basicTheme, ...installedThemes };
+const BUILTIN_THEMES = new Set(['base', 'basic']);
 
 function themeRenderer(name) {
   const theme = THEMES[name] ?? THEMES.basic;
@@ -605,7 +606,7 @@ async function handleThemeUpload(request, env) {
   if (!name || !/^[a-z0-9][a-z0-9-]*$/.test(name)) {
     return json({ error: 'Invalid theme name — use lowercase letters, numbers, and hyphens only' }, 400);
   }
-  if (THEMES[name]) {
+  if (BUILTIN_THEMES.has(name)) {
     return json({ error: `"${name}" is a built-in theme and cannot be replaced` }, 400);
   }
   if (!js || !css) {
@@ -633,7 +634,7 @@ async function handleThemeUpload(request, env) {
 }
 
 async function handleThemeDelete(name, env) {
-  if (THEMES[name]) {
+  if (BUILTIN_THEMES.has(name)) {
     return json({ error: `"${name}" is a built-in theme and cannot be deleted` }, 400);
   }
 
