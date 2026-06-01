@@ -5,15 +5,16 @@ import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFIma
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as baseTheme from '../themes/base.js';
 import * as basicTheme from '../themes/basic.js';
+import installedThemes from '../themes/_registry.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { base: baseTheme, basic: basicTheme };
+const THEMES = { base: baseTheme, basic: basicTheme, ...installedThemes };
 
 function themeRenderer(name) {
-  const theme = THEMES[name] ?? dynamicThemeCache.get(name) ?? THEMES.basic;
+  const theme = THEMES[name] ?? THEMES.basic;
   return {
     buildPost:     theme.buildPost     ?? baseTheme.buildPost,
     buildIndex:    theme.buildIndex    ?? baseTheme.buildIndex,
@@ -24,26 +25,7 @@ function themeRenderer(name) {
   };
 }
 
-// ── Dynamic theme engine ───────────────────────────────────────────────────────
-
-const dynamicThemeCache = new Map();
-let _dynamicThemesLoaded = false;
-
-const THEME_HELPERS = () => ({ esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard, SITE_URL });
-
-function transformThemeJs(code) {
-  let t = code;
-  // Remove all import statements
-  t = t.replace(/^import\s*\{[^}]*\}\s*from\s*['"][^'"]*['"];?\s*\n?/gm, '');
-  // Remove re-exports from other files (not allowed in dynamic themes)
-  t = t.replace(/^export\s*\{[^}]*\}\s*from\s*['"][^'"]*['"];?\s*\n?/gm, '');
-  // Transform: export function X( → exports.X = function X(
-  t = t.replace(/\bexport\s+function\s+(\w+)\s*\(/g, 'exports.$1 = function $1(');
-  // Transform: export const X = → exports.X =
-  t = t.replace(/\bexport\s+const\s+(\w+)\s*=/g, 'exports.$1 =');
-  const helperNames = Object.keys(THEME_HELPERS()).join(', ');
-  return `(function(__h) {\n  const { ${helperNames} } = __h;\n  const exports = {};\n${t}\n  return exports;\n})`;
-}
+// ── Theme compliance checker ──────────────────────────────────────────────────
 
 function checkThemeCompliance(name, jsCode, cssCode) {
   const errors = [];
@@ -99,49 +81,14 @@ function checkThemeCompliance(name, jsCode, cssCode) {
   return { errors, warnings };
 }
 
-async function loadDynamicTheme(name, env) {
-  if (dynamicThemeCache.has(name)) return dynamicThemeCache.get(name);
-  const [jsObj, cssObj] = await Promise.all([
-    env.BLOG.get(`themes/${name}.js`),
-    env.BLOG.get(`themes/${name}.css`),
-  ]);
-  if (!jsObj) return null;
-  try {
-    const factoryCode = await jsObj.text();
-    const inlineCss = cssObj ? await cssObj.text() : '';
-    // Curry buildHead so this theme's CSS is inlined at render time — no R2 fetch on page load
-    const themedBuildHead = (opts) => buildHead({ ...opts, inlineCss });
-    const helpers = { ...THEME_HELPERS(), buildHead: themedBuildHead };
-    // eslint-disable-next-line no-new-func
-    const factory = new Function('return ' + factoryCode)();
-    const module = factory(helpers);
-    dynamicThemeCache.set(name, module);
-    return module;
-  } catch (e) {
-    console.error(`Dynamic theme load failed [${name}]:`, e);
-    return null;
-  }
-}
-
-async function ensureDynamicThemesLoaded(env) {
-  if (_dynamicThemesLoaded) return;
-  _dynamicThemesLoaded = true;
-  try {
-    const obj = await env.BLOG.get('themes/registry.json');
-    if (!obj) return;
-    const registry = await obj.json();
-    await Promise.all(registry.map(({ name }) => loadDynamicTheme(name, env)));
-  } catch (_) { /* non-fatal */ }
-}
-
-async function getDynamicRegistry(env) {
+async function getThemeRegistry(env) {
   try {
     const obj = await env.BLOG.get('themes/registry.json');
     return obj ? await obj.json() : [];
   } catch (_) { return []; }
 }
 
-async function saveDynamicRegistry(env, registry) {
+async function saveThemeRegistry(env, registry) {
   await env.BLOG.put('themes/registry.json', JSON.stringify(registry), { httpMetadata: { contentType: 'application/json' } });
 }
 
@@ -644,7 +591,7 @@ async function savePagesIndex(env, pages) {
 // ── Theme management handlers ─────────────────────────────────────────────────
 
 async function handleThemeList(env) {
-  const registry = await getDynamicRegistry(env);
+  const registry = await getThemeRegistry(env);
   const installed = registry.filter(r => !THEMES[r.name]);
   return json({
     builtin: ['basic'],
@@ -670,34 +617,19 @@ async function handleThemeUpload(request, env) {
     return json({ error: 'Theme failed compliance checks', errors, warnings }, 422);
   }
 
-  // Transform and test-execute the JS before storing
-  let transformed;
-  try {
-    transformed = transformThemeJs(js);
-    // eslint-disable-next-line no-new-func
-    const factory = new Function('return ' + transformed)();
-    factory(THEME_HELPERS()); // dry run — throws if syntax error
-  } catch (e) {
-    return json({ error: `Theme JS failed to execute: ${e.message}` }, 422);
-  }
-
-  // Store in R2
+  // Store raw JS and CSS in R2 — build.mjs picks them up at deploy time
   await Promise.all([
-    env.BLOG.put(`themes/${name}.js`, transformed, { httpMetadata: { contentType: 'text/javascript' } }),
+    env.BLOG.put(`themes/${name}.js`, js, { httpMetadata: { contentType: 'text/javascript' } }),
     env.BLOG.put(`themes/${name}.css`, css, { httpMetadata: { contentType: 'text/css' } }),
   ]);
 
-  // Update registry
-  const registry = await getDynamicRegistry(env);
+  const registry = await getThemeRegistry(env);
   const existing = registry.findIndex(r => r.name === name);
   const entry = { name, installedAt: new Date().toISOString() };
   if (existing === -1) registry.push(entry); else registry[existing] = entry;
-  await saveDynamicRegistry(env, registry);
+  await saveThemeRegistry(env, registry);
 
-  // Invalidate cache so next request picks up the new version
-  dynamicThemeCache.delete(name);
-
-  return json({ ok: true, name, warnings });
+  return json({ ok: true, name, warnings, deployRequired: true });
 }
 
 async function handleThemeDelete(name, env) {
@@ -711,7 +643,7 @@ async function handleThemeDelete(name, env) {
     return json({ error: 'Cannot delete the active theme — switch to another theme first' }, 400);
   }
 
-  const registry = await getDynamicRegistry(env);
+  const registry = await getThemeRegistry(env);
   const found = registry.some(r => r.name === name);
   if (!found) {
     return json({ error: `Theme "${name}" not found` }, 404);
@@ -721,10 +653,28 @@ async function handleThemeDelete(name, env) {
     env.BLOG.delete(`themes/${name}.js`),
     env.BLOG.delete(`themes/${name}.css`),
   ]);
-  await saveDynamicRegistry(env, registry.filter(r => r.name !== name));
-  dynamicThemeCache.delete(name);
+  await saveThemeRegistry(env, registry.filter(r => r.name !== name));
 
-  return json({ ok: true });
+  return json({ ok: true, deployRequired: true });
+}
+
+async function handleThemeBundle(env) {
+  const registry = await getThemeRegistry(env);
+  const themes = await Promise.all(
+    registry.map(async ({ name, installedAt }) => {
+      const [jsObj, cssObj] = await Promise.all([
+        env.BLOG.get(`themes/${name}.js`),
+        env.BLOG.get(`themes/${name}.css`),
+      ]);
+      return {
+        name,
+        installedAt,
+        js: jsObj ? await jsObj.text() : null,
+        css: cssObj ? await cssObj.text() : null,
+      };
+    })
+  );
+  return json({ themes: themes.filter(t => t.js && t.css) });
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
@@ -739,9 +689,6 @@ export async function onRequest(context) {
   if (method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,PUT,DELETE', 'access-control-allow-headers': 'Content-Type' } });
   }
-
-  // Ensure dynamic themes are available (cached after first call per isolate)
-  await ensureDynamicThemesLoaded(env);
 
   // Auth routes — no session required
   if (resource === 'auth') {
@@ -765,19 +712,22 @@ export async function onRequest(context) {
   // Public theme config — no auth required
   if (resource === 'theme' && slug === 'image-roles' && method === 'GET') {
     const { theme: themeName } = await loadSiteContext(env);
-    const themeModule = THEMES[themeName] ?? dynamicThemeCache.get(themeName);
+    const themeModule = THEMES[themeName];
     if (!themeModule) return json({ error: `Unknown theme: "${themeName}"` }, 404);
     return json(themeModule.imageRoles ?? { layouts: [], treatments: [], defaults: {} });
   }
   if (resource === 'theme' && slug === 'list' && method === 'GET') {
-    const registry = await getDynamicRegistry(env);
+    const registry = await getThemeRegistry(env);
     const installedNames = registry.map(r => r.name).filter(n => !THEMES[n]);
     return json(['basic', ...installedNames]);
   }
 
-  // Internal build export — intentionally unauthenticated; returns pre-rendered published HTML only
+  // Internal build endpoints — intentionally unauthenticated; used by build.mjs during CF Pages deploy
   if (resource === 'internal' && slug === 'export' && method === 'GET') {
     return handleExport(request, env);
+  }
+  if (resource === 'internal' && slug === 'theme-bundle' && method === 'GET') {
+    return handleThemeBundle(env);
   }
 
   // All other routes require auth

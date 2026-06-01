@@ -952,7 +952,7 @@ async function _deleteTheme(name) {
     const res = await fetch(`/api/themes/${name}`, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); return; }
-    showToast(`Theme "${name}" deleted`, 'success');
+    showToast(`Theme "${name}" removed — will take effect on next Publish`, 'success');
     await _loadThemeManager();
     const activeBtn = document.querySelector('#theme-picker-group .theme-pick-btn.active');
     _loadThemePicker(activeBtn?.dataset.theme || 'cinematic');
@@ -1021,7 +1021,7 @@ function _initThemeUpload() {
         _setThemeUploadFeedback(msg, 'error');
         return;
       }
-      let msg = `Theme <strong>${data.name}</strong> installed.`;
+      let msg = `Theme <strong>${data.name}</strong> uploaded. Select it above and click Publish site to activate it.`;
       if (data.warnings?.length) msg += `<ul>${data.warnings.map(w => `<li>⚠ ${w}</li>`).join('')}</ul>`;
       _setThemeUploadFeedback(msg, data.warnings?.length ? 'warning' : 'ok');
       installBtn.hidden = true;
