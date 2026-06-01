@@ -593,7 +593,7 @@ async function savePagesIndex(env, pages) {
 
 async function handleThemeList(env) {
   const registry = await getThemeRegistry(env);
-  const installed = registry.filter(r => !THEMES[r.name]);
+  const installed = registry.filter(r => !BUILTIN_THEMES.has(r.name));
   return json({
     builtin: ['basic'],
     installed,
@@ -719,7 +719,7 @@ export async function onRequest(context) {
   }
   if (resource === 'theme' && slug === 'list' && method === 'GET') {
     const registry = await getThemeRegistry(env);
-    const installedNames = registry.map(r => r.name).filter(n => !THEMES[n]);
+    const installedNames = registry.map(r => r.name).filter(n => !BUILTIN_THEMES.has(n));
     return json(['basic', ...installedNames]);
   }
 
