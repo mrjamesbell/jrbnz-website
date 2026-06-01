@@ -47,8 +47,8 @@ console.log('Fetching installed themes...');
 
 function inlineTheme(name, jsCode) {
   let code = jsCode;
-  // Strip import statements — helpers are already imported at the top of _bundle.js
-  code = code.replace(/^import\s[^\n]*\n?/gm, '');
+  // Strip import statements (single- and multi-line) — helpers are imported at the top of _bundle.js
+  code = code.replace(/^import[\s\S]*?from\s*['"][^'"]*['"];?\n?/gm, '');
   // Strip 'export' keyword — functions are collected into _t manually at the end
   code = code.replace(/^export\s+((?:async\s+)?function|const|let|var)\s/gm, '$1 ');
   return `\n// ── Theme: ${name} ──\n{\n${code.trim()}\n  _t['${name}'] = { buildPost, buildIndex, buildPage, buildHomepage, buildNotes, buildPhotos, imageRoles };\n}`;
