@@ -1,24 +1,19 @@
 import { mdEsc, mdInline, mdToHtml } from '../lib/markdown.js';
 import { loadSnippetCss } from '../lib/snippets.js';
-import { SITE_URL, esc, buildHead, buildSiteNav, buildFooter, buildPostMeta, buildAuthorCard } from '../lib/templates.js';
+import { SITE_URL, esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard } from '../lib/templates.js';
 import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as baseTheme from '../themes/base.js';
-import * as cinematicTheme from '../themes/cinematic.js';
-import * as lightroomTheme from '../themes/lightroom.js';
 import * as basicTheme from '../themes/basic.js';
-import * as archiveFuturismTheme from '../themes/archivefuturism.js';
-import * as commonplacebookTheme from '../themes/commonplacebook.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
 // ── Theme registry ────────────────────────────────────────────────────────────
 
-const THEMES = { base: baseTheme, cinematic: cinematicTheme, lightroom: lightroomTheme, basic: basicTheme, archivefuturism: archiveFuturismTheme, commonplacebook: commonplacebookTheme };
+const THEMES = { base: baseTheme, basic: basicTheme };
 
 function themeRenderer(name) {
-  if (!THEMES[name]) throw new Error(`Unknown theme: "${name}"`);
-  const theme = THEMES[name];
+  const theme = THEMES[name] ?? dynamicThemeCache.get(name) ?? THEMES.basic;
   return {
     buildPost:     theme.buildPost     ?? baseTheme.buildPost,
     buildIndex:    theme.buildIndex    ?? baseTheme.buildIndex,
@@ -27,6 +22,127 @@ function themeRenderer(name) {
     buildHomepage: theme.buildHomepage ?? baseTheme.buildHomepage,
     buildNotes:    theme.buildNotes    ?? baseTheme.buildNotes,
   };
+}
+
+// ── Dynamic theme engine ───────────────────────────────────────────────────────
+
+const dynamicThemeCache = new Map();
+let _dynamicThemesLoaded = false;
+
+const THEME_HELPERS = () => ({ esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard, SITE_URL });
+
+function transformThemeJs(code) {
+  let t = code;
+  // Remove all import statements
+  t = t.replace(/^import\s*\{[^}]*\}\s*from\s*['"][^'"]*['"];?\s*\n?/gm, '');
+  // Remove re-exports from other files (not allowed in dynamic themes)
+  t = t.replace(/^export\s*\{[^}]*\}\s*from\s*['"][^'"]*['"];?\s*\n?/gm, '');
+  // Transform: export function X( → exports.X = function X(
+  t = t.replace(/\bexport\s+function\s+(\w+)\s*\(/g, 'exports.$1 = function $1(');
+  // Transform: export const X = → exports.X =
+  t = t.replace(/\bexport\s+const\s+(\w+)\s*=/g, 'exports.$1 =');
+  const helperNames = Object.keys(THEME_HELPERS()).join(', ');
+  return `(function(__h) {\n  const { ${helperNames} } = __h;\n  const exports = {};\n${t}\n  return exports;\n})`;
+}
+
+function checkThemeCompliance(name, jsCode, cssCode) {
+  const errors = [];
+  const warnings = [];
+
+  // Required exports
+  const requiredFns = ['buildHomepage', 'buildIndex', 'buildPost', 'buildPage', 'buildNotes', 'buildPhotos'];
+  for (const fn of requiredFns) {
+    if (!jsCode.includes(`export function ${fn}`) && !jsCode.includes(`export const ${fn}`)) {
+      errors.push(`Missing required export: ${fn}`);
+    }
+  }
+  if (!jsCode.includes('export const imageRoles')) {
+    errors.push('Missing required export: imageRoles');
+  }
+
+  // buildIndex structural requirements
+  const indexStart = jsCode.indexOf('export function buildIndex');
+  if (indexStart !== -1) {
+    const indexBody = jsCode.slice(indexStart, indexStart + 3000);
+    if (!indexBody.includes('tag-filter-bar')) errors.push('buildIndex missing tag-filter-bar element');
+    if (!indexBody.includes('/scripts/blog.js')) errors.push('buildIndex missing /scripts/blog.js script tag');
+  }
+
+  // No cross-theme re-exports
+  if (/export\s*\{[^}]*\}\s*from\s*['"]\.\//.test(jsCode)) {
+    errors.push('Dynamic themes must be self-contained — no re-exports from other theme files');
+  }
+
+  // CSS: data-theme token block
+  const tokenBlockRe = new RegExp(`\\[data-theme="${name}"\\]\\s*\\{([^}]+)\\}`);
+  const tokenBlock = cssCode.match(tokenBlockRe);
+  if (!tokenBlock) {
+    errors.push(`CSS missing [data-theme="${name}"] token block`);
+  } else {
+    const required = ['--color-bg','--color-surface','--color-text','--color-text-muted','--color-text-subtle','--color-border','--color-border-strong','--color-accent','--color-accent-muted','--color-accent-fg','--font-body','--font-display','--font-mono','--gutter','--col-read','--nav-h'];
+    for (const tok of required) {
+      if (!tokenBlock[1].includes(tok)) errors.push(`CSS token block missing: ${tok}`);
+    }
+  }
+
+  // Font size floor check
+  const smallFonts = cssCode.match(/font-size:\s*(([0-9]|1[0-5])px|0\.[0-9]+rem)/g);
+  if (smallFonts) warnings.push(`Possible sub-16px font sizes: ${smallFonts.join(', ')}`);
+
+  // CSS scoping check (rough)
+  const nakedRules = cssCode.split('\n').filter(l => {
+    const s = l.trim();
+    return s.includes('{') && !s.startsWith('[data-theme') && !s.startsWith('@') && !s.startsWith('/*') && s !== '{';
+  });
+  if (nakedRules.length) warnings.push(`${nakedRules.length} possible unscoped CSS selector(s) — ensure every rule is scoped to [data-theme="${name}"]`);
+
+  return { errors, warnings };
+}
+
+async function loadDynamicTheme(name, env) {
+  if (dynamicThemeCache.has(name)) return dynamicThemeCache.get(name);
+  const [jsObj, cssObj] = await Promise.all([
+    env.BLOG.get(`themes/${name}.js`),
+    env.BLOG.get(`themes/${name}.css`),
+  ]);
+  if (!jsObj) return null;
+  try {
+    const factoryCode = await jsObj.text();
+    const inlineCss = cssObj ? await cssObj.text() : '';
+    // Curry buildHead so this theme's CSS is inlined at render time — no R2 fetch on page load
+    const themedBuildHead = (opts) => buildHead({ ...opts, inlineCss });
+    const helpers = { ...THEME_HELPERS(), buildHead: themedBuildHead };
+    // eslint-disable-next-line no-new-func
+    const factory = new Function('return ' + factoryCode)();
+    const module = factory(helpers);
+    dynamicThemeCache.set(name, module);
+    return module;
+  } catch (e) {
+    console.error(`Dynamic theme load failed [${name}]:`, e);
+    return null;
+  }
+}
+
+async function ensureDynamicThemesLoaded(env) {
+  if (_dynamicThemesLoaded) return;
+  _dynamicThemesLoaded = true;
+  try {
+    const obj = await env.BLOG.get('themes/registry.json');
+    if (!obj) return;
+    const registry = await obj.json();
+    await Promise.all(registry.map(({ name }) => loadDynamicTheme(name, env)));
+  } catch (_) { /* non-fatal */ }
+}
+
+async function getDynamicRegistry(env) {
+  try {
+    const obj = await env.BLOG.get('themes/registry.json');
+    return obj ? await obj.json() : [];
+  } catch (_) { return []; }
+}
+
+async function saveDynamicRegistry(env, registry) {
+  await env.BLOG.put('themes/registry.json', JSON.stringify(registry), { httpMetadata: { contentType: 'application/json' } });
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -525,6 +641,92 @@ async function savePagesIndex(env, pages) {
   await env.BLOG.put('pages/index.json', JSON.stringify(pages), { httpMetadata: { contentType: 'application/json' } });
 }
 
+// ── Theme management handlers ─────────────────────────────────────────────────
+
+async function handleThemeList(env) {
+  const registry = await getDynamicRegistry(env);
+  const installed = registry.filter(r => !THEMES[r.name]);
+  return json({
+    builtin: ['basic'],
+    installed,
+  });
+}
+
+async function handleThemeUpload(request, env) {
+  const { name, js, css } = await request.json();
+
+  if (!name || !/^[a-z0-9][a-z0-9-]*$/.test(name)) {
+    return json({ error: 'Invalid theme name — use lowercase letters, numbers, and hyphens only' }, 400);
+  }
+  if (THEMES[name]) {
+    return json({ error: `"${name}" is a built-in theme and cannot be replaced` }, 400);
+  }
+  if (!js || !css) {
+    return json({ error: 'Both JS and CSS content are required' }, 400);
+  }
+
+  const { errors, warnings } = checkThemeCompliance(name, js, css);
+  if (errors.length) {
+    return json({ error: 'Theme failed compliance checks', errors, warnings }, 422);
+  }
+
+  // Transform and test-execute the JS before storing
+  let transformed;
+  try {
+    transformed = transformThemeJs(js);
+    // eslint-disable-next-line no-new-func
+    const factory = new Function('return ' + transformed)();
+    factory(THEME_HELPERS()); // dry run — throws if syntax error
+  } catch (e) {
+    return json({ error: `Theme JS failed to execute: ${e.message}` }, 422);
+  }
+
+  // Store in R2
+  await Promise.all([
+    env.BLOG.put(`themes/${name}.js`, transformed, { httpMetadata: { contentType: 'text/javascript' } }),
+    env.BLOG.put(`themes/${name}.css`, css, { httpMetadata: { contentType: 'text/css' } }),
+  ]);
+
+  // Update registry
+  const registry = await getDynamicRegistry(env);
+  const existing = registry.findIndex(r => r.name === name);
+  const entry = { name, installedAt: new Date().toISOString() };
+  if (existing === -1) registry.push(entry); else registry[existing] = entry;
+  await saveDynamicRegistry(env, registry);
+
+  // Invalidate cache so next request picks up the new version
+  dynamicThemeCache.delete(name);
+
+  return json({ ok: true, name, warnings });
+}
+
+async function handleThemeDelete(name, env) {
+  if (THEMES[name]) {
+    return json({ error: `"${name}" is a built-in theme and cannot be deleted` }, 400);
+  }
+
+  // Prevent deleting the active theme
+  const { theme: activeTheme } = await loadSiteContext(env);
+  if (activeTheme === name) {
+    return json({ error: 'Cannot delete the active theme — switch to another theme first' }, 400);
+  }
+
+  const registry = await getDynamicRegistry(env);
+  const found = registry.some(r => r.name === name);
+  if (!found) {
+    return json({ error: `Theme "${name}" not found` }, 404);
+  }
+
+  await Promise.all([
+    env.BLOG.delete(`themes/${name}.js`),
+    env.BLOG.delete(`themes/${name}.css`),
+  ]);
+  await saveDynamicRegistry(env, registry.filter(r => r.name !== name));
+  dynamicThemeCache.delete(name);
+
+  return json({ ok: true });
+}
+
 // ── Router ────────────────────────────────────────────────────────────────────
 
 export async function onRequest(context) {
@@ -537,6 +739,9 @@ export async function onRequest(context) {
   if (method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,PUT,DELETE', 'access-control-allow-headers': 'Content-Type' } });
   }
+
+  // Ensure dynamic themes are available (cached after first call per isolate)
+  await ensureDynamicThemesLoaded(env);
 
   // Auth routes — no session required
   if (resource === 'auth') {
@@ -560,11 +765,14 @@ export async function onRequest(context) {
   // Public theme config — no auth required
   if (resource === 'theme' && slug === 'image-roles' && method === 'GET') {
     const { theme: themeName } = await loadSiteContext(env);
-    if (!THEMES[themeName]) return json({ error: `Unknown theme: "${themeName}"` }, 404);
-    return json(THEMES[themeName].imageRoles ?? { layouts: [], treatments: [], defaults: {} });
+    const themeModule = THEMES[themeName] ?? dynamicThemeCache.get(themeName);
+    if (!themeModule) return json({ error: `Unknown theme: "${themeName}"` }, 404);
+    return json(themeModule.imageRoles ?? { layouts: [], treatments: [], defaults: {} });
   }
   if (resource === 'theme' && slug === 'list' && method === 'GET') {
-    return json(Object.keys(THEMES).filter(k => k !== 'dark'));
+    const registry = await getDynamicRegistry(env);
+    const installedNames = registry.map(r => r.name).filter(n => !THEMES[n]);
+    return json(['basic', ...installedNames]);
   }
 
   // Internal build export — intentionally unauthenticated; returns pre-rendered published HTML only
@@ -604,6 +812,13 @@ export async function onRequest(context) {
       if (method === 'GET') return handleGetSiteSettings(env);
       if (method === 'PUT') return handleSaveSiteSettings(request, env);
     }
+  }
+
+  // Theme management (upload / delete dynamic themes)
+  if (resource === 'themes') {
+    if (method === 'POST') return handleThemeUpload(request, env);
+    if (method === 'DELETE' && slug) return handleThemeDelete(slug, env);
+    if (method === 'GET') return handleThemeList(env);
   }
 
   // Homepage config

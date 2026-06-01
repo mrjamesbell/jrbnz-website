@@ -877,6 +877,9 @@ function openSettingsView() {
     _updateDefaultCoverFocusBtns(d.defaultCoverImageFocus || 'center');
     _loadThemePicker(d.theme || 'cinematic');
   }).catch(() => {});
+
+  _loadThemeManager();
+  _initThemeUpload();
 }
 
 function _loadThemePicker(activeTheme) {
@@ -894,6 +897,148 @@ function _loadThemePicker(activeTheme) {
       });
     });
   }).catch(() => {});
+}
+
+// ── Theme management ──────────────────────────────────────────────────────────
+
+let _pendingTheme = null; // { name, js, css } ready to install
+
+async function _loadJSZip() {
+  if (window.JSZip) return window.JSZip;
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+    s.onload = () => resolve(window.JSZip);
+    s.onerror = () => reject(new Error('Failed to load JSZip'));
+    document.head.appendChild(s);
+  });
+}
+
+function _setThemeUploadFeedback(msg, type) {
+  const el = document.getElementById('theme-upload-feedback');
+  if (!el) return;
+  el.hidden = !msg;
+  el.className = 'theme-upload-feedback' + (type ? ` is-${type}` : '');
+  el.innerHTML = msg || '';
+}
+
+async function _loadThemeManager() {
+  const wrap = document.getElementById('theme-installed-wrap');
+  const list = document.getElementById('theme-installed-list');
+  if (!wrap || !list) return;
+  try {
+    const res = await fetch('/api/themes', { headers: { 'Content-Type': 'application/json' } });
+    if (!res.ok) return;
+    const { installed = [] } = await res.json();
+    if (!installed.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    list.innerHTML = installed.map(({ name, installedAt }) => {
+      const date = installedAt ? new Date(installedAt).toLocaleDateString() : '';
+      return `<div class="theme-installed-item">
+        <span class="theme-installed-name">${name}</span>
+        <span class="theme-installed-date">${date}</span>
+        <button type="button" class="btn btn-danger btn-sm" data-delete-theme="${name}">Delete</button>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-delete-theme]').forEach(btn => {
+      btn.addEventListener('click', () => _deleteTheme(btn.dataset.deleteTheme));
+    });
+  } catch (_) {}
+}
+
+async function _deleteTheme(name) {
+  if (!confirm(`Delete theme "${name}"? This cannot be undone.`)) return;
+  try {
+    const res = await fetch(`/api/themes/${name}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); return; }
+    showToast(`Theme "${name}" deleted`, 'success');
+    await _loadThemeManager();
+    const activeBtn = document.querySelector('#theme-picker-group .theme-pick-btn.active');
+    _loadThemePicker(activeBtn?.dataset.theme || 'cinematic');
+  } catch (e) {
+    showToast('Delete failed — ' + e.message, 'error');
+  }
+}
+
+let _themeUploadInitialized = false;
+function _initThemeUpload() {
+  if (_themeUploadInitialized) return;
+  _themeUploadInitialized = true;
+  const input = document.getElementById('theme-upload-input');
+  const chooseBtn = document.getElementById('theme-upload-btn');
+  const filenameEl = document.getElementById('theme-upload-filename');
+  const installBtn = document.getElementById('theme-install-btn');
+  if (!input || !chooseBtn || !installBtn) return;
+
+  chooseBtn.addEventListener('click', () => input.click());
+
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+    filenameEl.textContent = file.name;
+    _setThemeUploadFeedback('Reading zip…', null);
+    installBtn.hidden = true;
+    _pendingTheme = null;
+
+    try {
+      const JSZip = await _loadJSZip();
+      const zip = await JSZip.loadAsync(file);
+      const files = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+      const jsFile = files.find(n => n.endsWith('.js'));
+      const cssFile = files.find(n => n.endsWith('.css'));
+      if (!jsFile || !cssFile) {
+        _setThemeUploadFeedback('Zip must contain a <code>.js</code> and a <code>.css</code> file.', 'error');
+        return;
+      }
+      const name = jsFile.replace(/\.js$/, '').replace(/^.*\//, '');
+      const js = await zip.files[jsFile].async('string');
+      const css = await zip.files[cssFile].async('string');
+      _pendingTheme = { name, js, css };
+      _setThemeUploadFeedback(`Ready to install theme: <strong>${name}</strong>`, 'ok');
+      installBtn.hidden = false;
+    } catch (e) {
+      _setThemeUploadFeedback('Failed to read zip — ' + e.message, 'error');
+    }
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!_pendingTheme) return;
+    installBtn.disabled = true;
+    installBtn.textContent = 'Installing…';
+    _setThemeUploadFeedback('Validating and installing…', null);
+    try {
+      const res = await fetch('/api/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(_pendingTheme),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        let msg = `<strong>${data.error}</strong>`;
+        if (data.errors?.length) msg += `<ul>${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+        if (data.warnings?.length) msg += `<ul>${data.warnings.map(w => `<li>⚠ ${w}</li>`).join('')}</ul>`;
+        _setThemeUploadFeedback(msg, 'error');
+        return;
+      }
+      let msg = `Theme <strong>${data.name}</strong> installed.`;
+      if (data.warnings?.length) msg += `<ul>${data.warnings.map(w => `<li>⚠ ${w}</li>`).join('')}</ul>`;
+      _setThemeUploadFeedback(msg, data.warnings?.length ? 'warning' : 'ok');
+      installBtn.hidden = true;
+      input.value = '';
+      filenameEl.textContent = '';
+      _pendingTheme = null;
+      await _loadThemeManager();
+      const activeBtn = document.querySelector('#theme-picker-group .theme-pick-btn.active');
+      _loadThemePicker(activeBtn?.dataset.theme || 'cinematic');
+      showToast(`Theme "${data.name}" installed`, 'success');
+    } catch (e) {
+      _setThemeUploadFeedback('Install failed — ' + e.message, 'error');
+    } finally {
+      installBtn.disabled = false;
+      installBtn.textContent = 'Install theme';
+    }
+  });
 }
 
 async function saveAppSettings() {

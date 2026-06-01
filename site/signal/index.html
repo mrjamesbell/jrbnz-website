@@ -634,8 +634,27 @@ const x = 1;
             </div>
             <div class="settings-page-field">
               <label class="field-label">Theme</label>
-              <p class="field-hint">Applied on next Rebuild and Deploy.</p>
+              <p class="field-hint">Applied on next Publish.</p>
               <div class="btn-group" id="theme-picker-group" role="group" aria-label="Theme"></div>
+            </div>
+          </div>
+
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Themes</div>
+            <div class="settings-page-field">
+              <label class="field-label">Install theme</label>
+              <p class="field-hint" style="margin-bottom:10px">Upload a <code>.zip</code> containing <code>{name}.js</code> and <code>{name}.css</code>. The theme is validated before install.</p>
+              <div class="theme-upload-row">
+                <input type="file" id="theme-upload-input" accept=".zip" style="display:none" aria-label="Choose theme zip file">
+                <button type="button" class="btn btn-secondary btn-sm" id="theme-upload-btn">Choose .zip</button>
+                <span class="theme-upload-filename" id="theme-upload-filename"></span>
+              </div>
+              <div id="theme-upload-feedback" class="theme-upload-feedback" hidden></div>
+              <button type="button" class="btn btn-secondary btn-sm" id="theme-install-btn" style="margin-top:10px" hidden>Install theme</button>
+            </div>
+            <div class="settings-page-field" id="theme-installed-wrap" hidden>
+              <label class="field-label">Installed themes</label>
+              <div id="theme-installed-list" class="theme-installed-list"></div>
             </div>
           </div>
 

@@ -34,13 +34,16 @@ function siteAccentFg(color) {
   return lum > 0.175 ? '#1c1c1c' : 'oklch(97% 0.008 75)';
 }
 
-export function buildHead({ title, theme = 'dark', accent = '', snippetCss = '', extraHead = '' }) {
+export function buildHead({ title, theme = 'dark', accent = '', snippetCss = '', extraHead = '', inlineCss = '' }) {
   const fontsUrl = THEME_FONTS[theme];
   const safeAccent = /^#[0-9a-fA-F]{3,8}$|^oklch\([^)]{1,80}\)$/.test(accent ?? '') ? accent : '';
   const accentFg = safeAccent ? siteAccentFg(safeAccent) : '';
   const accentStyle = safeAccent
     ? `<style>:root{--color-accent:${safeAccent};--color-accent-fg:${accentFg};--accent-color:${safeAccent};--accent-fg:${accentFg}}</style>`
     : '';
+  const cssTag = inlineCss
+    ? `<style>${inlineCss}</style>`
+    : `<link rel="stylesheet" href="/styles/themes/${esc(theme)}.css">`;
   return `<!DOCTYPE html>
 <html lang="en" data-theme="${esc(theme)}">
 <head>
@@ -51,7 +54,7 @@ ${fontsUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="${fontsUrl}" rel="stylesheet">` : ''}
 <link rel="stylesheet" href="/styles/site.css">
-<link rel="stylesheet" href="/styles/themes/${esc(theme)}.css">
+${cssTag}
 <link rel="alternate" type="application/rss+xml" title="James Bell" href="/feed.xml">
 <link rel="micropub" href="/api/micropub">
 ${accentStyle}
