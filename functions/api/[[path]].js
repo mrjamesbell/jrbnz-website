@@ -5,7 +5,7 @@ import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFIma
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
 import * as baseTheme from '../themes/base.js';
 import * as basicTheme from '../themes/basic.js';
-import installedThemes from '../themes/_registry.js';
+import installedThemes from '../themes/_bundle.js';
 
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
@@ -52,7 +52,7 @@ function checkThemeCompliance(name, jsCode, cssCode) {
 
   // No cross-theme re-exports
   if (/export\s*\{[^}]*\}\s*from\s*['"]\.\//.test(jsCode)) {
-    errors.push('Dynamic themes must be self-contained — no re-exports from other theme files');
+    errors.push('Themes must be self-contained — no re-exports from other theme files');
   }
 
   // CSS: data-theme token block

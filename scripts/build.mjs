@@ -40,37 +40,42 @@ try {
   console.warn(`Export fetch failed: ${e.message} — skipping HTML overlay`);
 }
 
-// 3. Download installed themes from R2 and write as proper module files
-// Theme JS goes into functions/themes/ (picked up by CF Pages Worker bundle).
-// Theme CSS goes into dist/styles/themes/ (served as static asset).
+// 3. Download installed themes from R2 and inline into functions/themes/_bundle.js.
+// Inlining into a pre-existing file (rather than writing new files) ensures CF Pages
+// picks up the changes when bundling the Worker — no new imports to discover.
 console.log('Fetching installed themes...');
+
+function inlineTheme(name, jsCode) {
+  let code = jsCode;
+  // Strip import statements — helpers are already imported at the top of _bundle.js
+  code = code.replace(/^import\s[^\n]*\n?/gm, '');
+  // Strip 'export' keyword — functions are collected into _t manually at the end
+  code = code.replace(/^export\s+((?:async\s+)?function|const|let|var)\s/gm, '$1 ');
+  return `\n// ── Theme: ${name} ──\n{\n${code.trim()}\n  _t['${name}'] = { buildPost, buildIndex, buildPage, buildHomepage, buildNotes, buildPhotos, imageRoles };\n}`;
+}
+
+const bundleHeader = `// Auto-generated during Cloudflare Pages build. Do not edit manually.\nimport { esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard, SITE_URL } from '../lib/templates.js';\nconst _t = {};`;
+const bundleFooter = `\nexport default _t;\n`;
+
 try {
   const themesRes = await fetch(`${SITE_URL}/api/internal/theme-bundle`);
   if (!themesRes.ok) {
     console.warn(`Theme bundle returned ${themesRes.status} — skipping`);
   } else {
     const { themes = [] } = await themesRes.json();
-    const registryEntries = [];
 
-    for (const { name, js, css } of themes) {
-      const identifier = name.replace(/-/g, '_');
-      writeFileSync(join(root, `functions/themes/${name}.js`), js, 'utf8');
-      mkdirSync(join(dist, 'styles/themes'), { recursive: true });
+    // Inline each theme's JS into _bundle.js
+    const themeBlocks = themes.map(({ name, js }) => inlineTheme(name, js)).join('\n');
+    writeFileSync(join(root, 'functions/themes/_bundle.js'), bundleHeader + themeBlocks + bundleFooter, 'utf8');
+
+    // Write CSS files to dist/ as static assets
+    mkdirSync(join(dist, 'styles/themes'), { recursive: true });
+    for (const { name, css } of themes) {
       writeFileSync(join(dist, `styles/themes/${name}.css`), css, 'utf8');
-      registryEntries.push({ name, identifier });
-      console.log(`  Theme installed: ${name}`);
+      console.log(`  Theme inlined: ${name}`);
     }
 
-    // Regenerate _registry.js with static imports for all installed themes
-    const imports = registryEntries.map(({ name, identifier }) =>
-      `import * as ${identifier} from './${name}.js';`
-    ).join('\n');
-    const exports = registryEntries.length
-      ? registryEntries.map(({ name, identifier }) => `  '${name}': ${identifier},`).join('\n')
-      : '';
-    const registry = `// Auto-generated during Cloudflare Pages build. Do not edit manually.\n${imports}\nexport default {\n${exports}\n};\n`;
-    writeFileSync(join(root, 'functions/themes/_registry.js'), registry, 'utf8');
-    console.log(`Themes: ${themes.length} installed, _registry.js updated`);
+    console.log(`Themes: ${themes.length} installed, _bundle.js updated`);
   }
 } catch (e) {
   console.warn(`Theme bundle fetch failed: ${e.message} — skipping`);
