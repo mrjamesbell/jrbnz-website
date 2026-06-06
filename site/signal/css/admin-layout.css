@@ -55,6 +55,24 @@ body {
   flex-shrink: 0;
   gap: 2px;
   z-index: var(--z-toolbar);
+  transition: width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1),
+              padding var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Focus mode — distraction-free writing (⌘⇧F / Esc) ──
+   Collapses the rail and hides the format bar so the writing surface fills
+   the screen. The topbar stays (Back, save status, Publish) for orientation. */
+.signal-app.is-focus-mode .signal-rail {
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+  border-right-color: transparent;
+}
+.signal-app.is-focus-mode .editor-fmtbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-rail { transition: none; }
 }
 
 .rail-brand {

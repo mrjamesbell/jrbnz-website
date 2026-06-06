@@ -17,6 +17,33 @@ let _snapshot = null;
 let _isDirty = false;
 let _snippetPickerInited = false;
 let _quotePickerInited = false;
+let _focusMode = false;
+
+// ── Focus mode (⌘⇧F) — distraction-free writing ───────────────────────────────
+function _editorOpen() {
+  return document.getElementById('view-editor')?.style.display !== 'none';
+}
+
+export function setFocusMode(on) {
+  _focusMode = !!on;
+  // Visual collapse only applies while the editor is open.
+  document.getElementById('app')?.classList.toggle('is-focus-mode', _focusMode && _editorOpen());
+}
+
+export function toggleFocusMode() {
+  if (!_editorOpen()) return; // only meaningful while writing
+  setFocusMode(!_focusMode);
+  showToast(_focusMode ? 'Focus mode — ⌘⇧F or Esc to exit' : 'Focus mode off', 'default', 2000);
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'f' || e.key === 'F')) {
+    e.preventDefault();
+    toggleFocusMode();
+    return;
+  }
+  if (e.key === 'Escape' && _focusMode) setFocusMode(false);
+});
 
 // ── Module-level delegated handlers ───────────────────────────────────────────
 
@@ -234,6 +261,7 @@ export async function openEditor(slug, type = 'post') {
     void editorEl.offsetWidth;
     editorEl.classList.add('is-entering');
   }
+  setFocusMode(_focusMode); // re-apply focus collapse if it was left on
 
   initAutosave();
 
@@ -295,6 +323,9 @@ export function closeEditor() {
   currentPost = null;
   const editorEl = document.getElementById('view-editor');
   if (editorEl) editorEl.style.display = 'none';
+  // Drop the focus-mode collapse when leaving the editor (preference is kept
+  // in _focusMode and re-applied on next openEditor).
+  document.getElementById('app')?.classList.remove('is-focus-mode');
   const titleEl = document.getElementById('topbar-title');
   if (titleEl) titleEl.textContent = '';
   const previewBtn = document.getElementById('btn-preview-post');
