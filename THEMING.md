@@ -940,7 +940,16 @@ If your theme uses different layout or treatment classes, update the `className`
   name: string,
   bio: string,
   headshotUrl: string,   // URL
+  threads: string,       // full URL or @handle (optional)
+  instagram: string,     // full URL or @handle (optional)
+  linkedin: string,      // full URL or username (optional)
+  flickr: string,        // full URL or username (optional)
 }
+// Social links are rendered for you by buildAuthorCard(author) — available
+// pre-rendered as data.authorCard — as <a class="social-link"> anchors, each
+// value resolved to a full URL whether you stored a handle or a URL. Render
+// your own from the raw fields if you need different markup. Keep them out of
+// the footer (see the footer guidance above).
 
 // Page (from pages/index.json — menu pages)
 {
