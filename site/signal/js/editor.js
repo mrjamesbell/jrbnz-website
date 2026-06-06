@@ -478,7 +478,7 @@ function _onKeydown(e) {
   if (!meta) return;
   if (e.key === 'b') { e.preventDefault(); _applyFormat('bold', textarea); }
   if (e.key === 'i') { e.preventDefault(); _applyFormat('italic', textarea); }
-  if (e.key === 'k') { e.preventDefault(); _applyFormat('link', textarea); }
+  if (e.key === 'k') { e.preventDefault(); e.stopPropagation(); _applyFormat('link', textarea); } // keep ⌘K = link while writing; don't open palette
   if (e.key === 'H' || (e.shiftKey && e.key === 'H')) { e.preventDefault(); _applyFormat('h2', textarea); }
   if (e.key === '.' && e.shiftKey) { e.preventDefault(); _applyFormat('quote', textarea); }
 }

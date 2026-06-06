@@ -10,8 +10,9 @@ import { BUILD } from './build.js';
 import { openMediaPicker } from './media-picker.js';
 import { esc } from './utils.js';
 import { showConfirm } from './confirm-modal.js';
+import { initPalette } from './palette.js';
 
-export { navigate, invalidatePostCache, invalidatePageCache, getAllTags };
+export { navigate, invalidatePostCache, invalidatePageCache, getAllTags, getAllPosts };
 export { showConfirm } from './confirm-modal.js';
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
@@ -29,6 +30,7 @@ export { showConfirm } from './confirm-modal.js';
   if (buildEl) buildEl.textContent = BUILD.split('.').pop();
 
   initMobile();
+  initPalette();
 
   // Rail link interception
   document.querySelectorAll('.rail-item[data-route]').forEach(a => {
@@ -370,6 +372,8 @@ function _applyView(view, useKeyframe) {
 let allPosts = [];
 
 function invalidatePostCache() { allPosts = []; }
+
+function getAllPosts() { return allPosts; }
 
 function getAllTags() {
   const seen = new Set();

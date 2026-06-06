@@ -1163,6 +1163,19 @@ const x = 1;
   </div>
 </div>
 
+<!-- Command palette (⌘K) -->
+<div class="palette-backdrop" id="palette-backdrop" hidden>
+  <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="palette-search-row">
+      <svg class="palette-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="palette-input" id="palette-input" type="text" placeholder="Search posts, run a command…" autocomplete="off" spellcheck="false" aria-label="Command palette search">
+      <kbd class="palette-kbd">esc</kbd>
+    </div>
+    <div class="palette-results" id="palette-results" role="listbox"></div>
+    <div class="palette-empty" id="palette-empty" hidden>No matches</div>
+  </div>
+</div>
+
 <script type="module" src="/signal/js/app.js"></script>
 </body>
 </html>
