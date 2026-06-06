@@ -323,38 +323,35 @@ function _animateIn(el) {
 }
 
 function _showView(view) {
-  const listEl = document.getElementById('view-list');
-  const pagesEl = document.getElementById('view-pages');
-  const mediaEl = document.getElementById('media-view');
-  const snippetsEl = document.getElementById('view-snippets');
-  const homepageEl = document.getElementById('view-homepage');
-  const helpEl = document.getElementById('view-help');
-  const settingsEl = document.getElementById('view-settings');
-  const authorEl = document.getElementById('view-author');
-  const showList = view === 'list';
-  const showPages = view === 'pages';
-  const showMedia = view === 'media';
-  const showSnippets = view === 'snippets';
-  const showHomepage = view === 'homepage';
-  const showHelp = view === 'help';
-  const showSettings = view === 'settings';
-  const showAuthor = view === 'author';
-  listEl.style.display = showList ? '' : 'none';
-  if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
-  mediaEl.style.display = showMedia ? '' : 'none';
-  if (snippetsEl) snippetsEl.style.display = showSnippets ? '' : 'none';
-  if (homepageEl) homepageEl.style.display = showHomepage ? '' : 'none';
-  if (helpEl) helpEl.style.display = showHelp ? '' : 'none';
-  if (settingsEl) settingsEl.style.display = showSettings ? '' : 'none';
-  if (authorEl) authorEl.style.display = showAuthor ? '' : 'none';
-  if (showList) _animateIn(listEl);
-  if (showPages && pagesEl) _animateIn(pagesEl);
-  if (showMedia) _animateIn(mediaEl);
-  if (showSnippets && snippetsEl) _animateIn(snippetsEl);
-  if (showHomepage && homepageEl) _animateIn(homepageEl);
-  if (showHelp && helpEl) _animateIn(helpEl);
-  if (showSettings && settingsEl) { _animateIn(settingsEl); _restoreDeployStatus(); }
-  if (showAuthor && authorEl) _animateIn(authorEl);
+  // Native View Transitions give a smooth, interruptible crossfade with no
+  // added latency. Where unsupported (or reduced-motion), fall back to the
+  // per-view keyframe enter animation.
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (document.startViewTransition && !reduce) {
+    document.startViewTransition(() => _applyView(view, false));
+  } else {
+    _applyView(view, true);
+  }
+}
+
+function _applyView(view, useKeyframe) {
+  const views = {
+    list:     document.getElementById('view-list'),
+    pages:    document.getElementById('view-pages'),
+    media:    document.getElementById('media-view'),
+    snippets: document.getElementById('view-snippets'),
+    homepage: document.getElementById('view-homepage'),
+    help:     document.getElementById('view-help'),
+    settings: document.getElementById('view-settings'),
+    author:   document.getElementById('view-author'),
+  };
+  for (const [name, el] of Object.entries(views)) {
+    if (!el) continue;
+    const show = view === name;
+    el.style.display = show ? '' : 'none';
+    if (show && useKeyframe) _animateIn(el);
+  }
+  if (view === 'settings' && views.settings) _restoreDeployStatus();
   // view-editor visibility managed by openEditor / closeEditor
 
   // Mobile tab bar: show/hide and update active tab

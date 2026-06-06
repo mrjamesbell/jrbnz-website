@@ -153,6 +153,16 @@ body {
   .btn-publish.just-published { animation: none; }
 }
 
+/* ── Native view transitions (progressive enhancement) ──
+   Tunes the default root crossfade between sections (Chrome/Safari).
+   Browsers without support fall back to the .is-entering keyframe;
+   reduced-motion is handled in JS (skips startViewTransition). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 
 /* ════════════════════════════════════════════
    MAIN CONTENT AREA
