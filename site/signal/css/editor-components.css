@@ -93,6 +93,12 @@
 .fmtbar-btn[data-action="h3"]        { font-weight: 700; }
 .fmtbar-btn[data-action="quote"]     { font-family: var(--font-serif); font-style: italic; }
 
+/* ── Insert group — icon buttons ── */
+.fmtbar-btn svg { width: 18px; height: 18px; display: block; }
+.fmtbar-btn--icon { padding: 0 10px; }
+.fmtbar-btn--dropdown { gap: 1px; padding-right: 6px; }
+.fmtbar-caret { width: 12px !important; height: 12px !important; opacity: 0.5; }
+
 /* ── View toggle (Edit / Preview) ── */
 .fmtbar-view-group {
   margin-left: auto;
