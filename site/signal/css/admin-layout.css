@@ -79,26 +79,26 @@ body {
   border-radius: var(--radius-md);
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--transition-fast), filter var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
   border: none;
   border-left: 2px solid transparent;
   background: transparent;
   position: relative;
   flex-shrink: 0;
-  filter: grayscale(0.5) opacity(0.5);
+  color: var(--color-dark-text-secondary);
 }
 .rail-item:hover {
   background: var(--color-dark-raised);
-  filter: none;
+  color: var(--color-dark-text-primary);
 }
 .rail-item.is-active {
   border-left-color: var(--color-accent);
-  background: var(--color-accent-dim);
-  filter: none;
+  background: var(--color-dark-raised);
+  color: var(--color-accent);
 }
-.rail-emoji {
-  font-size: 18px;
-  line-height: 1;
+.rail-item svg {
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
