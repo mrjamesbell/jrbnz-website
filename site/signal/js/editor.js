@@ -5,6 +5,14 @@ import { openImageSheet, openImageOptionsModal } from './image-upload.js';
 import { showToast } from './toast.js';
 import { navigate, invalidatePostCache, invalidatePageCache, getAllTags } from './app.js';
 import { SNIPPETS, snippetInsert } from './snippets.js';
+import { mountCM } from './codemirror-editor.js';
+
+let _cm = null; // CodeMirror wrapper { view, facade, setValue, refresh }
+
+// Push body text into the CM edit surface without firing a change event.
+function _setEditorBody(body) {
+  if (_cm) _cm.setValue(body || '');
+}
 
 let currentSlug = null;
 let currentPost = null;
@@ -57,8 +65,7 @@ document.addEventListener('click', e => {
     if (videoId && currentPost) {
       const re = new RegExp(`\\n?<!--\\s*signal:youtube\\s+id="${videoId}"[^>]*-->\\n?`, 'g');
       currentPost.body = (currentPost.body || '').replace(re, '\n');
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
     block.remove();
@@ -83,8 +90,7 @@ document.addEventListener('click', e => {
     const videoId = block.dataset.videoId;
     if (videoId && currentPost) {
       currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, preset, block.dataset.align || 'center');
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
     return;
@@ -104,8 +110,7 @@ document.addEventListener('click', e => {
     const videoId = block.dataset.videoId;
     if (videoId && currentPost) {
       currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, block.dataset.width || '100', align);
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
   }
@@ -120,8 +125,7 @@ document.addEventListener('click', e => {
       const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const re = new RegExp(`\\n?<!--\\s*signal:image\\s+src="${escapedSrc}"[^>]*-->\\n?`, 'g');
       currentPost.body = (currentPost.body || '').replace(re, '\n');
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
     block.remove();
@@ -178,8 +182,7 @@ document.addEventListener('click', e => {
     const src = block.dataset.src;
     if (src && currentPost) {
       currentPost.body = _rebuildImageComment(currentPost.body, src, block.dataset.alt || '', layout, String(width));
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
   }
@@ -207,8 +210,7 @@ document.addEventListener('input', e => {
     const videoId = block.dataset.videoId;
     if (videoId && currentPost) {
       currentPost.body = _rebuildYouTubeComment(currentPost.body, videoId, String(pct), align);
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
     return;
@@ -224,8 +226,7 @@ document.addEventListener('input', e => {
     const src = block.dataset.src;
     if (src && currentPost) {
       currentPost.body = _rebuildImageComment(currentPost.body, src, block.dataset.alt || '', block.dataset.layout || 'full', String(pct));
-      const ta = document.getElementById('editor-textarea');
-      if (ta) ta.value = currentPost.body;
+      _setEditorBody(currentPost.body);
       _triggerSave();
     }
   }
@@ -338,10 +339,20 @@ export function closeEditor() {
 
 function _populateEditor() {
   const titleInput = document.getElementById('post-title-input');
-  const textarea = document.getElementById('editor-textarea');
 
   titleInput.value = currentPost.title || '';
-  textarea.value = currentPost.body || '';
+
+  // Mount CodeMirror once into the persistent host, reuse thereafter.
+  if (!_cm) {
+    const host = document.getElementById('editor-cm-host');
+    _cm = mountCM(host, currentPost.body || '', {
+      onChange: () => _onBodyChange(),
+      onKeydown: _onKeydown,
+      onPaste: _onPaste,
+    });
+  } else {
+    _cm.setValue(currentPost.body || '');
+  }
   tags = Array.isArray(currentPost.tags) ? [...currentPost.tags] : [];
 
   // Show/hide type-specific UI
@@ -372,15 +383,10 @@ function _populateEditor() {
     }
   }
 
-  // Listeners — use fresh references to avoid stacking on re-open
+  // Title listener — fresh reference to avoid stacking on re-open.
+  // (Body input/paste/keydown are wired into CodeMirror at mount.)
   titleInput.removeEventListener('input', _onTitleChange);
   titleInput.addEventListener('input', _onTitleChange);
-  textarea.removeEventListener('input', _onBodyChange);
-  textarea.addEventListener('input', _onBodyChange);
-  textarea.removeEventListener('paste', _onPaste);
-  textarea.addEventListener('paste', _onPaste);
-  textarea.removeEventListener('keydown', _onKeydown);
-  textarea.addEventListener('keydown', _onKeydown);
 
   // Format bar — single delegated listener
   const fmtbar = document.getElementById('editor-fmtbar');
@@ -459,7 +465,7 @@ function _onPaste(e) {
   const videoId = !trimmed.includes('\n') && trimmed.length < 300 ? extractVideoId(trimmed) : null;
   if (videoId) {
     e.preventDefault();
-    const textarea = document.getElementById('editor-textarea');
+    const textarea = _getActiveTextarea();
     insertYouTubeBlock(textarea, videoId);
     fetchYouTubeTitle(videoId).then(title => {
       showToast(`YouTube: ${title}`, 'default', 2000);
@@ -474,7 +480,7 @@ function _onPaste(e) {
 
 function _onKeydown(e) {
   const meta = e.metaKey || e.ctrlKey;
-  const textarea = document.getElementById('editor-textarea');
+  const textarea = _getActiveTextarea();
   if (!meta) return;
   if (e.key === 'b') { e.preventDefault(); _applyFormat('bold', textarea); }
   if (e.key === 'i') { e.preventDefault(); _applyFormat('italic', textarea); }
@@ -499,7 +505,7 @@ function _onFmtBarClick(e) {
 
 function _getActiveTextarea() {
   if (viewMode === 'split') return document.getElementById('editor-textarea-split');
-  return document.getElementById('editor-textarea');
+  return _cm ? _cm.facade : null;
 }
 
 function _applyFormat(action, textarea) {
@@ -666,7 +672,7 @@ function _initQuotePicker() {
 
 function _setViewMode(mode) {
   viewMode = mode;
-  const editArea = document.getElementById('editor-textarea');
+  const editArea = document.getElementById('editor-cm-host');
   const splitView = document.getElementById('editor-split-view');
   const readView = document.getElementById('editor-read-view');
 
@@ -678,7 +684,7 @@ function _setViewMode(mode) {
     editArea.style.display = '';
     splitView.style.display = 'none';
     readView.style.display = 'none';
-    _autoResizeTextarea();
+    _cm?.refresh(); // CM needs a remeasure after being shown again
   } else if (mode === 'split') {
     editArea.style.display = 'none';
     splitView.style.display = 'flex';
@@ -700,7 +706,7 @@ function _setViewMode(mode) {
 function _onSplitInput() {
   const splitTA = document.getElementById('editor-textarea-split');
   currentPost.body = splitTA.value;
-  document.getElementById('editor-textarea').value = splitTA.value;
+  _setEditorBody(splitTA.value);
   _updateWordCount();
   _triggerSave();
   clearTimeout(splitDebounce);
@@ -906,7 +912,7 @@ function _revertChanges() {
   tags = [..._snapshot.tags];
 
   document.getElementById('post-title-input').value = currentPost.title || '';
-  document.getElementById('editor-textarea').value = currentPost.body || '';
+  _setEditorBody(currentPost.body);
   if (viewMode === 'split') {
     const splitTA = document.getElementById('editor-textarea-split');
     if (splitTA) splitTA.value = currentPost.body || '';
