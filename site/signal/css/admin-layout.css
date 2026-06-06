@@ -198,6 +198,7 @@ body {
   text-transform: uppercase;
   color: var(--color-dark-text-primary);
   flex: 1;
+  text-wrap: balance;
 }
 
 .post-list-search {
@@ -348,6 +349,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.4;
+  text-wrap: pretty;
 }
 
 .post-list-item-right {
@@ -479,6 +481,7 @@ body {
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .topbar-divider {
@@ -489,15 +492,15 @@ body {
 }
 
 .topbar-icon-btn {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-cream-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
   background: transparent;
   border: none;
 }
@@ -625,6 +628,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-wrap: balance;
 }
 
 .media-topbar-right {
@@ -820,6 +824,8 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+  outline: 1px solid rgba(255, 255, 255, 0.1);
+  outline-offset: -1px;
 }
 
 .media-item-overlay {

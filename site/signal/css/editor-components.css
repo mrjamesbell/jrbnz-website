@@ -628,7 +628,7 @@
   color: var(--color-cream-text-muted);
   font-family: var(--font-sans);
   background: none;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .image-width-pill.is-active {
@@ -941,7 +941,7 @@
   font-family: var(--font-sans);
   cursor: pointer;
   background: none;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .crop-ratio-pill.is-active {
@@ -1290,8 +1290,8 @@
 .btn:active      { transform: scale(0.97); }
 .btn-publish:active,
 .btn-new-post:active { transform: scale(0.96); }
-.fmtbar-btn:active   { transform: scale(0.92); }
-.kb-btn:active       { transform: scale(0.93); }
+.fmtbar-btn:active   { transform: scale(0.96); }
+.kb-btn:active       { transform: scale(0.96); }
 
 /* Publish success — brief swell when the post goes live */
 @keyframes publish-confirm {

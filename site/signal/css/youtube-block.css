@@ -214,7 +214,7 @@
   font-family: var(--font-sans);
   cursor: pointer;
   background: none;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .youtube-align-pill.is-active,

@@ -137,7 +137,7 @@
   font-family: var(--font-sans);
   cursor: pointer;
   background: none;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .image-layout-btn.is-active {
@@ -192,7 +192,7 @@
   background: none;
   color: var(--color-cream-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .image-role-edit-btn:hover {
