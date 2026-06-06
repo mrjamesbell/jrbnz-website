@@ -61,7 +61,7 @@
     <a href="https://jrbnz.com" target="_blank" rel="noopener" class="rail-item" title="Live site" aria-label="Live site">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
     </a>
-    <button class="rail-item" id="rail-author" title="Author" aria-label="Author">
+    <button class="rail-item" id="rail-author" data-route="author" title="Author" aria-label="Author">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
     <span class="rail-build" id="build-label"></span>
@@ -713,6 +713,75 @@ const x = 1;
       </div>
     </div>
 
+    <!-- VIEW: Author -->
+    <div id="view-author" class="post-list-view" style="display:none">
+      <div class="post-list-topbar">
+        <span class="post-list-topbar-heading">Author</span>
+        <div class="post-list-header-right">
+          <button class="btn btn-primary btn-sm" id="author-save">Save</button>
+        </div>
+      </div>
+      <div class="post-list-scroll">
+       <div class="internal-page-column">
+        <div class="settings-page-body">
+
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Profile</div>
+            <div class="settings-page-field">
+              <label class="field-label" for="author-name">Display name</label>
+              <input class="field-input" type="text" id="author-name" placeholder="James Bell">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="author-bio">Bio</label>
+              <textarea class="field-input" id="author-bio" rows="3" style="height:auto;resize:vertical" placeholder="Short bio…"></textarea>
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label">Headshot</label>
+              <div class="headshot-picker">
+                <div class="headshot-preview-wrap" id="headshot-preview-wrap">
+                  <img class="headshot-preview-img" id="headshot-preview-img" src="" alt="" style="display:none">
+                  <span class="headshot-placeholder" id="headshot-placeholder">No photo</span>
+                </div>
+                <div class="headshot-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-upload">Upload</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-media">Choose from R2</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-url">URL</button>
+                </div>
+              </div>
+              <div class="headshot-url-row" id="headshot-url-row" style="display:none">
+                <input class="field-input" type="url" id="headshot-url-input" placeholder="https://…">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-url-set">Set</button>
+              </div>
+              <input type="hidden" id="author-headshot">
+              <input type="file" id="headshot-file-input" accept="image/*" style="display:none">
+            </div>
+          </div>
+
+          <div class="settings-page-section">
+            <div class="settings-page-section-title">Social links</div>
+            <div class="settings-page-field">
+              <label class="field-label" for="author-threads">Threads</label>
+              <input class="field-input" type="text" id="author-threads" placeholder="@handle or https://threads.net/…">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="author-instagram">Instagram</label>
+              <input class="field-input" type="text" id="author-instagram" placeholder="@handle or https://instagram.com/…">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="author-linkedin">LinkedIn</label>
+              <input class="field-input" type="text" id="author-linkedin" placeholder="username or https://linkedin.com/in/…">
+            </div>
+            <div class="settings-page-field">
+              <label class="field-label" for="author-flickr">Flickr</label>
+              <input class="field-input" type="text" id="author-flickr" placeholder="username or https://flickr.com/photos/…">
+            </div>
+          </div>
+
+        </div>
+       </div>
+      </div>
+    </div>
+
   </div><!-- /.signal-main -->
 
   <!-- Mobile bottom tab bar (hidden on desktop via CSS) -->
@@ -868,64 +937,6 @@ const x = 1;
 </div>
 
 <!-- Author settings modal -->
-<div class="modal-backdrop" id="author-modal" style="display:none">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <span class="modal-title">Author settings</span>
-      <button class="modal-close" id="author-close">×</button>
-    </div>
-    <div class="modal-body">
-      <div>
-        <label class="field-label" for="author-name">Display name</label>
-        <input class="field-input" type="text" id="author-name" placeholder="James Bell">
-      </div>
-      <div>
-        <label class="field-label" for="author-bio">Bio</label>
-        <textarea class="field-input" id="author-bio" rows="3" style="height:auto;resize:none" placeholder="Short bio…"></textarea>
-      </div>
-      <div>
-        <label class="field-label">Headshot</label>
-        <div class="headshot-picker">
-          <div class="headshot-preview-wrap" id="headshot-preview-wrap">
-            <img class="headshot-preview-img" id="headshot-preview-img" src="" alt="" style="display:none">
-            <span class="headshot-placeholder" id="headshot-placeholder">No photo</span>
-          </div>
-          <div class="headshot-actions">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-upload">Upload</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-media">Choose from R2</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-url">URL</button>
-          </div>
-        </div>
-        <div class="headshot-url-row" id="headshot-url-row" style="display:none">
-          <input class="field-input" type="url" id="headshot-url-input" placeholder="https://…">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-headshot-url-set">Set</button>
-        </div>
-        <input type="hidden" id="author-headshot">
-        <input type="file" id="headshot-file-input" accept="image/*" style="display:none">
-      </div>
-      <div>
-        <label class="field-label" for="author-threads">Threads</label>
-        <input class="field-input" type="text" id="author-threads" placeholder="@handle or https://threads.net/…">
-      </div>
-      <div>
-        <label class="field-label" for="author-instagram">Instagram</label>
-        <input class="field-input" type="text" id="author-instagram" placeholder="@handle or https://instagram.com/…">
-      </div>
-      <div>
-        <label class="field-label" for="author-linkedin">LinkedIn</label>
-        <input class="field-input" type="text" id="author-linkedin" placeholder="username or https://linkedin.com/in/…">
-      </div>
-      <div>
-        <label class="field-label" for="author-flickr">Flickr</label>
-        <input class="field-input" type="text" id="author-flickr" placeholder="username or https://flickr.com/photos/…">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="author-cancel">Cancel</button>
-      <button class="btn btn-primary" id="author-save">Save</button>
-    </div>
-  </div>
-</div>
 
 <!-- Image upload bottom sheet -->
 <div class="bottom-sheet-backdrop" id="image-sheet">

@@ -94,17 +94,14 @@ export { showConfirm } from './confirm-modal.js';
   });
 
   // Rail buttons
-  document.getElementById('rail-author').addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
+  document.getElementById('rail-author').addEventListener('click', e => { e.preventDefault(); navigate('author'); });
 
   // Mobile icon buttons (post list header, visible when rail is hidden)
-  document.getElementById('mobile-author-btn')?.addEventListener('click', e => { e.preventDefault(); openAuthorModal(e); });
+  document.getElementById('mobile-author-btn')?.addEventListener('click', e => { e.preventDefault(); navigate('author'); });
   document.getElementById('mobile-settings-btn')?.addEventListener('click', e => { e.preventDefault(); navigate('settings'); });
 
-  // Author modal
-  document.getElementById('author-close').addEventListener('click', closeAuthorModal);
-  document.getElementById('author-cancel').addEventListener('click', closeAuthorModal);
+  // Author page
   document.getElementById('author-save').addEventListener('click', saveAuthor);
-  document.getElementById('author-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAuthorModal(); });
   document.getElementById('btn-copy-token').addEventListener('click', () => {
     const val = document.getElementById('micropub-token-display').value;
     if (!val) return;
@@ -258,6 +255,7 @@ function _route(hash) {
   const homepageMatch = hash === 'homepage';
   const helpMatch = hash === 'help';
   const settingsMatch = hash === 'settings';
+  const authorMatch = hash === 'author';
 
   const tabbar = document.getElementById('mobile-tabbar');
   if (editPageMatch) {
@@ -297,6 +295,11 @@ function _route(hash) {
     closeEditor();
     _showView('settings');
     openSettingsView();
+  } else if (authorMatch) {
+    _setRailActive('author');
+    closeEditor();
+    _showView('author');
+    openAuthorView();
   } else {
     _setRailActive('list');
     closeEditor();
@@ -327,6 +330,7 @@ function _showView(view) {
   const homepageEl = document.getElementById('view-homepage');
   const helpEl = document.getElementById('view-help');
   const settingsEl = document.getElementById('view-settings');
+  const authorEl = document.getElementById('view-author');
   const showList = view === 'list';
   const showPages = view === 'pages';
   const showMedia = view === 'media';
@@ -334,6 +338,7 @@ function _showView(view) {
   const showHomepage = view === 'homepage';
   const showHelp = view === 'help';
   const showSettings = view === 'settings';
+  const showAuthor = view === 'author';
   listEl.style.display = showList ? '' : 'none';
   if (pagesEl) pagesEl.style.display = showPages ? '' : 'none';
   mediaEl.style.display = showMedia ? '' : 'none';
@@ -341,6 +346,7 @@ function _showView(view) {
   if (homepageEl) homepageEl.style.display = showHomepage ? '' : 'none';
   if (helpEl) helpEl.style.display = showHelp ? '' : 'none';
   if (settingsEl) settingsEl.style.display = showSettings ? '' : 'none';
+  if (authorEl) authorEl.style.display = showAuthor ? '' : 'none';
   if (showList) _animateIn(listEl);
   if (showPages && pagesEl) _animateIn(pagesEl);
   if (showMedia) _animateIn(mediaEl);
@@ -348,6 +354,7 @@ function _showView(view) {
   if (showHomepage && homepageEl) _animateIn(homepageEl);
   if (showHelp && helpEl) _animateIn(helpEl);
   if (showSettings && settingsEl) { _animateIn(settingsEl); _restoreDeployStatus(); }
+  if (showAuthor && authorEl) _animateIn(authorEl);
   // view-editor visibility managed by openEditor / closeEditor
 
   // Mobile tab bar: show/hide and update active tab
@@ -691,10 +698,9 @@ async function createPage() {
   }
 }
 
-// ── Author modal ──────────────────────────────────────────────────────────────
+// ── Author page ───────────────────────────────────────────────────────────────
 
-function openAuthorModal(e) {
-  e.preventDefault();
+function openAuthorView() {
   fetch('/api/author').then(r => r.ok ? r.json() : {}).then(data => {
     document.getElementById('author-name').value = data.name || '';
     document.getElementById('author-bio').value = data.bio || '';
@@ -704,12 +710,7 @@ function openAuthorModal(e) {
     document.getElementById('author-linkedin').value = data.linkedin || '';
     document.getElementById('author-flickr').value = data.flickr || '';
     _updateHeadshotPreview(data.headshotUrl || '');
-    document.getElementById('author-modal').style.display = 'flex';
-  }).catch(() => { document.getElementById('author-modal').style.display = 'flex'; });
-}
-
-function closeAuthorModal() {
-  document.getElementById('author-modal').style.display = 'none';
+  }).catch(() => {});
 }
 
 async function saveAuthor() {
@@ -727,7 +728,6 @@ async function saveAuthor() {
       body: JSON.stringify({ name, bio, headshotUrl, threads, instagram, linkedin, flickr })
     });
     if (!res.ok) throw new Error(await res.text());
-    closeAuthorModal();
     showToast('Saved', 'success');
   } catch (e) {
     showToast('Save failed: ' + e.message, 'error');
