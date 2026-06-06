@@ -381,11 +381,14 @@
 
     <!-- VIEW 4: Snippets (shown at /signal/snippets) -->
     <div id="view-snippets" class="post-list-view" style="display:none">
-      <div class="post-list-inner">
-        <div class="post-list-header">
-          <h1 class="post-list-title">Snippets</h1>
+      <div class="post-list-topbar">
+        <span class="post-list-topbar-heading">Snippets</span>
+        <div class="post-list-header-right">
           <button class="btn-new-post" id="btn-new-snippet">+ New</button>
         </div>
+      </div>
+      <div class="post-list-scroll">
+       <div class="internal-page-column">
         <div id="snippet-list"></div>
         <div id="snippet-form" style="display:none">
           <div class="snippet-form-inner">
@@ -408,16 +411,20 @@
             </div>
           </div>
         </div>
+       </div>
       </div>
     </div>
 
     <!-- VIEW: Homepage editor -->
     <div id="view-homepage" class="post-list-view" style="display:none">
-      <div class="post-list-inner">
-        <div class="post-list-header">
-          <h1 class="post-list-title">Homepage</h1>
+      <div class="post-list-topbar">
+        <span class="post-list-topbar-heading">Homepage</span>
+        <div class="post-list-header-right">
           <button class="btn btn-primary btn-sm" id="btn-homepage-save">Save &amp; publish</button>
         </div>
+      </div>
+      <div class="post-list-scroll">
+       <div class="internal-page-column">
         <div class="settings-page-body">
 
           <!-- Featured article -->
@@ -465,14 +472,16 @@
           </div>
 
         </div>
+       </div>
       </div>
     </div>
 
     <div id="view-help" class="post-list-view" style="display:none">
-      <div class="post-list-inner">
-        <div class="post-list-header">
-          <h1 class="post-list-title">Help</h1>
-        </div>
+      <div class="post-list-topbar">
+        <span class="post-list-topbar-heading">Help</span>
+      </div>
+      <div class="post-list-scroll">
+       <div class="internal-page-column">
         <div class="help-content">
 
           <div class="help-section">
@@ -592,16 +601,20 @@ const x = 1;
           </div>
 
         </div>
+       </div>
       </div>
     </div>
 
     <!-- VIEW: Settings -->
     <div id="view-settings" class="post-list-view" style="display:none">
-      <div class="post-list-inner">
-        <div class="post-list-header">
-          <h1 class="post-list-title">Settings</h1>
+      <div class="post-list-topbar">
+        <span class="post-list-topbar-heading">Settings</span>
+        <div class="post-list-header-right">
           <button class="btn btn-primary btn-sm" id="app-settings-save">Save</button>
         </div>
+      </div>
+      <div class="post-list-scroll">
+       <div class="internal-page-column">
         <div class="settings-page-body">
 
           <div class="settings-page-section">
@@ -696,6 +709,7 @@ const x = 1;
           </div>
 
         </div>
+       </div>
       </div>
     </div>
 
