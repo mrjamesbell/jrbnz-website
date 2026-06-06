@@ -203,20 +203,22 @@
 /* ── Image options modal selects ── */
 .field-select {
   width: 100%;
-  font-size: var(--text-base);
+  font-size: 14px;
   font-family: var(--font-sans);
   background: var(--color-cream-dark);
   border: var(--border-cream);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--color-cream-text-primary);
-  padding: 6px 10px;
+  padding: 9px var(--space-3);
+  line-height: 1.5;
   appearance: none;
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 28px;
+  background-position: right 12px center;
+  padding-right: 30px;
   cursor: pointer;
+  transition: border-color var(--transition-fast);
 }
 
 .field-select:focus {
