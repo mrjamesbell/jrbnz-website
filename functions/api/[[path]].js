@@ -170,7 +170,7 @@ function isValidSlug(slug) {
 // buildHomepageHtml and buildNotesHtml are imported from ../lib/render.js so the
 // identical rendering runs both here and at build time under Node.
 
-async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme) {
+async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme, author) {
   const notes = (posts || [])
     .filter(p => p.status === 'published' && (p.tags || []).includes('note'))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -179,7 +179,7 @@ async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss
     const obj = await env.BLOG.get(`posts/${n.slug}/draft.md`);
     return obj ? await obj.text() : '';
   }));
-  return buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme);
+  return buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme, author);
 }
 
 // ── Index helpers ─────────────────────────────────────────────────────────────
@@ -207,9 +207,9 @@ async function saveIndex(env, posts) {
 
 async function rebuildIndexHtml(env, posts, ctx = null) {
   const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig, theme } = ctx ?? await loadSiteContext(env);
-  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme);
+  const indexHtml = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme, author);
   const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme);
-  const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme);
+  const notesHtml = await buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme, author);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
     ...(homepageHtml ? [env.BLOG.put('pages/homepage/index.html', homepageHtml, { httpMetadata: { contentType: 'text/html' } })] : []),
@@ -281,8 +281,8 @@ async function handlePreviewPage(env, slug) {
   if (!page) return new Response('Not found', { status: 404 });
   const obj = await env.BLOG.get(`pages/${slug}/draft.md`);
   const body = obj ? await obj.text() : '';
-  const { accent, menuPages, snippetCss, theme } = ctx;
-  const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss, theme });
+  const { author, accent, menuPages, snippetCss, theme } = ctx;
+  const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss, theme, author });
   return new Response(html, { headers: { 'Content-Type': 'text/html;charset=utf-8', 'X-Robots-Tag': 'noindex' } });
 }
 
@@ -765,15 +765,15 @@ async function handleRebuildSite(env) {
     ...publishedPages.map(async page => {
       const obj = await env.BLOG.get(`pages/${page.slug}/draft.md`);
       const body = obj ? await obj.text() : '';
-      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss, theme });
+      const html = buildPageHtml({ ...page, contentHtml: mdToHtml(body), menuPages, accent, snippetCss, theme, author });
       await env.BLOG.put(`pages/${page.slug}/index.html`, html, { httpMetadata: { contentType: 'text/html' } });
     }),
   ]);
   const [indexHtml, photosHtml, homepageHtml, notesHtml] = await Promise.all([
-    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme)),
-    Promise.resolve(buildPhotosHtml(menuPages, accent, theme)),
+    Promise.resolve(buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme, author)),
+    Promise.resolve(buildPhotosHtml(menuPages, accent, theme, author)),
     Promise.resolve(buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme)),
-    buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme),
+    buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme, author),
   ]);
   await Promise.all([
     env.BLOG.put('posts/index.html', indexHtml, { httpMetadata: { contentType: 'text/html' } }),
@@ -1850,8 +1850,8 @@ async function handlePublishPage(env, slug) {
   await savePagesIndex(env, pages);
 
   const ctx = await loadSiteContext(env);
-  const { accent, snippetCss, theme } = ctx;
-  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages: pages, accent, snippetCss, theme });
+  const { author, accent, snippetCss, theme } = ctx;
+  const pageHtml = buildPageHtml({ ...pages[idx], contentHtml, menuPages: pages, accent, snippetCss, theme, author });
   await env.BLOG.put(`pages/${slug}/index.html`, pageHtml, { httpMetadata: { contentType: 'text/html' } });
 
   if (pages[idx].include_in_menu) {

@@ -88,7 +88,7 @@ export function buildPostHtml(args, theme) {
   return themeRenderer(t).buildPost(prepPostData({ ...args, theme: t }));
 }
 
-export function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme) {
+export function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme, author) {
   const essays = posts
     .filter(p => p.status === 'published' && !(p.tags || []).includes('note'))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -115,23 +115,23 @@ export function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCove
 
   const t = theme;
   return themeRenderer(t).buildIndex({
-    items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: essays, defaultCoverImage,
+    items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: essays, defaultCoverImage, author,
   });
 }
 
-export function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss, theme }) {
+export function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss, theme, author }) {
   const year = new Date().getFullYear();
   const t = theme;
   return themeRenderer(t).buildPage({
-    title, slug, contentHtml, menuPages, accent, snippetCss, year, theme: t,
+    title, slug, contentHtml, menuPages, accent, snippetCss, year, theme: t, author,
   });
 }
 
-export function buildPhotosHtml(menuPages, accent, theme) {
+export function buildPhotosHtml(menuPages, accent, theme, author) {
   const year = new Date().getFullYear();
   const t = theme;
   return themeRenderer(t).buildPhotos({
-    menuPages, accent, year, theme: t,
+    menuPages, accent, year, theme: t, author,
   });
 }
 
@@ -168,12 +168,12 @@ export function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, 
   }) ?? '';
 }
 
-export function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme) {
+export function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme, author) {
   const t = theme;
   const renderer = themeRenderer(t).buildNotes;
   if (!renderer) return '';
   const notesWithHtml = notes.map((note, i) => ({ ...note, bodyHtml: mdToHtml(bodies[i] || '') }));
-  return renderer({ notes: notesWithHtml, menuPages, accent, snippetCss, theme: t });
+  return renderer({ notes: notesWithHtml, menuPages, accent, snippetCss, theme: t, author });
 }
 
 // ── Build-time orchestration ──────────────────────────────────────────────────
@@ -186,7 +186,7 @@ export function renderAllPages(data) {
   const { author, accent, menuPages, snippetCss, defaultCoverImage, defaultCoverImageFocus, homepageConfig, theme } = ctx;
   const map = {};
 
-  map['posts/index.html'] = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme);
+  map['posts/index.html'] = buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme, author);
 
   const homepageHtml = buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme);
   if (homepageHtml) map['index.html'] = homepageHtml;
@@ -195,7 +195,7 @@ export function renderAllPages(data) {
     .filter(p => (p.tags || []).includes('note'))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
   if (notes.length) {
-    const notesHtml = buildNotesHtml(notes, notes.map(n => n.body || ''), menuPages, accent, snippetCss, theme);
+    const notesHtml = buildNotesHtml(notes, notes.map(n => n.body || ''), menuPages, accent, snippetCss, theme, author);
     if (notesHtml) map['notes/index.html'] = notesHtml;
   }
 
@@ -209,7 +209,7 @@ export function renderAllPages(data) {
 
   for (const page of publishedPages || []) {
     const contentHtml = mdToHtml(page.body || '');
-    map[`${page.slug}/index.html`] = buildPageHtml({ ...page, contentHtml, menuPages, accent, snippetCss, theme });
+    map[`${page.slug}/index.html`] = buildPageHtml({ ...page, contentHtml, menuPages, accent, snippetCss, theme, author });
   }
 
   return map;
