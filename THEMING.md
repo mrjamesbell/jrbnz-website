@@ -833,7 +833,15 @@ A theme might use `heroImage` as a full-bleed background, a decorative side pane
 
 #### What to use and what to ignore
 
-All fields have safe null/empty defaults. Use only what your design calls for:
+All fields have safe null/empty defaults. Use only what your design calls for.
+
+**If your homepage shows an intro/tagline line, source it from `heroDescription` — do not hardcode the text.** A hardcoded intro silently ignores whatever the author sets under **Homepage** in Signal, so the field appears editable but does nothing. Fall back to your own default only when `heroDescription` is empty:
+
+```js
+const intro = (heroDescription && heroDescription.trim()) || 'Your theme default tagline.';
+```
+
+The same principle applies to any field with a Signal-configurable counterpart (`heroImage`, `quote`): if your design renders that element, drive it from the data rather than a literal.
 
 ```js
 // Minimal homepage — just the author bio and recent essay titles
