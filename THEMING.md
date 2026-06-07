@@ -983,7 +983,9 @@ If your theme uses different layout or treatment classes, update the `className`
 
 The footer is theme-owned. Each theme builds its own footer HTML — there is no shared `buildFooter` helper that themes are required to call.
 
-### What the footer must contain
+### The required bottom row (must always be last)
+
+Whatever else the footer contains, it **must end** with this row, in this order, as the last thing in the footer:
 
 | Element | Notes |
 |---|---|
@@ -991,13 +993,20 @@ The footer is theme-owned. Each theme builds its own footer HTML — there is no
 | RSS link | `<a href="/feed.xml">RSS</a>` |
 | Signal logo | `<img src="/signal/signal-logo.png" alt="" width="20" height="20">` wrapped in an `<a href="/signal/">` with `title="Made with Signal"` and `aria-label="Signal"` |
 
-### What the footer must NOT contain
+A minimal footer of just this row is always a valid choice.
 
-- A navigation menu. Menus live in the site header only. Repeating them in the footer adds noise and is unnecessary given the site's scale.
+### Optional sections above the bottom row
 
-### Structure convention
+You **may** add content above the required row — for example a Pages list (About, Now, Writing, Notes, Photos, RSS) and an "Elsewhere" list of the author's social links. These are allowed, not required. If you add them:
 
-Keep the footer minimal: copyright left, RSS + Signal logo right (or inline). No taglines, no secondary nav, no social links.
+- **They must be identical on every page.** This is the cardinal footer rule. Do **not** derive footer content from the posts/notes that happen to be on the current page — that produces a different footer per route (e.g. a tag list that changes between Home, Writing and Notes, and vanishes on pages with no posts). Build optional sections only from site-global, page-independent data.
+- **Don't put a changing tag/topic list in the footer.** Page-contextual tag links read as broken navigation. If you want tag discovery, put it in the page body, not the footer.
+- **Social links come from `author`** — `data.author` is passed to every renderer (`buildHomepage`, `buildPost`, `buildIndex`, `buildPage`, `buildPhotos`, `buildNotes`), so an "Elsewhere" block renders consistently everywhere. Use only real author fields (`threads`, `instagram`, `linkedin`, `flickr`) and omit any that are empty. `buildAuthorCard(author)` / `data.authorCard` is also available pre-rendered.
+- A Pages list is fine in the footer even though the rule of thumb is "menus live in the header" — a footer Pages list is a known, accepted exception. Keep it to a fixed set of real site pages.
+
+### Examples
+
+Minimal (always valid):
 
 ```html
 <footer class="[theme]-footer">
@@ -1008,6 +1017,35 @@ Keep the footer minimal: copyright left, RSS + Signal logo right (or inline). No
       <a href="/signal/" title="Made with Signal" aria-label="Signal">
         <img src="/signal/signal-logo.png" alt="" width="20" height="20">
       </a>
+    </div>
+  </div>
+</footer>
+```
+
+With optional sections above the required row (Pages + Elsewhere, identical on every page):
+
+```html
+<footer class="[theme]-footer">
+  <div class="[theme]-footer-inner">
+    <div class="[theme]-footer-grid">
+      <section>
+        <h2>Pages</h2>
+        <ul><li><a href="/about/">About</a></li>… <li><a href="/photos/">Photos</a></li></ul>
+      </section>
+      <section>
+        <h2>Elsewhere</h2>
+        <ul><!-- only non-empty author.* links --></ul>
+      </section>
+    </div>
+    <!-- required bottom row, always last: copyright + RSS + Signal -->
+    <div class="[theme]-footer-bottom">
+      <span>©2026 James Bell</span>
+      <div class="[theme]-footer-links">
+        <a href="/feed.xml">RSS</a>
+        <a href="/signal/" title="Made with Signal" aria-label="Signal">
+          <img src="/signal/signal-logo.png" alt="" width="20" height="20">
+        </a>
+      </div>
     </div>
   </div>
 </footer>
