@@ -101,8 +101,12 @@ function buildImageDecos(view) {
       const alt = attr(m[1], 'alt');
       b.add(s, e, Decoration.mark({ class: 'cm-image-comment' }));
       const line = view.state.doc.lineAt(e);
+      // Inline (not block) widget: CM6 forbids block decorations from a
+      // ViewPlugin ("Block decorations may not be specified via plugins"),
+      // which threw on every post containing an image. The widget's own DOM is
+      // display:block so it still renders as a thumbnail on its own line.
       b.add(line.to, line.to, Decoration.widget({
-        widget: new ImageWidget(src, alt), block: true, side: 1,
+        widget: new ImageWidget(src, alt), side: 1,
       }));
     }
   }

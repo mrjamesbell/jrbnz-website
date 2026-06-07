@@ -358,6 +358,7 @@
 /* Inline image: dim the source comment, show a thumbnail beneath it */
 .cm-image-comment { opacity: 0.4; }
 .cm-image-widget {
+  display: block;          /* inline widget DOM forced block so it sits on its own line */
   margin: 12px 0 20px;
   border-radius: var(--radius-lg);
   overflow: hidden;
