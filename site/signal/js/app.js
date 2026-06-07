@@ -118,26 +118,6 @@ export { showConfirm } from './confirm-modal.js';
   document.getElementById('app-settings-save').addEventListener('click', saveAppSettings);
   document.getElementById('btn-app-logout').addEventListener('click', logout);
   document.getElementById('btn-publish-site').addEventListener('click', publishSite);
-  // Default cover image in settings
-  document.getElementById('btn-default-cover-media')?.addEventListener('click', () =>
-    openMediaPicker({ insertLabel: 'Use as default cover', onSelect: item => {
-      const url = item.urls?.hero || item.publicUrl;
-      const inp = document.getElementById('site-default-cover');
-      const wrap = document.getElementById('default-cover-preview-wrap');
-      const img = document.getElementById('default-cover-preview-img');
-      if (inp) inp.value = url;
-      if (wrap && img) { wrap.style.display = ''; img.src = url; }
-    }})
-  );
-  document.getElementById('site-default-cover')?.addEventListener('input', e => {
-    const url = e.target.value.trim();
-    const wrap = document.getElementById('default-cover-preview-wrap');
-    const img = document.getElementById('default-cover-preview-img');
-    if (wrap && img) { wrap.style.display = url ? '' : 'none'; if (url) img.src = url; }
-  });
-  document.querySelectorAll('.default-cover-focus-btn').forEach(btn => {
-    btn.addEventListener('click', () => _updateDefaultCoverFocusBtns(btn.dataset.focus));
-  });
 
   // Accent colour pickers
   _initAccentPickers();
@@ -226,15 +206,6 @@ function _updateHeadshotPreview(url) {
     img.style.display = 'none';
     if (placeholder) placeholder.style.display = '';
   }
-}
-
-
-function _updateDefaultCoverFocusBtns(focus) {
-  const img = document.getElementById('default-cover-preview-img');
-  document.querySelectorAll('.default-cover-focus-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.focus === focus);
-  });
-  if (img) img.style.objectPosition = `${focus} center`;
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -867,15 +838,6 @@ function openSettingsView() {
   }).catch(() => {});
 
   fetch('/api/site/settings').then(r => r.ok ? r.json() : {}).then(d => {
-    const inp = document.getElementById('site-default-cover');
-    const wrap = document.getElementById('default-cover-preview-wrap');
-    const img = document.getElementById('default-cover-preview-img');
-    if (inp) inp.value = d.defaultCoverImage || '';
-    if (wrap && img) {
-      wrap.style.display = d.defaultCoverImage ? '' : 'none';
-      if (d.defaultCoverImage) img.src = d.defaultCoverImage;
-    }
-    _updateDefaultCoverFocusBtns(d.defaultCoverImageFocus || 'center');
     _loadThemePicker(d.theme || 'cinematic');
   }).catch(() => {});
 
@@ -1043,16 +1005,13 @@ function _initThemeUpload() {
 }
 
 async function saveAppSettings() {
-  const defaultCoverImage = document.getElementById('site-default-cover')?.value.trim() || null;
-  const activeDefaultFocusBtn = document.querySelector('.default-cover-focus-btn.active');
-  const defaultCoverImageFocus = activeDefaultFocusBtn ? activeDefaultFocusBtn.dataset.focus : 'center';
   const activeThemeBtn = document.querySelector('#theme-picker-group .theme-pick-btn.active');
   const theme = activeThemeBtn ? activeThemeBtn.dataset.theme : null;
   try {
     const res = await fetch('/api/site/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ defaultCoverImage, defaultCoverImageFocus, ...(theme ? { theme } : {}) }),
+      body: JSON.stringify({ ...(theme ? { theme } : {}) }),
     });
     if (!res.ok) throw new Error(`${res.status}`);
     showToast(theme ? `Settings saved — theme: ${theme}` : 'Settings saved', 'success');

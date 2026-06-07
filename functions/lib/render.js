@@ -77,8 +77,8 @@ function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, sub
     title, slug, date, dateFormatted, tags, contentHtml, author, accent,
     menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
     authorCard, year, theme: theme,
-    coverImage: coverImage || defaultCoverImage || null,
-    coverImageAlt, coverImageFocus: coverImageFocus || (coverImage ? 'center' : defaultCoverImageFocus) || 'center',
+    coverImage: coverImage || null,
+    coverImageAlt, coverImageFocus: coverImageFocus || 'center',
     recentPosts, excerpt, subtitle,
   };
 }

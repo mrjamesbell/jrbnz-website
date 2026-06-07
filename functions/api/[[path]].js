@@ -384,7 +384,7 @@ async function loadSiteContext(env) {
   const menuPages = pagesObj ? JSON.parse(await pagesObj.text()) : [];
   const siteData = siteObj ? JSON.parse(await siteObj.text()) : {};
   const homepageConfig = homepageObj ? JSON.parse(await homepageObj.text()) : null;
-  return { author, accent: accentData.accent || null, menuPages, snippetCss, defaultCoverImage: siteData.defaultCoverImage || null, defaultCoverImageFocus: siteData.defaultCoverImageFocus || 'center', homepageConfig, theme: siteData.theme || 'cinematic' };
+  return { author, accent: accentData.accent || null, menuPages, snippetCss, homepageConfig, theme: siteData.theme || 'cinematic' };
 }
 
 async function handleGetSiteSettings(env) {
@@ -393,12 +393,13 @@ async function handleGetSiteSettings(env) {
 }
 
 async function handleSaveSiteSettings(request, env) {
-  const { theme, defaultCoverImage, defaultCoverImageFocus } = await request.json();
+  const { theme } = await request.json();
   const existing = await env.BLOG.get('settings/site.json').then(o => o ? o.json() : {}).catch(() => ({}));
   const updated = { ...existing };
   if (theme !== undefined) updated.theme = theme;
-  if (defaultCoverImage !== undefined) updated.defaultCoverImage = defaultCoverImage;
-  if (defaultCoverImageFocus !== undefined) updated.defaultCoverImageFocus = defaultCoverImageFocus;
+  // Drop any previously-stored default cover image — the option has been removed.
+  delete updated.defaultCoverImage;
+  delete updated.defaultCoverImageFocus;
   await env.BLOG.put('settings/site.json', JSON.stringify(updated), { httpMetadata: { contentType: 'application/json' } });
   return json(updated);
 }
