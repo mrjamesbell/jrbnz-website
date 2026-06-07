@@ -3,28 +3,10 @@ import { loadSnippetCss } from '../lib/snippets.js';
 import { SITE_URL, esc, buildHead, buildSiteNav, buildNavLinks, buildFooter, buildPostMeta, buildAuthorCard } from '../lib/templates.js';
 import { slugify as slugifyMedia, generateImageId, uploadToCFImages, deleteCFImage, cfImageUrls } from '../lib/cf-images.js';
 import { putMeta, getMeta, deleteMeta, listMeta } from '../lib/media-kv.js';
-import * as baseTheme from '../themes/base.js';
-import * as basicTheme from '../themes/basic.js';
-import installedThemes from '../themes/_bundle.js';
-
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
-
-// ── Theme registry ────────────────────────────────────────────────────────────
-
-const THEMES = { base: baseTheme, basic: basicTheme, ...installedThemes };
-const BUILTIN_THEMES = new Set(['base', 'basic']);
-
-function themeRenderer(name) {
-  const theme = THEMES[name] ?? THEMES.basic;
-  return {
-    buildPost:     theme.buildPost     ?? baseTheme.buildPost,
-    buildIndex:    theme.buildIndex    ?? baseTheme.buildIndex,
-    buildPage:     theme.buildPage     ?? baseTheme.buildPage,
-    buildPhotos:   theme.buildPhotos   ?? baseTheme.buildPhotos,
-    buildHomepage: theme.buildHomepage ?? baseTheme.buildHomepage,
-    buildNotes:    theme.buildNotes    ?? baseTheme.buildNotes,
-  };
-}
+import {
+  THEMES, BUILTIN_THEMES,
+  buildPostHtml, buildIndexHtml, buildPageHtml, buildPhotosHtml, buildHomepageHtml, buildNotesHtml,
+} from '../lib/render.js';
 
 // ── Theme compliance checker ──────────────────────────────────────────────────
 
@@ -184,149 +166,9 @@ function isValidSlug(slug) {
 // esc, buildHead, buildSiteNav, buildFooter, buildPostMeta, buildAuthorCard
 // are imported from ../lib/templates.js
 
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
-}
-
-function fmtDateShort(iso) {
-  return new Date(iso).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
-}
-
-
-function calcReadingTime(wordCount) {
-  return Math.max(1, Math.ceil((wordCount || 0) / 200));
-}
-
-function extractFirstImage(body) {
-  const signal = (body || '').match(/<!--\s*signal:image\s+src="([^"]+)"/);
-  if (signal) return signal[1];
-  const md = (body || '').match(/!\[[^\]]*\]\(([^)]+)\)/);
-  return md ? md[1] : null;
-}
-
-function prepPostData({ title, slug, date, tags, contentHtml, body, excerpt, subtitle, coverImage, coverImageAlt, coverImageFocus, defaultCoverImage, defaultCoverImageFocus, author, accent, menuPages, snippetCss, allPosts, wordCount, theme }) {
-  const year = new Date().getFullYear();
-  const ogImage = coverImage || extractFirstImage(body) || DEFAULT_OG_IMAGE;
-  const postUrl = `${SITE_URL}/posts/${slug}/`;
-  const extraHead = buildPostMeta({ title, postUrl, metaDesc: excerpt || '', ogImage, date, authorName: author?.name });
-  const readTime = calcReadingTime(wordCount);
-  const dateFormatted = fmtDate(date);
-  const authorCard = buildAuthorCard(author);
-
-  const published = (allPosts || [])
-    .filter(p => p.status === 'published')
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-  const pidx = published.findIndex(p => p.slug === slug);
-  const prevPost = pidx > 0 ? published[pidx - 1] : null;
-  const nextPost = pidx < published.length - 1 ? published[pidx + 1] : null;
-
-  const recentPosts = (allPosts || [])
-    .filter(p => p.status === 'published' && p.slug !== slug)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 3);
-
-  return {
-    title, slug, date, dateFormatted, tags, contentHtml, author, accent,
-    menuPages, snippetCss, readTime, postUrl, extraHead, prevPost, nextPost,
-    authorCard, year, theme: theme,
-    coverImage: coverImage || defaultCoverImage || null,
-    coverImageAlt, coverImageFocus: coverImageFocus || (coverImage ? 'center' : defaultCoverImageFocus) || 'center',
-    recentPosts, excerpt, subtitle,
-  };
-}
-
-function buildPostHtml(args, theme) {
-  const t = theme;
-  return themeRenderer(t).buildPost(prepPostData({ ...args, theme: t }));
-}
-
-function buildIndexHtml(posts, accent, menuPages, snippetCss, defaultCoverImage, theme) {
-  const essays = posts
-    .filter(p => p.status === 'published' && !(p.tags || []).includes('note'))
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const items = essays.map(p => {
-    const tagsText = (p.tags || []).filter(t => t !== 'note').map(t => `#${esc(t)}`).join(' · ');
-    const readTime = calcReadingTime(p.wordCount);
-    return `
-  <li class="post-list-item" data-tags="${esc((p.tags || []).join(','))}">
-    <time>${fmtDateShort(p.date)}</time>
-    <div>
-      <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a>
-      <div class="post-item-meta">
-        ${tagsText ? `<span class="post-item-tags">${tagsText}</span>` : ''}
-        <span class="post-item-readtime">${readTime} min read</span>
-      </div>
-    </div>
-  </li>`;
-  }).join('');
-
-  const allTags = [...new Set(essays.flatMap(p => (p.tags || []).filter(t => t !== 'note')))].sort();
-  const tagChips = allTags.map(t => `<a href="/posts/?tag=${esc(t)}" class="tag-chip">#${esc(t)}</a>`).join('\n    ');
-  const year = new Date().getFullYear();
-
-  const t = theme;
-  return themeRenderer(t).buildIndex({
-    items, tagChips, menuPages, accent, snippetCss, year, theme: t, posts: essays, defaultCoverImage,
-  });
-}
-
-function buildPageHtml({ title, slug, contentHtml, menuPages, accent, snippetCss, theme }) {
-  const year = new Date().getFullYear();
-  const t = theme;
-  return themeRenderer(t).buildPage({
-    title, slug, contentHtml, menuPages, accent, snippetCss, year, theme: t,
-  });
-}
-
-function buildPhotosHtml(menuPages, accent, theme) {
-  const year = new Date().getFullYear();
-  const t = theme;
-  return themeRenderer(t).buildPhotos({
-    menuPages, accent, year, theme: t,
-  });
-}
-
-function buildHomepageHtml(posts, author, accent, menuPages, snippetCss, defaultCoverImage, homepageConfig, theme) {
-  const published = (posts || [])
-    .filter(p => p.status === 'published')
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const isNote = p => (p.tags || []).includes('note');
-  const allEssays = published.filter(p => !isNote(p));
-  const allNotes  = published.filter(p =>  isNote(p));
-
-  const cfg = homepageConfig || {};
-
-  let featuredEssay = allEssays[0] || null;
-  if (cfg.featured?.slug) {
-    const found = allEssays.find(p => p.slug === cfg.featured.slug);
-    if (found) featuredEssay = found;
-  }
-
-  const recentEssays = allEssays.filter(p => p.slug !== featuredEssay?.slug).slice(0, 4);
-  const recentNotes  = allNotes.slice(0, 5);
-
-  const t = theme;
-  return themeRenderer(t).buildHomepage?.({
-    author,
-    featuredEssay,
-    recentEssays,
-    recentNotes,
-    heroImage:       cfg.heroImage       || null,
-    heroDescription: cfg.heroDescription || null,
-    quote:           cfg.quote           || null,
-    menuPages, accent, snippetCss, theme: t, defaultCoverImage, homepageConfig: cfg,
-  }) ?? '';
-}
-
-function buildNotesHtml(notes, bodies, menuPages, accent, snippetCss, theme) {
-  const t = theme;
-  const renderer = themeRenderer(t).buildNotes;
-  if (!renderer) return '';
-  const notesWithHtml = notes.map((note, i) => ({ ...note, bodyHtml: mdToHtml(bodies[i] || '') }));
-  return renderer({ notes: notesWithHtml, menuPages, accent, snippetCss, theme: t });
-}
+// prepPostData, buildPostHtml, buildIndexHtml, buildPageHtml, buildPhotosHtml,
+// buildHomepageHtml and buildNotesHtml are imported from ../lib/render.js so the
+// identical rendering runs both here and at build time under Node.
 
 async function buildNotesHtmlFromPosts(env, posts, menuPages, accent, snippetCss, theme) {
   const notes = (posts || [])
@@ -730,6 +572,9 @@ export async function onRequest(context) {
   if (resource === 'internal' && slug === 'theme-bundle' && method === 'GET') {
     return handleThemeBundle(env);
   }
+  if (resource === 'internal' && slug === 'render-data' && method === 'GET') {
+    return handleRenderData(env);
+  }
 
   // All other routes require auth
   const token = getSessionCookie(request);
@@ -993,6 +838,38 @@ async function handleExport(request, env) {
 
   const map = Object.fromEntries(results.filter(Boolean));
   return Response.json(map);
+}
+
+// Returns the raw data needed to render every public page, so build.mjs can render
+// HTML under Node using the just-inlined theme bundle. Unlike handleExport (which
+// serves stale pre-rendered HTML from R2, rendered by whatever theme was live when
+// it was last published), this returns only data — immune to the theme-bundle lag
+// that previously required two deploys for a new theme to take effect.
+async function handleRenderData(env) {
+  const [posts, pages, ctx, feedObj, sitemapObj] = await Promise.all([
+    getIndex(env),
+    getPagesIndex(env),
+    loadSiteContext(env),
+    env.BLOG.get('feed.xml'),
+    env.BLOG.get('sitemap.xml'),
+  ]);
+
+  const publishedPosts = posts.filter(p => p.status === 'published');
+  const publishedPages = pages.filter(p => p.status === 'published' && !p.nav_url);
+
+  const [postBodies, pageBodies] = await Promise.all([
+    Promise.all(publishedPosts.map(p => env.BLOG.get(`posts/${p.slug}/draft.md`).then(o => o ? o.text() : ''))),
+    Promise.all(publishedPages.map(p => env.BLOG.get(`pages/${p.slug}/draft.md`).then(o => o ? o.text() : ''))),
+  ]);
+
+  return json({
+    ctx,
+    posts,
+    publishedPosts: publishedPosts.map((p, i) => ({ ...p, body: postBodies[i] })),
+    publishedPages: publishedPages.map((p, i) => ({ ...p, body: pageBodies[i] })),
+    feedXml: feedObj ? await feedObj.text() : null,
+    sitemapXml: sitemapObj ? await sitemapObj.text() : null,
+  });
 }
 
 // ── Media handlers ────────────────────────────────────────────────────────────
