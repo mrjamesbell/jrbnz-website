@@ -157,9 +157,10 @@ function featuredHomeItem(post) {
 }
 
 export function buildHomepage(data) {
-  const { author, featuredEssay, recentEssays, accent, snippetCss, theme, year, menuPages } = data;
+  const { author, featuredEssay, recentEssays, accent, snippetCss, theme, year, menuPages, heroDescription } = data;
   const recent = (recentEssays || []).filter(Boolean).slice(0, 4);
-  const intro = 'Writing about theatre, memory, technology and whatever keeps echoing.';
+  const intro = (heroDescription && heroDescription.trim())
+    || 'Writing about theatre, memory, technology and whatever keeps echoing.';
   const body = `<section class="bb-home">
     <h1 class="bb-home-intro">${esc(intro)}</h1>
     ${featuredEssay ? featuredHomeItem(featuredEssay) : ''}
