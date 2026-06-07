@@ -1002,7 +1002,7 @@ You **may** add content above the required row — for example a Pages list (Abo
 - **They must be identical on every page.** This is the cardinal footer rule. Do **not** derive footer content from the posts/notes that happen to be on the current page — that produces a different footer per route (e.g. a tag list that changes between Home, Writing and Notes, and vanishes on pages with no posts). Build optional sections only from site-global, page-independent data.
 - **Don't put a changing tag/topic list in the footer.** Page-contextual tag links read as broken navigation. If you want tag discovery, put it in the page body, not the footer.
 - **Social links come from `author`** — `data.author` is passed to every renderer (`buildHomepage`, `buildPost`, `buildIndex`, `buildPage`, `buildPhotos`, `buildNotes`), so an "Elsewhere" block renders consistently everywhere. Use only real author fields (`threads`, `instagram`, `linkedin`, `flickr`) and omit any that are empty. `buildAuthorCard(author)` / `data.authorCard` is also available pre-rendered.
-- A Pages list is fine in the footer even though the rule of thumb is "menus live in the header" — a footer Pages list is a known, accepted exception. Keep it to a fixed set of real site pages.
+- **A nav-pages list must come from `data.menuPages`, not a hardcoded array.** `menuPages` is passed to every renderer — the same page set the header nav uses. Build the footer's page list from it with `buildNavLinks(menuPages)` (returns `[{ href, label }]`) or by filtering directly (`menuPages.filter(p => p.include_in_menu && p.status === 'published')`, using `p.nav_url || '/' + p.slug + '/'`). This keeps the footer in sync with the menu — any page flagged **include in menu** in Signal appears in both. Hardcoding page links means new pages (e.g. a "Theatre" page) silently never reach the footer. Section routes that aren't CMS pages (`/posts/`, `/notes/`, `/photos/`) and external links are fine to hardcode, since they aren't in `menuPages`.
 
 ### Examples
 
@@ -1030,7 +1030,8 @@ With optional sections above the required row (Pages + Elsewhere, identical on e
     <div class="[theme]-footer-grid">
       <section>
         <h2>Pages</h2>
-        <ul><li><a href="/about/">About</a></li>… <li><a href="/photos/">Photos</a></li></ul>
+        <!-- built from buildNavLinks(menuPages) — stays in sync with the menu -->
+        <ul><li><a href="/about/">About</a></li>… <li><a href="/now/">Now</a></li></ul>
       </section>
       <section>
         <h2>Elsewhere</h2>
