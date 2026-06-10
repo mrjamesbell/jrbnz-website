@@ -400,7 +400,8 @@
   .mobile-post-title-input {
     font-family: var(--font-serif);
     font-size: var(--text-2xl);
-    font-weight: 700;
+    font-weight: 400;
+    letter-spacing: -0.02em;
     color: var(--color-cream-text-primary);
     border: none;
     outline: none;
@@ -425,7 +426,7 @@
     font-family: var(--font-serif);
     font-size: var(--text-md);
     line-height: var(--leading-prose);
-    color: var(--color-cream-text-secondary);
+    color: var(--color-cream-text-primary);
     border: none;
     outline: none;
     width: 100%;
@@ -554,9 +555,9 @@
     gap: 3px;
     color: var(--color-dark-text-muted);
     text-decoration: none;
-    font-size: 9px;
-    font-family: var(--font-display);
-    letter-spacing: 0.07em;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     background: none;
     border: none;

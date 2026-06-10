@@ -2,70 +2,87 @@
  * Signal Admin — Design Tokens
  * jrbnz.com blogging platform
  *
+ * "The Projection Booth" — Signal is the backstage of jrbnz.com,
+ * built from the same materials as the public site: warm near-black
+ * surfaces, Warm Gold accent, Georgia for everything authored,
+ * monospace for everything the machine owns.
+ *
  * All colour, typography, spacing, and animation values live here.
  * Import this file first; all other CSS files depend on these variables.
+ *
+ * Legacy variable names (--color-cream-*, --color-dark-*) are kept as
+ * aliases of the booth palette so component CSS keeps resolving.
  */
 
 :root {
 
-  /* ── Colour: Site identity ── */
-  --color-ink:          #1c1c1c;   /* near-black — used for dark buttons, dark surfaces */
-  --color-cream:        #1e1b18;   /* warm dark — writing surface bg (dark mode)        */
-  --color-cream-mid:    #161412;   /* slightly darker — toolbar / topbar bg             */
-  --color-cream-dark:   #28251f;   /* input bg, hover, raised surfaces                  */
-  --color-accent:       oklch(66% 0.09 140);          /* warm sage — tags, links, active states, publish btn */
-  --color-accent-dim:   oklch(66% 0.09 140 / 0.15);  /* sage border on tag pills                            */
-  --color-accent-fg:    var(--color-dark-text-primary); /* text ON accent bg — JS overrides to #1c1c1c when accent is light */
+  /* ── Booth palette ── */
+  --booth-shade:    #08090b;                 /* chrome: rail, topbars, format bar     */
+  --booth-canvas:   #0c0e11;                 /* content canvas, writing surface       */
+  --booth-raised:   #14171c;                 /* inputs, hover, modals, raised         */
+  --booth-border-1: rgba(255,255,255,0.09);  /* hairline dividers                     */
+  --booth-border-2: rgba(255,255,255,0.18);  /* stronger borders: ghost buttons       */
+  --booth-text-1:   rgba(255,255,255,0.88);  /* primary text                          */
+  --booth-text-2:   rgba(255,255,255,0.58);  /* secondary text — the only other tier  */
 
-  /* ── Colour: Dark chrome (rail, sidebar, post list) ── */
-  --color-dark-base:    #141414;   /* rail background                      */
-  --color-dark-surface: #111111;   /* sidebar background                   */
-  --color-dark-raised:  #1a1a1a;   /* active sidebar item, input bg        */
-  --color-dark-border:  #1e1e1e;   /* subtle borders in dark chrome        */
-  --color-dark-border2: #2a2a2a;   /* stronger borders, dividers           */
+  /* ── Accent (user-configurable; Warm Gold matches the live site) ── */
+  --color-accent:        #b89b72;
+  --color-accent-dim:    rgba(184,155,114,0.14);
+  --color-accent-bright: color-mix(in oklch, var(--color-accent) 88%, white);
+  --color-accent-fg:     #16120c;            /* text ON accent — JS flips when accent is dark */
 
-  /* ── Colour: Text on dark chrome ── */
-  --color-dark-text-primary:   #f0ede8; /* headings, post titles            */
-  --color-dark-text-secondary: #909090; /* secondary — dates, meta, labels  */
-  --color-dark-text-muted:     #909090; /* alias for secondary              */
-  --color-dark-text-ghost:     #909090; /* alias for secondary              */
+  /* ── Status ── */
+  --color-saved:   var(--color-accent);      /* autosave dot                          */
+  --color-danger:  #cf7a68;                  /* delete, destructive — warm, desaturated */
 
-  /* ── Colour: Text on cream (editor — dark mode) ── */
-  --color-cream-text-primary:   #e8e4dc; /* post title, body text          */
-  --color-cream-text-secondary: #909090; /* secondary — meta, captions     */
-  --color-cream-text-muted:     #909090; /* alias for secondary            */
-  --color-cream-text-ghost:     #909090; /* alias for secondary            */
+  /* ── Legacy aliases: surfaces ── */
+  --color-ink:          #16120c;             /* text/surfaces on accent               */
+  --color-cream:        var(--booth-canvas);
+  --color-cream-mid:    var(--booth-shade);
+  --color-cream-dark:   var(--booth-raised);
+  --color-dark-base:    var(--booth-shade);
+  --color-dark-surface: #0a0c0e;
+  --color-dark-raised:  var(--booth-raised);
 
-  /* ── Colour: Cream surface borders ── */
-  --color-cream-border:     #2e2b26;  /* hr, section dividers, field edges  */
-  --color-cream-border-mid: #3d3a34;  /* image action pill borders          */
+  /* ── Legacy aliases: borders ── */
+  --color-dark-border:      var(--booth-border-1);
+  --color-dark-border2:     var(--booth-border-2);
+  --color-cream-border:     var(--booth-border-1);
+  --color-cream-border-mid: var(--booth-border-2);
 
-  /* ── Colour: Status ── */
-  --color-saved:   oklch(66% 0.09 140);  /* autosave dot — sage             */
-  --color-danger:  #c0392b;             /* delete, destructive actions     */
+  /* ── Legacy aliases: text ── */
+  --color-dark-text-primary:    var(--booth-text-1);
+  --color-dark-text-secondary:  var(--booth-text-2);
+  --color-dark-text-muted:      var(--booth-text-2);
+  --color-dark-text-ghost:      var(--booth-text-2);
+  --color-cream-text-primary:   var(--booth-text-1);
+  --color-cream-text-secondary: var(--booth-text-2);
+  --color-cream-text-muted:     var(--booth-text-2);
+  --color-cream-text-ghost:     var(--booth-text-2);
 
-  /* ── Typography ── */
-  --font-serif:    'Lora', Georgia, 'Times New Roman', serif;
-  --font-sans:     -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-display:  'Bebas Neue', sans-serif;
-  --font-mono:     'SF Mono', 'Fira Mono', 'Consolas', monospace;
+  /* ── Typography ──
+     One rule: what James writes is Georgia; what the machine owns is mono. */
+  --font-serif:    Georgia, 'Times New Roman', serif;
+  --font-mono:     ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:     var(--font-mono);   /* UI chrome is mono — alias kept for legacy rules */
+  --font-display:  var(--font-mono);   /* Bebas Neue retired                              */
 
-  /* Type scale */
-  --text-label: 14px; /* minimum accessible size — small labels, status chips, hints */
-  --text-xs:   16px;  /* labels, pills, hints, format bar buttons   */
-  --text-sm:   18px;  /* meta dates, captions, secondary chrome      */
-  --text-base: 20px;  /* primary chrome text, inputs, sheet labels   */
-  --text-md:   22px;  /* topbar title, editor h3, mobile body prose  */
-  --text-lg:   26px;   /* body prose in editor                           */
-  --text-xl:   30px;   /* H2 in editor                                   */
-  --text-2xl:  36px;   /* H1 / post title in editor (desktop)            */
-  --text-3xl:  44px;   /* post title large (desktop wide)                */
+  /* Type scale (14px floor — accessibility) */
+  --text-label: 14px;  /* mono labels, buttons, meta, status, hints      */
+  --text-xs:    15px;  /* serif excerpts, hints, secondary prose         */
+  --text-sm:    16px;  /* serif small prose, dropzone labels             */
+  --text-base:  17px;  /* form inputs (authored text), body UI prose     */
+  --text-md:    21px;  /* editor h3, modal-scale headings                */
+  --text-lg:    20px;  /* body prose in editor                           */
+  --text-xl:    29px;  /* H2 in editor                                   */
+  --text-2xl:   34px;  /* H1 / post title in editor (compact)            */
+  --text-3xl:   42px;  /* post title field (desktop)                     */
 
   /* Line heights */
   --leading-tight:  1.2;
   --leading-snug:   1.4;
   --leading-normal: 1.6;
-  --leading-prose:  1.82;  /* body text in editor — generous for reading  */
+  --leading-prose:  1.8;   /* body text in editor — generous for reading  */
 
   /* Letter spacing */
   --tracking-tight:  -0.01em;
@@ -73,6 +90,7 @@
   --tracking-wide:   0.04em;
   --tracking-wider:  0.08em;
   --tracking-widest: 0.1em;
+  --tracking-kicker: 0.22em;  /* topbar headings, section labels          */
 
   /* ── Spacing ── */
   --space-1:   4px;
@@ -87,28 +105,29 @@
   --space-16:  64px;
 
   /* ── Layout ── */
-  --rail-width:        68px;
+  --rail-width:        64px;
   --sidebar-width:     210px;
-  --editor-max-width:  clamp(680px, 75vw, 1200px);
-  --topbar-height:     54px;
-  --fmtbar-height:     52px;
+  --editor-max-width:  760px;   /* ~70ch at 20px Georgia — a reading measure */
+  --list-max-width:    860px;   /* post list column                          */
+  --topbar-height:     56px;
+  --fmtbar-height:     50px;
   --mobile-kbbar-height: 52px;
 
-  /* ── Radius ── */
-  --radius-sm:   4px;
-  --radius-md:   6px;
-  --radius-lg:   8px;
-  --radius-xl:   12px;
-  --radius-2xl:  20px;
+  /* ── Radius — square-ish corners, like the live site ── */
+  --radius-sm:   3px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-xl:   8px;
+  --radius-2xl:  10px;
   --radius-pill: 999px;
 
   /* ── Borders ── */
-  --border-dark:   1px solid var(--color-dark-border);
-  --border-dark2:  1px solid var(--color-dark-border2);
-  --border-cream:  1px solid var(--color-cream-border);
+  --border-dark:   1px solid var(--booth-border-1);
+  --border-dark2:  1px solid var(--booth-border-2);
+  --border-cream:  1px solid var(--booth-border-1);
 
   /* ── Shadows ── */
-  /* Intentionally none — flat design. Focus rings only. */
+  /* Flat by default — depth is tonal. Shadows only on true overlays. */
   --focus-ring: 0 0 0 2px var(--color-accent);
 
   /* ── Transitions ── */

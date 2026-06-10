@@ -37,7 +37,7 @@ const highlight = HighlightStyle.define([
 // ── Editor chrome theme ──
 const theme = EditorView.theme({
   '&': {
-    color: 'var(--color-cream-text-secondary)',
+    color: 'var(--color-cream-text-primary)',
     backgroundColor: 'transparent',
     fontSize: 'var(--text-lg)',
   },
@@ -55,7 +55,7 @@ const theme = EditorView.theme({
   '.cm-scroller': { fontFamily: 'var(--font-serif)' },
   '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--color-accent)', borderLeftWidth: '2px' },
   '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
-    backgroundColor: 'oklch(70% 0.10 185 / 0.28)',
+    backgroundColor: 'color-mix(in oklch, var(--color-accent) 30%, transparent)',
   },
   '.cm-line': { padding: '0' },
 }, { dark: true });

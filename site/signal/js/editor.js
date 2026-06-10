@@ -1348,25 +1348,28 @@ async function _runReview() {
   reviewWin.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
 <title>Review</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #faf8f4; color: #2a2520; margin: 0 auto; padding: 48px 64px 80px;
-    max-width: 740px; line-height: 1.7; font-size: 15px; }
-  h1 { font-size: 18px; font-weight: 700; color: #3a8a72; margin: 0 0 4px; letter-spacing: -0.01em; }
-  #post-title { font-size: 14px; color: #888; margin-bottom: 32px; }
-  hr { border: none; border-top: 1px solid #e5e0d8; margin: 28px 0; }
-  h2 { font-size: 14px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #888; margin: 28px 0 8px; }
-  h3 { font-size: 14px; font-weight: 600; color: #555; margin: 20px 0 6px; }
+  body { font-family: Georgia, 'Times New Roman', serif;
+    background: #f1eadf; color: #2a2420; margin: 0 auto; padding: 48px 64px 80px;
+    max-width: 740px; line-height: 1.75; font-size: 17px; }
+  h1 { font-size: 21px; font-weight: 400; color: #2a2420; margin: 0 0 4px; letter-spacing: -0.01em; }
+  #post-title { font-size: 14px; font-family: ui-monospace, Menlo, Consolas, monospace;
+    letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.55); margin-bottom: 32px; }
+  hr { border: none; border-top: 1px solid rgba(0,0,0,0.15); margin: 28px 0; }
+  h2 { font-size: 14px; font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 400;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #8a6d44; margin: 32px 0 10px; }
+  h3 { font-size: 17px; font-weight: 700; color: #2a2420; margin: 20px 0 6px; }
   p { margin: 0 0 14px; }
   ul, ol { padding-left: 22px; margin: 0 0 14px; }
   li { margin-bottom: 6px; }
   strong { color: #1a1510; }
-  em { color: #555; }
-  code { background: #ede9e2; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 14px; }
-  .spinner { width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: #4a9;
+  em { color: rgba(0,0,0,0.6); }
+  code { background: rgba(0,0,0,0.07); padding: 1px 5px; border-radius: 3px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.15); border-top-color: #8a6d44;
     border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading { display: flex; align-items: center; gap: 12px; color: #888; margin-top: 80px; }
-  #error { color: #c00; }
+  .loading { display: flex; align-items: center; gap: 12px; color: rgba(0,0,0,0.55); margin-top: 80px; }
+  #error { color: #9a4634; }
 </style></head><body>
 <div class="loading" id="loading"><div class="spinner"></div>Reviewing your post…</div>
 <div id="result" hidden>

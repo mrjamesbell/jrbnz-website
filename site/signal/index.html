@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Signal Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script>
   // Apply saved accent colour before first paint to avoid flash
   try {
@@ -635,7 +632,7 @@ const x = 1;
                 <div class="accent-swatch-row" id="signal-swatch-row">
                   <button class="accent-custom-btn" id="signal-custom-btn" title="Pick a colour">+</button>
                   <input type="color" class="accent-picker-input" id="signal-color-picker" value="#888888">
-                  <button class="accent-none-btn is-active" id="signal-none-btn">None</button>
+                  <button class="accent-none-btn is-active" id="signal-none-btn">Default</button>
                 </div>
               </div>
             </div>
@@ -646,7 +643,7 @@ const x = 1;
                 <div class="accent-swatch-row" id="live-swatch-row">
                   <button class="accent-custom-btn" id="live-custom-btn" title="Pick a colour">+</button>
                   <input type="color" class="accent-picker-input" id="live-color-picker" value="#888888">
-                  <button class="accent-none-btn is-active" id="live-none-btn">None</button>
+                  <button class="accent-none-btn is-active" id="live-none-btn">Default</button>
                 </div>
               </div>
             </div>
@@ -1018,7 +1015,7 @@ const x = 1;
       <button class="modal-close" id="delete-close">×</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:var(--text-base);color:var(--color-cream-text-muted);font-family:var(--font-sans)">
+      <p style="font-size:var(--text-base);color:var(--color-cream-text-muted);font-family:var(--font-serif);line-height:1.6">
         This will permanently delete the post and all its media. This cannot be undone.
       </p>
     </div>

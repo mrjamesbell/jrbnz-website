@@ -4,17 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Signal — Login</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/signal/css/design-tokens.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   height: 100%;
-  font-family: var(--font-sans);
-  background: var(--color-dark-base);
+  font-family: var(--font-serif);
+  background: #090b0d; /* projection black — same as jrbnz.com */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -23,17 +20,14 @@ html, body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: var(--space-5);
+  padding: var(--space-6);
 }
 
+/* No card — a door, not a dialog */
 .login-card {
   width: 100%;
-  max-width: 360px;
-  background: var(--color-cream-dark);
-  border: 1px solid var(--color-cream-border-mid);
-  border-radius: var(--radius-2xl);
-  padding: 40px 36px 44px;
-  box-shadow: 0 48px 96px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.45);
+  max-width: 340px;
+  text-align: center;
 }
 
 .login-brand {
@@ -41,91 +35,105 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 
 .login-icon {
   width: 44px;
   height: 44px;
-  color: var(--color-cream-text-primary);
 }
 
 .login-wordmark {
-  font-family: var(--font-display);
-  font-size: 28px;
-  letter-spacing: 0.12em;
-  color: var(--color-cream-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: 0.42em;
+  text-indent: 0.42em; /* optically centre the tracked text */
+  color: var(--booth-text-1);
   text-transform: uppercase;
   line-height: 1;
 }
 
+/* Gold hairline between brand and form */
+.login-brand::after {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: var(--color-accent);
+  margin-top: 22px;
+}
+
 .login-label {
   display: block;
-  font-size: 11px;
-  font-family: var(--font-sans);
-  color: var(--color-cream-text-muted);
-  letter-spacing: 0.1em;
+  text-align: left;
+  font-size: var(--text-label);
+  font-family: var(--font-mono);
+  color: var(--booth-text-2);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: var(--space-2);
+  margin-bottom: 9px;
 }
 
 .login-input {
   width: 100%;
-  background: var(--color-cream);
-  border: 1px solid var(--color-cream-border-mid);
+  background: var(--booth-raised);
+  border: 1px solid var(--booth-border-1);
   border-radius: var(--radius-md);
-  padding: 10px var(--space-4);
-  font-size: 15px;
-  color: var(--color-cream-text-primary);
-  font-family: var(--font-sans);
+  padding: 11px var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--booth-text-1);
+  font-family: var(--font-mono);
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-base);
 }
 
 .login-input:focus {
-  border-color: var(--color-cream-text-muted);
+  border-color: var(--color-accent);
 }
 
 .login-submit {
   width: 100%;
   margin-top: var(--space-6);
-  padding: 11px 0;
-  background: var(--color-dark-raised);
-  color: var(--color-cream-text-primary);
+  height: 44px;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
   border: none;
   border-radius: var(--radius-md);
-  font-size: 13px;
-  font-family: var(--font-sans);
-  letter-spacing: 0.04em;
+  font-size: var(--text-label);
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: background var(--transition-base);
 }
 
-.login-submit:hover { opacity: 0.88; }
+.login-submit:hover { background: var(--color-accent-bright); }
 .login-submit:disabled { opacity: 0.5; cursor: default; }
 
 .login-error {
-  margin-top: var(--space-4);
-  font-size: 13px;
+  margin-top: var(--space-5);
+  font-size: var(--text-label);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
   color: var(--color-danger);
   text-align: center;
   display: none;
-  font-family: var(--font-sans);
 }
 
 .login-lockout {
-  margin-top: var(--space-4);
-  font-size: 13px;
-  color: var(--color-cream-text-muted);
+  margin-top: var(--space-5);
+  font-size: var(--text-label);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--booth-text-2);
   text-align: center;
   display: none;
-  font-family: var(--font-sans);
 }
 
 .login-build {
-  font-family: var(--font-sans);
-  font-size: 10px;
-  color: var(--color-cream-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  color: var(--booth-text-2);
   letter-spacing: 0.06em;
   opacity: 0.5;
 }
